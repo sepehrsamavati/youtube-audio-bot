@@ -1,6 +1,6 @@
 const token = "1818346970:AAHcILX18YPgB4owJOckauhUTfEaGFYQ6Wo";
 const botUrl = "https://api.telegram.org/bot" + token + "/";
-const veloversion="1.1.0", maxChannels = 3, MIN_INTERVAL = 10, MIN_DELAY = 500, TIMEOUT = 20, sevenDays = 7*24*60*60*1000; /* 3/5/2021 */
+const veloversion="1.1.2", maxChannels = 3, MIN_INTERVAL = 10, MIN_DELAY = 500, TIMEOUT = 20, sevenDays = 7*24*60*60*1000; /* 3/5/2021 */
 let owners=[89776826];
 let running=false, license="2/2/2021", botId=1, botUsername="usernamebot", saveTimer=null, mainAdmin=owners[0], isBroadcasting=false, timer = false;
 const currentQueue = {}, maxThreads = 2, dir = "YTAudio/files/", ffmpegExe = "C:/Users/Administrator/Desktop/YTAudio/ffmpeg/bin/ffmpeg.exe";
@@ -38,6 +38,7 @@ let DB = {
 		random: "🎲 Random song",
 		top5: "🥇 Top 5",
 		weekTop: "⏲ Last Week Top",
+		mostLikes: "♥ Most Likes",
 		addAdmin: "➕ افزودن مدیر",
 		remAdmin: "➖ حذف مدیر",
 		return: "🔙 بازگشت",
@@ -93,7 +94,7 @@ const adminKeyboard = (admin) => {
 const userKeyboard = () => {
 	return [
 		[{text: UIT.random}, {text: UIT.weekTop}],
-		[{text: UIT.top5}],
+		[{text: UIT.top5}, {text: UIT.mostLikes}],
 		[{text: UIT.help}]
 	];
 };
@@ -185,7 +186,7 @@ function getUpdates() {
 }
 
 function handleUpdate(update)
-	{
+{
 	let message = update.message; // message
 	if(message)
 	{
@@ -1103,6 +1104,13 @@ function handleUpdate(update)
 						to: ID,
 						input: `🔥 Top ${topDownloads.length} downloads\n\n\n${topDownloads.map( (D, i) => `${i+1}. ${D.title} /v${DBB.videos.indexOf(D)}` ).join("\n\n")}`
 					});
+				case UIT.mostLikes:
+					const mostLikedCountToGet = 5;
+					const topLikes = [...DBB.videos].sort((A,B) => B.likes.length - A.likes.length).slice(0, mostLikedCountToGet);
+					sendMessage({
+						to: ID,
+						input: `🔥 Top ${topLikes.length} likes\n\n\n${topLikes.map( (D, i) => `${i+1}. ${D.title} /v${DBB.videos.indexOf(D)}` ).join("\n\n")}`
+					});
 					break;
 				case UIT.weekTop:
 					const weekCountToGet = 5, lastWeekIds = DBB.lastweekDownloads.map( V => V.video );
@@ -1197,6 +1205,10 @@ function handleUpdate(update)
 														TIMER_ON();
 														startProcess(videoID);
 													}
+													else
+													{
+														delete currentQueue[videoID];
+													}
 												});
 											}
 											else
@@ -1252,6 +1264,32 @@ function handleUpdate(update)
 					}
 					break;
 			}
+		}
+	}
+	else if (update.callback_query)
+	{
+		let query = update.callback_query;
+		if(query.data.startsWith("like"))
+		{
+			let vidToLike = query.data.slice(4), queryReplyText = "Couldn't find music";
+			const vidObjToLike = DBB.videos.find( v => v.id === vidToLike );
+			if(vidObjToLike)
+			{
+				if(vidObjToLike.likes.indexOf(query.from.id) === -1)
+				{
+					vidObjToLike.likes.push(query.from.id);
+					queryReplyText = "Liked ♥";
+					saveData();
+				}
+				else
+				{
+					queryReplyText = "Already liked";
+				}
+			}
+			call("answerCallbackQuery",{
+				callback_query_id: query.id,
+				text: queryReplyText
+			});
 		}
 	}
 }
@@ -1599,7 +1637,8 @@ async function upload(vid){
 											id: vid,
 											msg: body.result.audio.file_id,
 											dl: [currentQueue[vid].from],
-											title: currentQueue[vid].title
+											title: currentQueue[vid].title,
+											likes: []
 										});
 									}
 									DBB.lastweekDownloads.push({
@@ -1637,6 +1676,7 @@ async function upload(vid){
 							f.append('performer', currentQueue[vid].artist);
 							f.append('caption', DB.dynamicText.audioCaption);
 							f.append('reply_to_message_id', currentQueue[vid].userMsgId);
+							f.append('reply_markup', {inline_keyboard: [[{text: "♥", callback_data: "like"+vid}]]} );
 							f.append('audio', fs.createReadStream(trackFileName));
 							f.append('thumb', fs.createReadStream(fileLocalId+".jpg"));
 						}
@@ -1651,7 +1691,7 @@ function generateName(vid)
 {
 	if(currentQueue[vid])
 	{
-		return dir + (currentQueue[vid].title.startsWith(currentQueue[vid].artist) ? '' : currentQueue[vid].artist + ' - ') + currentQueue[vid].title + ".mp3"
+		return (dir + (currentQueue[vid].title.startsWith(currentQueue[vid].artist) ? '' : currentQueue[vid].artist + ' - ') + currentQueue[vid].title + ".mp3").replace(/[/\\?%*:|"<>]/g, '-')
 	}
 }
 
@@ -1740,7 +1780,10 @@ const sendAudio = ({ID, msgObj, caption = DB.dynamicText.audioCaption, cacheObj}
 	const sendAudioOptions = {
 		chat_id: ID,
 		audio: cacheObj.msg,
-		caption: caption
+		caption: caption,
+		reply_markup: {
+			inline_keyboard: [[{text: "♥", callback_data: "like"+cacheObj.id}]]
+		}
 	};
 	if(msgObj)
 	{
