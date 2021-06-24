@@ -1,6 +1,6 @@
 const token = "1818346970:AAHcILX18YPgB4owJOckauhUTfEaGFYQ6Wo";
 const botUrl = "https://api.telegram.org/bot" + token + "/";
-const veloversion="1.1.2", maxChannels = 3, MIN_INTERVAL = 10, MIN_DELAY = 500, TIMEOUT = 20, sevenDays = 7*24*60*60*1000; /* 3/5/2021 */
+const veloversion="1.1.3", maxChannels = 3, MIN_INTERVAL = 10, MIN_DELAY = 500, TIMEOUT = 20, sevenDays = 7*24*60*60*1000; /* 3/5/2021 */
 let owners=[89776826];
 let running=false, license="2/2/2021", botId=1, botUsername="usernamebot", saveTimer=null, mainAdmin=owners[0], isBroadcasting=false, timer = false;
 const currentQueue = {}, maxThreads = 2, dir = "YTAudio/files/", ffmpegExe = "C:/Users/Administrator/Desktop/YTAudio/ffmpeg/bin/ffmpeg.exe";
@@ -39,6 +39,7 @@ let DB = {
 		top5: "🥇 Top 5",
 		weekTop: "⏲ Last Week Top",
 		mostLikes: "♥ Most Likes",
+		recentDownloads: "🗂 Recent Downloads",
 		addAdmin: "➕ افزودن مدیر",
 		remAdmin: "➖ حذف مدیر",
 		return: "🔙 بازگشت",
@@ -94,9 +95,41 @@ const adminKeyboard = (admin) => {
 const userKeyboard = () => {
 	return [
 		[{text: UIT.random}, {text: UIT.weekTop}],
+		[{text: UIT.recentDownloads}],
 		[{text: UIT.top5}, {text: UIT.mostLikes}],
 		[{text: UIT.help}]
 	];
+};
+const likeKeyboard = (video, ID) => {
+	let cacheObj, heartToShow = "♥", dataQuery = "like";
+
+	if(typeof video === "number")
+	{
+		cacheObj = DBB.videos[video];
+	}
+	else if(typeof video === "string")
+	{
+		cacheObj = DBB.videos.find( v => v.id === video );
+	}
+	else if(typeof video === "object")
+	{
+		cacheObj = video;
+	}
+
+	if(typeof video === "string" && !cacheObj)
+	{
+		dataQuery += video;
+	}
+	else if(cacheObj && cacheObj.id)
+	{
+		if(ID && cacheObj.likes.includes(ID))
+		{
+			heartToShow = "💚";
+		}
+		dataQuery += cacheObj.id
+	}
+
+	return [[{text: heartToShow, callback_data: dataQuery}]];
 };
 function saveDataWP()
 	{
@@ -1109,7 +1142,15 @@ function handleUpdate(update)
 					const topLikes = [...DBB.videos].sort((A,B) => B.likes.length - A.likes.length).slice(0, mostLikedCountToGet);
 					sendMessage({
 						to: ID,
-						input: `🔥 Top ${topLikes.length} likes\n\n\n${topLikes.map( (D, i) => `${i+1}. ${D.title} /v${DBB.videos.indexOf(D)}` ).join("\n\n")}`
+						input: `♥ Top ${topLikes.length} likes\n\n\n${topLikes.map( (D, i) => `${i+1}. ${D.title} /v${DBB.videos.indexOf(D)}` ).join("\n\n")}`
+					});
+					break;
+				case UIT.recentDownloads:
+					const recentCountToGet = 5;
+					const recentList = [...DBB.videos].slice(recentCountToGet * -1).reverse();
+					sendMessage({
+						to: ID,
+						input: `📆 Recent ${recentList.length} downloads\n\n\n${recentList.map( (D, i) => `${i+1}. ${D.title} /v${DBB.videos.indexOf(D)}` ).join("\n\n")}`
 					});
 					break;
 				case UIT.weekTop:
@@ -1190,7 +1231,7 @@ function handleUpdate(update)
 												currentQueue[videoID] = {};
 												call("sendMessage", {
 													chat_id: ID,
-													text: "[1/5] Getting info",
+													text: "ℹ️ [1/5] Getting info",
 													reply_to_message_id: message.message_id
 												}, function(res){
 													if(res)
@@ -1275,20 +1316,33 @@ function handleUpdate(update)
 			const vidObjToLike = DBB.videos.find( v => v.id === vidToLike );
 			if(vidObjToLike)
 			{
-				if(vidObjToLike.likes.indexOf(query.from.id) === -1)
+				const likeIndex = vidObjToLike.likes.indexOf(query.from.id);
+				if(likeIndex === -1)
 				{
 					vidObjToLike.likes.push(query.from.id);
-					queryReplyText = "Liked ♥";
-					saveData();
+					queryReplyText = "Liked 💚";
 				}
 				else
 				{
-					queryReplyText = "Already liked";
+					vidObjToLike.likes.splice(likeIndex, 1);
+					queryReplyText = "Unliked 💔";
 				}
+				saveData();
 			}
 			call("answerCallbackQuery",{
 				callback_query_id: query.id,
 				text: queryReplyText
+			}, () => {
+				if(vidObjToLike)
+				{
+					call("editMessageReplyMarkup", {
+						chat_id: query.message.chat.id,
+						message_id: query.message.message_id,
+						reply_markup: {
+							inline_keyboard: likeKeyboard(vidObjToLike, query.from.id)
+						}
+					});
+				}
 			});
 		}
 	}
@@ -1363,7 +1417,7 @@ async function startProcess(vid){
 		call("editMessageText", {
 			chat_id: currentQueue[vid].from,
 			message_id: currentQueue[vid].updateID,
-			text: "[2/5] Downloading MP4"
+			text: "📥 [2/5] Downloading MP4"
 		}, function(res){
 			if(res && currentQueue[vid])
 			{
@@ -1393,9 +1447,7 @@ async function startProcess(vid){
 					currentQueue[vid].album = basicInfo.videoDetails.media.album;
 				}
 				currentQueue[vid].thumbnail = basicInfo.videoDetails.thumbnails.pop().url;
-				download({
-					vid: vid
-				});
+				download(vid);
 				/*
 				https.get(`https://img.youtube.com/vi/${vid}/hqdefault.jpg`, function(res) {
 					if(res.statusCode == 200)
@@ -1412,15 +1464,14 @@ async function startProcess(vid){
 	}, fakeDelay > 0 ? 10 : Math.abs(fakeDelay));
 }
 
-async function download({obj, vid}) {
+async function download(vid) {
 	if(currentQueue[vid])
 	{
-		//ytdl(url).pipe(fs.createWriteStream(dir+name+'.mp4'));
-		obj = await getAudio(vid);
+		//const obj = await ytdl.getInfo(vid);
 		const fileAddress = dir+currentQueue[vid].localID;
 		try {
 			const videoFileAddress = fileAddress+'.mp4';
-			ytdl.downloadFromInfo(obj).pipe(fs.createWriteStream(videoFileAddress).on("finish", async function(){
+			ytdl(vid, {quality: "highestaudio"}).pipe(fs.createWriteStream(videoFileAddress).on("finish", async function(){
 
 				currentQueue[vid].mp4Size = await getFilesizeInMegaBytes(videoFileAddress);
 
@@ -1435,7 +1486,7 @@ async function download({obj, vid}) {
 							call("editMessageText", {
 								chat_id: currentQueue[vid].from,
 								message_id: currentQueue[vid].updateID,
-								text: "[3/5] Converting to MP3"
+								text: "🎙 [3/5] Converting to MP3"
 							}, function(res){
 								if(res)
 								{
@@ -1486,7 +1537,7 @@ function convert(vid)
 						call("editMessageText", {
 							chat_id: currentQueue[vid].from,
 							message_id: currentQueue[vid].updateID,
-							text: "[4/5] Generating & setting cover"
+							text: "📸 [4/5] Generating cover"
 						}, async function(res){
 							if(res)
 							{
@@ -1572,7 +1623,7 @@ function setMeta(vid)
 					call("editMessageText", {
 						chat_id: currentQueue[vid].from,
 						message_id: currentQueue[vid].updateID,
-						text: "[5/5] Uploading to Telegram"
+						text: "📤 [5/5] Uploading to Telegram"
 					}, function(res){
 						if(res)
 						{
@@ -1676,7 +1727,7 @@ async function upload(vid){
 							f.append('performer', currentQueue[vid].artist);
 							f.append('caption', DB.dynamicText.audioCaption);
 							f.append('reply_to_message_id', currentQueue[vid].userMsgId);
-							f.append('reply_markup', {inline_keyboard: [[{text: "♥", callback_data: "like"+vid}]]} );
+							f.append('reply_markup', JSON.stringify({inline_keyboard: likeKeyboard(vid, null) }) );
 							f.append('audio', fs.createReadStream(trackFileName));
 							f.append('thumb', fs.createReadStream(fileLocalId+".jpg"));
 						}
@@ -1691,18 +1742,14 @@ function generateName(vid)
 {
 	if(currentQueue[vid])
 	{
-		return (dir + (currentQueue[vid].title.startsWith(currentQueue[vid].artist) ? '' : currentQueue[vid].artist + ' - ') + currentQueue[vid].title + ".mp3").replace(/[/\\?%*:|"<>]/g, '-')
+		let fileName = currentQueue[vid].title;
+		if(!fileName.startsWith(currentQueue[vid].artist) && fileName.split(" - ").length !== 2)
+		{
+			fileName = currentQueue[vid].artist + " - " + fileName;
+		}
+		fileName = fileName.replace(/[/\\?%*:|"<>]/g, '-');
+		return dir + fileName + ".mp3"
 	}
-}
-
-async function getAudio(vid){
-	const info = await ytdl.getInfo(vid);
-	return info;
-	const audioFormats = ytdl.filterFormats(info.formats, 'audioonly').filter( A => A.audioBitrate == 128 );
-	if(audioFormats.length)
-		return audioFormats.shift();
-	else
-		return null;
 }
 
 async function getFilesizeInMegaBytes(filename) {
@@ -1782,14 +1829,14 @@ const sendAudio = ({ID, msgObj, caption = DB.dynamicText.audioCaption, cacheObj}
 		audio: cacheObj.msg,
 		caption: caption,
 		reply_markup: {
-			inline_keyboard: [[{text: "♥", callback_data: "like"+cacheObj.id}]]
+			inline_keyboard: likeKeyboard(cacheObj, ID)
 		}
 	};
 	if(msgObj)
 	{
 		sendAudioOptions.reply_to_message_id = msgObj.message_id;
 	}
-	call("sendAudio",sendAudioOptions, function(response){
+	call("sendAudio", sendAudioOptions, function(response){
 		if(response)
 		{
 			DBB.cacheUsage++;
