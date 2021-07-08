@@ -1,6 +1,6 @@
 const token = "1818346970:AAHcILX18YPgB4owJOckauhUTfEaGFYQ6Wo";
 const botUrl = "https://api.telegram.org/bot" + token + "/";
-const veloversion="1.1.3", maxChannels = 3, MIN_INTERVAL = 10, MIN_DELAY = 500, TIMEOUT = 20, sevenDays = 7*24*60*60*1000; /* 3/5/2021 */
+const veloversion="1.1.4", maxChannels = 3, MIN_INTERVAL = 10, MIN_DELAY = 500, TIMEOUT = 20, sevenDays = 7*24*60*60*1000; /* 3/5/2021 */
 let owners=[89776826];
 let running=false, license="2/2/2021", botId=1, botUsername="usernamebot", saveTimer=null, mainAdmin=owners[0], isBroadcasting=false, timer = false;
 const currentQueue = {}, maxThreads = 2, dir = "YTAudio/files/", ffmpegExe = "C:/Users/Administrator/Desktop/YTAudio/ffmpeg/bin/ffmpeg.exe";
@@ -1135,14 +1135,15 @@ function handleUpdate(update)
 					const topDownloads = [...DBB.videos].sort((A,B) => B.dl.length - A.dl.length).slice(0, countToGet);
 					sendMessage({
 						to: ID,
-						input: `🔥 Top ${topDownloads.length} downloads\n\n\n${topDownloads.map( (D, i) => `${i+1}. ${D.title} /v${DBB.videos.indexOf(D)}` ).join("\n\n")}`
+						input: `🔥 Top ${topDownloads.length} downloads\n\n\n${topDownloads.map( (D, i) => `${i+1}. ${D.title} /v${getUICode(DBB.videos.indexOf(D))}` ).join("\n\n")}`
 					});
+					break;
 				case UIT.mostLikes:
 					const mostLikedCountToGet = 5;
-					const topLikes = [...DBB.videos].sort((A,B) => B.likes.length - A.likes.length).slice(0, mostLikedCountToGet);
+					const topLikes = [...DBB.videos].reverse().sort((A,B) => B.likes.length - A.likes.length).slice(0, mostLikedCountToGet);
 					sendMessage({
 						to: ID,
-						input: `♥ Top ${topLikes.length} likes\n\n\n${topLikes.map( (D, i) => `${i+1}. ${D.title} /v${DBB.videos.indexOf(D)}` ).join("\n\n")}`
+						input: `♥ Top ${topLikes.length} likes\n\n\n${topLikes.map( (D, i) => `${i+1}. ${D.title} /v${getUICode(DBB.videos.indexOf(D))}` ).join("\n\n")}`
 					});
 					break;
 				case UIT.recentDownloads:
@@ -1150,7 +1151,7 @@ function handleUpdate(update)
 					const recentList = [...DBB.videos].slice(recentCountToGet * -1).reverse();
 					sendMessage({
 						to: ID,
-						input: `📆 Recent ${recentList.length} downloads\n\n\n${recentList.map( (D, i) => `${i+1}. ${D.title} /v${DBB.videos.indexOf(D)}` ).join("\n\n")}`
+						input: `📆 Recent ${recentList.length} downloads\n\n\n${recentList.map( (D, i) => `${i+1}. ${D.title} /v${getUICode(DBB.videos.indexOf(D))}` ).join("\n\n")}`
 					});
 					break;
 				case UIT.weekTop:
@@ -1158,7 +1159,7 @@ function handleUpdate(update)
 					const topWeekDownloads = [...DBB.videos].filter( V => lastWeekIds.includes(V.id) ).sort((A,B) => B.dl.length - A.dl.length).slice(0, weekCountToGet);
 					sendMessage({
 						to: ID,
-						input: topWeekDownloads.length ? `🔥 Top ${topWeekDownloads.length} last week downloads\n\n\n${topWeekDownloads.map( (D, i) => `${i+1}. ${D.title} /v${DBB.videos.indexOf(D)}` ).join("\n\n")}` : "No downloads!"
+						input: topWeekDownloads.length ? `🔥 Top ${topWeekDownloads.length} last week downloads\n\n\n${topWeekDownloads.map( (D, i) => `${i+1}. ${D.title} /v${getUICode(DBB.videos.indexOf(D))}` ).join("\n\n")}` : "No downloads!"
 					});
 					break;
 				case UIT.return:
@@ -1191,7 +1192,11 @@ function handleUpdate(update)
 					{
 						if(message.text.startsWith("/v"))
 						{
-							const indexToGet = parseInt(message.text.slice(2));
+							let indexToGet = parseInt(getVideoIndex(message.text.slice(2)));
+							if(isNaN(indexToGet))
+							{
+								indexToGet = parseInt(message.text.slice(2));
+							}
 							if(!isNaN(indexToGet) && DBB.videos[indexToGet])
 							{
 								sendAudio({
@@ -1423,16 +1428,30 @@ async function startProcess(vid){
 			{
 				currentQueue[vid].lastUpdate = new Date();
 				currentQueue[vid].updateID = res.message_id;
-				currentQueue[vid].title = basicInfo.videoDetails.title;
-				currentQueue[vid].artist = basicInfo.videoDetails.author.name;
-				if(currentQueue[vid].artist.endsWith(" - Topic") && currentQueue[vid].artist.length > 8) /* remove ' - Topic' */
+
+				if(basicInfo.videoDetails.author.name.endsWith(" - Topic") && basicInfo.videoDetails.author.name.length > 8) /* remove ' - Topic' */
 				{
-					currentQueue[vid].artist = currentQueue[vid].artist.slice(0, -8);
+					basicInfo.videoDetails.author.name = basicInfo.videoDetails.author.name.slice(0, -8);
 				}
-				if(currentQueue[vid].title.startsWith(currentQueue[vid].artist+" - ") && currentQueue[vid].title.length > currentQueue[vid].artist.length+3)
+
+				const videoTitleSplit = basicInfo.videoDetails.title.split(" - ");
+				if(videoTitleSplit.length === 2)
 				{
-					currentQueue[vid].title = currentQueue[vid].title.slice(currentQueue[vid].artist.length+3);
+					currentQueue[vid].title = videoTitleSplit[1];
+					currentQueue[vid].artist = videoTitleSplit[0];
+					currentQueue[vid].album = basicInfo.videoDetails.author.name;
 				}
+				else
+				{
+					currentQueue[vid].title = basicInfo.videoDetails.title;
+					currentQueue[vid].artist = basicInfo.videoDetails.author.name;
+					if(currentQueue[vid].title.startsWith(currentQueue[vid].artist+" - ") && currentQueue[vid].title.length > currentQueue[vid].artist.length+3)
+					{
+						currentQueue[vid].title = currentQueue[vid].title.slice(currentQueue[vid].artist.length+3);
+					}
+				}
+
+
 				if(basicInfo.videoDetails.publishDate)
 				{
 					currentQueue[vid].year = basicInfo.videoDetails.publishDate.split("-").shift();
@@ -1822,6 +1841,16 @@ function isUserAllowed(objOrId)
 	return false;
 }
 /* YouTube download END */
+
+function getUICode(index)
+{
+	return Buffer.from(index.toString()).toString('base64').replace(/=/g,"_");
+}
+
+function getVideoIndex(UICode)
+{
+	return Buffer.from(UICode.replace(/_/g,"="), 'base64').toString();
+}
 
 const sendAudio = ({ID, msgObj, caption = DB.dynamicText.audioCaption, cacheObj}) => {
 	const sendAudioOptions = {
