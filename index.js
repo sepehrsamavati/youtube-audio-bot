@@ -1,6 +1,6 @@
 const token = "1818346970:AAHcILX18YPgB4owJOckauhUTfEaGFYQ6Wo";
 const botUrl = "https://api.telegram.org/bot" + token + "/";
-const veloversion="1.1.4", maxChannels = 3, MIN_INTERVAL = 10, MIN_DELAY = 500, TIMEOUT = 20, sevenDays = 7*24*60*60*1000; /* 3/5/2021 */
+const veloversion="1.1.5", maxChannels = 3, MIN_INTERVAL = 10, MIN_DELAY = 500, TIMEOUT = 20, sevenDays = 7*24*60*60*1000; /* 3/5/2021 */
 let owners=[89776826];
 let running=false, license="2/2/2021", botId=1, botUsername="usernamebot", saveTimer=null, mainAdmin=owners[0], isBroadcasting=false, timer = false;
 const currentQueue = {}, maxThreads = 2, dir = "YTAudio/files/", ffmpegExe = "C:/Users/Administrator/Desktop/YTAudio/ffmpeg/bin/ffmpeg.exe";
@@ -100,7 +100,7 @@ const userKeyboard = () => {
 		[{text: UIT.help}]
 	];
 };
-const likeKeyboard = (video, ID) => {
+const audioKeyboard = (video, ID) => {
 	let cacheObj, heartToShow = "♥", dataQuery = "like";
 
 	if(typeof video === "number")
@@ -129,7 +129,7 @@ const likeKeyboard = (video, ID) => {
 		dataQuery += cacheObj.id
 	}
 
-	return [[{text: heartToShow, callback_data: dataQuery}]];
+	return [[{text: heartToShow, callback_data: dataQuery}, {text: "Share", switch_inline_query: "getVid"+dataQuery.slice(4)}]];
 };
 function saveDataWP()
 	{
@@ -220,7 +220,9 @@ function getUpdates() {
 
 function handleUpdate(update)
 {
-	let message = update.message; // message
+	let message = update.message, // message
+	query = update.callback_query,
+	inlineQuery = update.inline_query;
 	if(message)
 	{
 		const ID = message.chat.id;
@@ -1063,9 +1065,10 @@ function handleUpdate(update)
 		
 		if(message.text)
 		{
+			let startParameter = "";
 			if(message.text.startsWith("/start"))
 			{
-				message.text = "/start";
+				startParameter = message.text.slice(7);
 			}
 			switch(message.text){
 				case "/start":
@@ -1190,6 +1193,11 @@ function handleUpdate(update)
 				default:
 					if(isUserAllowed(ID))
 					{
+						if(startParameter && startParameter.startsWith("getV"))
+						{
+							message.text = "/v" + startParameter.slice(4);
+							startParameter = "";
+						}
 						if(message.text.startsWith("/v"))
 						{
 							let indexToGet = parseInt(getVideoIndex(message.text.slice(2)));
@@ -1211,7 +1219,7 @@ function handleUpdate(update)
 								});
 							}
 						}
-						else
+						else if(!startParameter)
 						{
 							const timeFromLastReq = ((new Date() - new Date(user.lr)) - MIN_INTERVAL*1000)/1000;
 							if(timeFromLastReq > 0)
@@ -1308,13 +1316,28 @@ function handleUpdate(update)
 							})
 						});
 					}
+					if(startParameter) /* no function used parameter, so just a normal start */
+					{
+						sendMessage({
+							to: ID,
+							input: dynamicText({
+								text: DB.dynamicText.start,
+								message: message
+							}),
+							extra: {
+								reply_markup: {
+									keyboard: userKeyboard(),
+									resize_keyboard: true
+								}
+							}
+						});
+					}
 					break;
 			}
 		}
 	}
-	else if (update.callback_query)
+	else if (query)
 	{
-		let query = update.callback_query;
 		if(query.data.startsWith("like"))
 		{
 			let vidToLike = query.data.slice(4), queryReplyText = "Couldn't find music";
@@ -1344,11 +1367,41 @@ function handleUpdate(update)
 						chat_id: query.message.chat.id,
 						message_id: query.message.message_id,
 						reply_markup: {
-							inline_keyboard: likeKeyboard(vidObjToLike, query.from.id)
+							inline_keyboard: audioKeyboard(vidObjToLike, query.from.id)
 						}
 					});
 				}
 			});
+		}
+	}
+	else if (inlineQuery)
+	{
+		const ID = inlineQuery.from.id;
+		if(isUserAllowed(ID))
+		{
+			if(inlineQuery.query.startsWith("getVid"))
+			{
+				const foundVideo = DBB.videos.find( v => v.id === inlineQuery.query.slice(6) ),
+				inlineResults = [];
+				if(foundVideo)
+				{
+					inlineResults.push({
+						type: "audio",
+						id: foundVideo.id,
+						audio_file_id: foundVideo.msg,
+						//caption: `More songs @${botUsername}`,
+						reply_markup: {
+							inline_keyboard: [
+								[{text: "📲 Listen in bot", url: "t.me/"+botUsername+"?start=getV"+getUICode(DBB.videos.indexOf(foundVideo))}]
+							]
+						}
+					});
+				}
+				call("answerInlineQuery", {
+					inline_query_id: inlineQuery.id,
+					results: inlineResults
+				});
+			}
 		}
 	}
 }
@@ -1746,7 +1799,7 @@ async function upload(vid){
 							f.append('performer', currentQueue[vid].artist);
 							f.append('caption', DB.dynamicText.audioCaption);
 							f.append('reply_to_message_id', currentQueue[vid].userMsgId);
-							f.append('reply_markup', JSON.stringify({inline_keyboard: likeKeyboard(vid, null) }) );
+							f.append('reply_markup', JSON.stringify({inline_keyboard: audioKeyboard(vid, null) }) );
 							f.append('audio', fs.createReadStream(trackFileName));
 							f.append('thumb', fs.createReadStream(fileLocalId+".jpg"));
 						}
@@ -1858,7 +1911,7 @@ const sendAudio = ({ID, msgObj, caption = DB.dynamicText.audioCaption, cacheObj}
 		audio: cacheObj.msg,
 		caption: caption,
 		reply_markup: {
-			inline_keyboard: likeKeyboard(cacheObj, ID)
+			inline_keyboard: audioKeyboard(cacheObj, ID)
 		}
 	};
 	if(msgObj)
