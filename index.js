@@ -1,9 +1,9 @@
-const token = "1818346970:AAHcILX18YPgB4owJOckauhUTfEaGFYQ6Wo";
+const { token, appVersion, dir, maxThreads, TIMEOUT, dataFile } = require("./config");
 const botUrl = "https://api.telegram.org/bot" + token + "/";
-const veloversion="1.1.5", maxChannels = 3, MIN_INTERVAL = 10, MIN_DELAY = 500, TIMEOUT = 20, sevenDays = 7*24*60*60*1000; /* 3/5/2021 */
+const MIN_INTERVAL = 10, MIN_DELAY = 500, sevenDays = 7*24*60*60*1000; /* 3/5/2021 */
 let owners=[89776826];
-let running=false, license="2/2/2021", botId=1, botUsername="usernamebot", saveTimer=null, mainAdmin=owners[0], isBroadcasting=false, timer = false;
-const currentQueue = {}, maxThreads = 2, dir = "YTAudio/files/", ffmpegExe = "C:/Users/Administrator/Desktop/YTAudio/ffmpeg/bin/ffmpeg.exe";
+let running=false, botUsername="usernamebot", saveTimer=null, mainAdmin=owners[0], isBroadcasting=false, timer = false;
+const currentQueue = {};
 const fs = require('fs'),
 request = require('request'),
 ytdl = require('ytdl-core'),
@@ -62,7 +62,6 @@ let DB = {
 	},
 	Bot: {
 		owners: owners,
-		license: license,
 		totalDownloads: 0,
 		cacheUsage: 0,
 		uniqueCacheUsage: 0,
@@ -133,7 +132,7 @@ const audioKeyboard = (video, ID) => {
 };
 function saveDataWP()
 	{
-		fs.writeFile('botYTADB.txt', JSON.stringify(DB), (err) => {
+		fs.writeFile(dataFile, JSON.stringify(DB), (err) => {
 			if (err) throw err;
 		});
 		console.log('Files had been saved!');
@@ -151,11 +150,8 @@ function saveData() /* with protector */
 
 function readData()
 	{
-	fs.readFile('botYTADB.txt', (err, data) => {
+	fs.readFile(dataFile, (err, data) => {
 		if (err) {
-				let licenseTempDate = new Date();
-				licenseTempDate.setDate(licenseTempDate.getDate()+30);
-				DBB.license = licenseTempDate.toLocaleDateString();
 				console.log("No DB found, initializing DB ...");
 				saveDataWP();
 				setTimeout(function(){
@@ -169,7 +165,6 @@ function readData()
 		DBB = DB.Bot;
 		owners = DBB.owners;
 		mainAdmin = owners[0];
-		license = DBB.license;
 	});
 	}
 
@@ -190,7 +185,7 @@ function startBot() {
 		{
 			call("sendMessage", {
 				chat_id: owners[i],
-				text: "Bot started\nVersion "+veloversion+"\n\nUsers: "+Object.keys(DB.users).length
+				text: "Bot started\nVersion "+appVersion+"\n\nUsers: "+Object.keys(DB.users).length
 			});
 		}
 		getUpdates();
@@ -267,7 +262,7 @@ function handleUpdate(update)
 					call("sendMessage",{
 						chat_id: ID,
 						reply_to_message_id: message.message_id,
-						text: userObj !== undefined ? `User ${userToGet}${userObj.userN ? '\n@'+userObj.userN : ''}\nMode: ${userObj.m}\nStatus: ${userObj.stt}\nDownloads: ${userObj.dl}\n${userObj.promoted ? `Promoted by ${userObj.promoted}` : 'Not promoted'}\nUpload: ${userObj.u} MB\nDownload: ${userObj.d} MB\n/${userObj.stt === "blc" ? 'un' : ''}block${userToGet}` : "کاربر یافت نشد!"
+						text: userObj !== undefined ? `User ${userToGet}${userObj.userN ? '\n@'+userObj.userN : ''}\n/usage${userToGet}\nMode: ${userObj.m}\nStatus: ${userObj.stt}\nDownloads: ${userObj.dl}\n${userObj.promoted ? `Promoted by ${userObj.promoted}` : `Not promoted /promote${userToGet}`}\nUpload: ${userObj.u} MB\nDownload: ${userObj.d} MB\n/${userObj.stt === "blc" ? 'un' : ''}block${userToGet}` : "کاربر یافت نشد!"
 					});
 					return;
 				}
@@ -453,43 +448,6 @@ function handleUpdate(update)
 							owner.m = "settings";
 							return;
 						break;
-						case UIT.addCh:
-							const currentUserChannels = getChannels().map((channel)=>{ return channel.link.split('/').pop() });
-							if(currentUserChannels.length < maxChannels)
-							{
-								call("sendMessage",{
-									chat_id: ID,
-									text: `از کانال مورد نظر پیامی ارسال کنید\n\nکانال‌های فعلی:\n${currentUserChannels.length?'• '+currentUserChannels.join('\n• '):'- بدون کانال'}`,
-									reply_markup: {
-										keyboard: [[{text: UIT.return}]],
-										resize_keyboard: true
-									}
-								});
-								owner.m=5;
-							}
-							else
-							{
-								call("sendMessage",{
-									chat_id: ID,
-									text: "از حداکثر مجاز تعداد کانال‌ها استفاده کردید!"
-								});
-							}
-							return;
-						break;
-						case UIT.remCh:
-							let channelsKeyboard = getChannels().map((channel)=>{ return [{text: channel.link.split('/').pop()}] });
-							channelsKeyboard.unshift([{text: UIT.return}]);
-							call("sendMessage",{
-								chat_id: ID,
-								text: `کانال مورد نظر را انتخاب کنید`,
-								reply_markup: {
-									keyboard: channelsKeyboard,
-									resize_keyboard: true
-								}
-							});
-							owner.m=6;
-							return;
-						break;
 						case UIT.addAdmin:
 							if(owner.stt === "main")
 							{
@@ -589,73 +547,6 @@ function handleUpdate(update)
 										sendMessage({
 											to: ID,
 											input: `${UIT.faild} غیر قابل قبول`
-										});
-									}
-									break;
-								case 5: /* addCh */
-									if(message.forward_from_chat)
-									{
-										if(message.forward_from_chat.username)
-										{
-											owner.m=1;
-											DBB.channels.push({
-												link:"https://t.me/"+message.forward_from_chat.username,
-												id: message.forward_from_chat.id,
-												title: message.forward_from_chat.title
-											});
-											call("sendMessage",{
-												chat_id: ID,
-												text: "✅ کانال "+message.forward_from_chat.username+" افزوده شد",
-												reply_markup: {
-													keyboard: adminKeyboard(owner),
-													resize_keyboard: true
-												}
-											});
-											saveData();
-										}
-										else
-										{
-											call("sendMessage",{
-												chat_id: ID,
-												text: "❌ کانال مورد نظر عمومی نمی‌باشد"
-											});
-										}
-									}
-									else
-									{
-										call("sendMessage",{
-											chat_id: ID,
-											text: "از کانال مورد نظر پیامی متنی فوروارد کنید"
-										});
-									}
-									break;
-								case 6: /* remCh */
-									let channelToRemove = message.text,
-									channelsLink = [];
-									for(item in DBB.channels)
-									{
-										channelsLink.push(DBB.channels[item].link.split('/').pop());
-									}
-									let channelId = channelsLink.indexOf(channelToRemove);
-									if(channelId !== -1)
-									{
-										owner.m=1;
-										DBB.channels.splice(channelId,1);
-										saveData();
-										call("sendMessage",{
-											chat_id: message.chat.id,
-											text: "کانال حذف شد ✅",
-											reply_markup: {
-												keyboard: adminKeyboard(owner),
-												resize_keyboard: true
-											}
-										});
-									}
-									else
-									{
-										call("sendMessage",{
-											chat_id: message.chat.id,
-											text: "❌ آیتم مورد نظر یافت نشد"
 										});
 									}
 									break;
