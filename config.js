@@ -5,6 +5,7 @@ const config = {
 	dataFile: "botYTADB.json", // Path to file to save data
 	maxThreads: 2, // Downloads limit
 	timeout: 20, // Step timeout in seconds (download, convert and ...)
+	admins: [123456], // Array of IDs *ONLY USES IN DB SEED* (Telegram account ID / requires at least 1 admin / first admin is owner)
 	version: "1.1.5"
 };
 
@@ -14,4 +15,5 @@ exports.ffmpegExe = config.ffmpegExe;
 exports.dataFile = config.dataFile;
 exports.maxThreads = config.maxThreads;
 exports.TIMEOUT = config.timeout;
+exports.admins = config.admins;
 exports.appVersion = config.version;

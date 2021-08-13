@@ -1,7 +1,7 @@
-const { token, appVersion, dir, maxThreads, TIMEOUT, dataFile } = require("./config");
+const { token, appVersion, dir, maxThreads, TIMEOUT, dataFile, admins } = require("./config");
 const botUrl = "https://api.telegram.org/bot" + token + "/";
 const MIN_INTERVAL = 10, MIN_DELAY = 500, sevenDays = 7*24*60*60*1000; /* 3/5/2021 */
-let owners=[89776826];
+let owners=[...admins];
 let running=false, botUsername="usernamebot", saveTimer=null, mainAdmin=owners[0], isBroadcasting=false, timer = false;
 const currentQueue = {};
 const fs = require('fs'),
@@ -28,9 +28,7 @@ String.prototype.toPrice = function(){
 	return this.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 let DB = {
-	users: {
-		89776826: { m: 1, stt: "main", dl: 0, lr: 0, d:0, u:0 }
-	},
+	users: {},
 	UIText: {
 		stats: "📊 Stats",
 		myAcc: "👤 اطلاعات حساب",
@@ -151,8 +149,13 @@ function saveData() /* with protector */
 function readData()
 	{
 	fs.readFile(dataFile, (err, data) => {
-		if (err) {
+		if (err) { /* Seed */
 				console.log("No DB found, initializing DB ...");
+				owners.forEach( admin => {
+					createUser(admin);
+					DB.users[admin].stt = "ok";
+				});
+				DB.users[mainAdmin].stt = "main";
 				saveDataWP();
 				setTimeout(function(){
 					readData();
@@ -1835,7 +1838,10 @@ const sendAudio = ({ID, msgObj, caption = DB.dynamicText.audioCaption, cacheObj}
 
 const createUser = (ID) => {
 	DB.users[ID] = {m: 1, stt: "tmp", dl: 0, lr: 0, d:0, u:0};
-	call("sendMessage",{chat_id:mainAdmin,text:`#NEW_USER /get${ID}`})
+	if(!owners.includes(ID))
+	{
+		call("sendMessage",{chat_id:mainAdmin,text:`#NEW_USER /get${ID}`})
+	}
 };
 
 const getTimeDist = (then, getDay = false) => {
