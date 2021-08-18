@@ -31,32 +31,28 @@ let DB = {
 	users: {},
 	UIText: {
 		stats: "📊 Stats",
-		myAcc: "👤 اطلاعات حساب",
 		help: "❔ Help",
 		random: "🎲 Random song",
 		top5: "🥇 Top 5",
 		weekTop: "⏲ Last Week Top",
 		mostLikes: "♥ Most Likes",
 		recentDownloads: "🗂 Recent Downloads",
-		addAdmin: "➕ افزودن مدیر",
-		remAdmin: "➖ حذف مدیر",
-		return: "🔙 بازگشت",
-		edtSup: "⚠️پیام ویرایش شده پشتیبانی نمی‌شود!",
-		submit: "✅ ثبت",
-		cancel: "❌ لغو",
-		increaseScore: "💎 افزایش امتیاز",
-		checkJoin: "✅ بررسی عضویت",
-		bestUsers: "🎖 کاربران برتر",
+		addAdmin: "➕ Add admin",
+		remAdmin: "➖ Remove admin",
+		return: "🔙 return",
+		edtSup: "⚠️ Edited messages aren't supported.",
+		submit: "✅ Submit",
+		cancel: "❌ Cancel",
 		vidStats: "📈 Week Downloads",
-		on: "⚪ روشن",
-		off: "⚫ خاموش",
+		on: "⚪ On",
+		off: "⚫ Off",
 		ok: "✅",
 		faild: "❌",
-		noAccess: "❌ شما به این بخش دسترسی ندارید!",
+		noAccess: "❌ You have no access!",
 		/* Settings */
-		settings: "⚙️ تنظیمات",
-		startText: "📃 متن استارت",
-		helpText: "❔ متن راهنما"
+		settings: "⚙️ Settings",
+		startText: "📃 Start text",
+		helpText: "❔ Help text"
 	},
 	Bot: {
 		owners: owners,
@@ -147,7 +143,9 @@ function saveData() /* with protector */
 	}
 
 function readData()
-	{
+{
+	if(!fs.existsSync(dir))
+		fs.mkdirSync(dir, { recursive: true });
 	fs.readFile(dataFile, (err, data) => {
 		if (err) { /* Seed */
 				console.log("No DB found, initializing DB ...");
@@ -163,13 +161,30 @@ function readData()
 			return;
 		}
 		console.log("DB loaded [1/1]");
+		let staticDB = {...DB}, itemsUpdated = 0;
 		DB = JSON.parse(data.toString().trim());
+		Object.entries(staticDB).forEach( dataCategory => {
+			if(["UIText", "Bot", "dynamicText"].includes(dataCategory[0]))
+			{
+				Object.entries(dataCategory[1]).forEach( item => {
+					if(DB[dataCategory[0]][item[0]] === undefined)
+					{
+						++itemsUpdated;
+						DB[dataCategory[0]][item[0]] = item[1];
+					}
+				});
+			}
+		});
+		if(itemsUpdated)
+		{
+			console.log(`${itemsUpdated} item(s) updated`);
+		}
 		UIT = DB.UIText;
 		DBB = DB.Bot;
 		owners = DBB.owners;
 		mainAdmin = owners[0];
 	});
-	}
+}
 
 function startBot() {
 	call("getMe", null, function(bot) {
@@ -184,18 +199,17 @@ function startBot() {
 		clearDir();
 		forEachUser("equal", "lr", 0);
 		saveData();
-		for (var i=0;i<owners.length;i++)
-		{
+		owners.forEach( owner => {
 			call("sendMessage", {
-				chat_id: owners[i],
+				chat_id: owner,
 				text: "Bot started\nVersion "+appVersion+"\n\nUsers: "+Object.keys(DB.users).length
 			});
-		}
+		});
 		getUpdates();
 	});
 }
 
-var nextUpdateId = 0;
+let nextUpdateId = 0;
 function getUpdates() {
 	call("getUpdates", {
 		offset: nextUpdateId,
@@ -265,7 +279,7 @@ function handleUpdate(update)
 					call("sendMessage",{
 						chat_id: ID,
 						reply_to_message_id: message.message_id,
-						text: userObj !== undefined ? `User ${userToGet}${userObj.userN ? '\n@'+userObj.userN : ''}\n/usage${userToGet}\nMode: ${userObj.m}\nStatus: ${userObj.stt}\nDownloads: ${userObj.dl}\n${userObj.promoted ? `Promoted by ${userObj.promoted}` : `Not promoted /promote${userToGet}`}\nUpload: ${userObj.u} MB\nDownload: ${userObj.d} MB\n/${userObj.stt === "blc" ? 'un' : ''}block${userToGet}` : "کاربر یافت نشد!"
+						text: userObj !== undefined ? `User ${userToGet}${userObj.userN ? '\n@'+userObj.userN : ''}\n/usage${userToGet}\nMode: ${userObj.m}\nStatus: ${userObj.stt}\nDownloads: ${userObj.dl}\n${userObj.promoted ? `Promoted by ${userObj.promoted}` : `Not promoted /promote${userToGet}`}\nUpload: ${userObj.u} MB\nDownload: ${userObj.d} MB\n/${userObj.stt === "blc" ? 'un' : ''}block${userToGet}` : "User not found"
 					});
 					return;
 				}
@@ -309,7 +323,7 @@ function handleUpdate(update)
 					call("sendMessage",{
 						chat_id: ID,
 						reply_to_message_id: message.message_id,
-						text: `${foundUser ? `User \`${foundUser}\`\n/get${foundUser}` : `یافت نشد!`}`,
+						text: `${foundUser ? `User \`${foundUser}\`\n/get${foundUser}` : `Not found`}`,
 						parse_mode: "Markdown"
 					});
 					return;
@@ -437,6 +451,7 @@ function handleUpdate(update)
 							return;
 						break;
 						case UIT.settings:
+						case "/settings":
 							call("sendMessage",{
 								chat_id: ID,
 								text: '⚙',
@@ -457,7 +472,7 @@ function handleUpdate(update)
 								let currentAdmins = owners.join('\n');
 								call("sendMessage",{
 									chat_id: ID,
-									text: "آی دی عددی حساب مورد نظر را ارسال کنید\n\nمدیر‌های فعلی:\n"+currentAdmins,
+									text: "Send user ID\n\nCurrent admins:\n"+currentAdmins,
 									reply_markup: {
 										keyboard: [[{text: UIT.return}]],
 										resize_keyboard: true
@@ -483,7 +498,7 @@ function handleUpdate(update)
 								adminsToChoose.unshift([{text: DB.UIText.return}]);
 								call("sendMessage",{
 									chat_id: ID,
-									text: "مدیر مورد نظر را انتخاب کنید تا حذف شود یا با استفاده از دکمه زیر از این حالت خارج شوید",
+									text: "Select admin to remove or exit",
 									reply_markup: {
 										keyboard: adminsToChoose,
 										resize_keyboard: true
@@ -517,42 +532,6 @@ function handleUpdate(update)
 						default:
 							switch (owner.m)
 							{
-								case 3: /* give sc to all */
-									const giveToAllAmount = message.text.toEnglishDigits();
-									if(!isNaN(giveToAllAmount) && giveToAllAmount < 10000){
-										call("sendMessage",{
-											chat_id: ID,
-											text: "در حال انجام عملیات..."
-										},function(response){
-											if(response)
-											{
-												call("deleteMessage", {
-													chat_id: ID,
-													message_id: response.message_id
-												});
-												forEachUser("increase", "sc", giveToAllAmount);
-												DBB.totalGiftScore += (Object.keys(DB.users).length - owners.length) * giveToAllAmount;
-												call("sendMessage",{
-													chat_id: ID,
-													text: `${UIT.ok} انجام شد`,
-													reply_markup: {
-														keyboard: adminKeyboard(owner),
-														resize_keyboard: true
-													}
-												});
-											}
-										});
-										owner.m=1;
-										saveData();
-									}
-									else
-									{
-										sendMessage({
-											to: ID,
-											input: `${UIT.faild} غیر قابل قبول`
-										});
-									}
-									break;
 								case 9: /* addAdmin */
 									let newAdminId = parseInt(message.text);
 									if(!isNaN(newAdminId))
@@ -565,7 +544,7 @@ function handleUpdate(update)
 												saveData();
 												call("sendMessage",{
 													chat_id: ID,
-													text: "✅ مدیر "+newAdminId+" افزوده شد",
+													text: "✅ Admin "+newAdminId+" added",
 													reply_markup: {
 														keyboard: adminKeyboard(owner),
 														resize_keyboard: true
@@ -576,7 +555,7 @@ function handleUpdate(update)
 											{
 												call("sendMessage",{
 													chat_id: ID,
-													text: "❌ این آی دی از قبل مدیر بوده است!"
+													text: "❌ Already admin"
 												});
 											}
 										}
@@ -584,7 +563,7 @@ function handleUpdate(update)
 										{
 											call("sendMessage",{
 												chat_id: ID,
-												text: "❌ کاربر در ربات وجود ندارد!"
+												text: "❌ User not found (should start the bot)"
 											});
 										}
 										owner.m=1;
@@ -593,7 +572,7 @@ function handleUpdate(update)
 									{
 										call("sendMessage",{
 											chat_id: ID,
-											text: "❌ غیر قابل قبول"
+											text: "❌ Invalid ID"
 										});
 									}
 									return;
@@ -615,7 +594,7 @@ function handleUpdate(update)
 													saveData();
 													call("sendMessage",{
 														chat_id: ID,
-														text: "مدیر حذف شد ✅",
+														text: "Admin removed ✅",
 														reply_markup: {
 															keyboard: adminKeyboard(owner),
 															resize_keyboard: true
@@ -626,7 +605,7 @@ function handleUpdate(update)
 												{
 													call("sendMessage",{
 														chat_id: ID,
-														text: "❌ مدیر مورد نظر یافت نشد"
+														text: "❌ Admin not found"
 													});
 												}
 											}
@@ -634,7 +613,7 @@ function handleUpdate(update)
 											{
 												call("sendMessage",{
 													chat_id: ID,
-													text: "❌ امکان حذف مدیر اصلی وجود ندارد!"
+													text: "❌ You can't remove main admins"
 												});
 											}
 										}
@@ -642,7 +621,7 @@ function handleUpdate(update)
 										{
 											call("sendMessage",{
 												chat_id: ID,
-												text: "❌ کاربر یافت نشد!"
+												text: "❌ User not found"
 											});
 										}
 									}
@@ -650,7 +629,7 @@ function handleUpdate(update)
 									{
 										call("sendMessage",{
 											chat_id: ID,
-											text: "❌ غیر قابل قبول"
+											text: "❌ Invalid ID"
 										});
 									}
 									return;
@@ -665,12 +644,12 @@ function handleUpdate(update)
 												{
 													case UIT.startText:
 														owner.m = "set_start";
-														settingText = `مقدار فعلی:\n\n'${DB.dynamicText.start}'\n\n\nپیام جدید را ارسال کنید`;
+														settingText = `Current value:\n\n'${DB.dynamicText.start}'\n\n\nSend new message`;
 														availableDTs = ["name"];
 													break;
 													case UIT.helpText:
 														owner.m = "set_help";
-														settingText = `مقدار فعلی:\n\n'${DB.dynamicText.help}'\n\n\nپیام جدید را ارسال کنید`;
+														settingText = `Current value:\n\n'${DB.dynamicText.help}'\n\n\nSend new message`;
 														availableDTs = ["name"];
 													break;
 													default:
@@ -687,7 +666,7 @@ function handleUpdate(update)
 												}
 												if(availableDTs.length)
 												{
-													settingText += "\n\nکلمات پویا قابل استفاده:\n" + availableDTs.map((key)=>{
+													settingText += "\n\nAvailable dynamic words:\n" + availableDTs.map((key)=>{
 														const dt = dynamicTextHelp[key];
 														return dt ? `${dt.key} ${dt.value}` : ""
 													}).join('\n');
@@ -723,41 +702,11 @@ function handleUpdate(update)
 													break;
 												}
 
-												if(typeof input === "boolean")
-												{
-													switch(toSet){
-														case "phoneregister":
-															title = "تائید شماره تلفن";
-															newValue = input;
-															DBB.phoneRegister = newValue;
-														break;
-														case "usernamerequired":
-															title = "اجبار داشتن یوزرنیم";
-															newValue = input;
-															DBB.usernameRequired = newValue;
-														break;
-														case "accountnotification":
-															title = "اعلان اکانت ها";
-															newValue = input;
-															DBB.notifications.accountsRemaining = newValue;
-														break;
-														case "inviternotification":
-															title = "اعلان دعوتی";
-															newValue = input;
-															DBB.notifications.inviter = newValue;
-														break;
-														case "botnotification":
-															title = "اعلانات ربات";
-															newValue = input;
-															DBB.notifications.bot = newValue;
-														break;
-													}
-												}
-												else if(typeof input === "string")
+												if(typeof input === "string")
 												{
 													switch(toSet){
 														case "start":
-															title = "متن استارت";
+															title = "Start message text";
 															if(input.length < 1000)
 															{
 																newValue = input;
@@ -767,9 +716,9 @@ function handleUpdate(update)
 															{
 																error = "Maximum length is 1000";
 															}
-														break;
+															break;
 														case "help":
-															title = "متن راهنما";
+															title = "Help message text";
 															if(input.length < 1000)
 															{
 																newValue = input;
@@ -779,109 +728,19 @@ function handleUpdate(update)
 															{
 																error = "Maximum length is 1000";
 															}
-														break;
-														case "vbamountchoose":
-															title = "متن انتخاب مقدار ویباکس";
-															if(input.length < 1000)
-															{
-																newValue = input;
-																DB.dynamicText.chooseAmount = newValue;
-															}
-															else
-															{
-																error = "Maximum length is 1000";
-															}
-														break;
-														case "scoreincrease":
-															title = "متن افزایش امتیاز";
-															if(input.length < 1000)
-															{
-																newValue = input;
-																DB.dynamicText.increaseScore = newValue;
-															}
-															else
-															{
-																error = "Maximum length is 1000";
-															}
-														break;
-														case "vblistchange":
-															title = "لیست ویباکس";
-															newValue = input.split(',').filter((number)=>{
-																const digit = number.toEnglishDigits();
-																return isNaN(digit) || digit < 1 || digit > 20000
-															});
-															if(!newValue.length || inputNumber === 0)
-															{
-																if(inputNumber === 0)
-																{
-																	newValue = inputNumber;
-																	DBB.VBucks = newValue;
-																}
-																else
-																{
-																	newValue = input.split(',').join(', ');
-																	DBB.VBucks = input.split(',').map((number)=>{ return number.toEnglishDigits() });
-																}
-															}
-															else
-															{
-																newValue = undefined;
-																error = "Use only English digits\nSeparate numbers with ','\nAcceptable range is 1-20000\nOr use '0'";
-															}
-														break;
-														case "joinchannelstext":
-															title = "متن عضویت در کانال‌ها";
-															if(input.length < 700)
-															{
-																newValue = input;
-																DB.dynamicText.joinChannels = newValue;
-															}
-															else
-															{
-																error = "Maximum length is 700";
-															}
-														break;
-													}
-													if(!isNaN(inputNumber))
-													{
-														switch(toSet){
-															case "accountvalue":
-																title = "ارزش اکانت";
-																if(inputNumber >= 0 && inputNumber <= 1000)
-																{
-																	newValue = inputNumber;
-																	DBB.accountValue = newValue;
-																}
-																else
-																{
-																	error = "Acceptable range is 0-1000";
-																}
 															break;
-															case "vbratio":
-																title = "ضریب ویباکس";
-																if(inputNumber >= 0 && inputNumber <= 1000 && ( Array.isArray(DBB.VBucks) && !DBB.VBucks.map(x => (x/inputNumber).toString().includes('.')).includes(true)))
-																{
-																	newValue = inputNumber;
-																	DBB.vbRatio = newValue;
-																}
-																else
-																{
-																	error = `Acceptable range is 0-1000${Array.isArray(DBB.VBucks)?`\nShould be divisible to ${DBB.VBucks.join(', ')}`:""}`;
-																}
-															break;
-														}
 													}
 												}
 												owner.m = 1;
 												call("sendMessage",{
 													chat_id: ID,
 													text: newValue !== undefined ?
-													`${title} ${typeof input === "boolean"?`${input?"روشن":"خاموش"} شد`:`به${newValue.toString().includes("\n")?`\n\n'${newValue}'\n\n`:` '${newValue}' `}تغییر پیدا کرد`}`
+													`${title} ${typeof input === "boolean"?`turned ${input?"on":"off"}`:` changed to ${newValue.toString().includes("\n")?`\n\n'${newValue}'\n\n`:` '${newValue}' `}`}`
 													:
 													(title?
-														`${title}\n\nمقدار غیر قابل قبول${error?`\n- ${error.replace(/\n/g,'\n- ')}`:``}`
+														`${title}\n\n${UIT.faild} Invalid value${error?`\n- ${error.replace(/\n/g,'\n- ')}`:``}`
 														:
-														`خطا در settings`),
+														`Error in settings`),
 													reply_markup: {
 														keyboard: adminKeyboard(owner),
 														resize_keyboard: true
@@ -908,48 +767,12 @@ function handleUpdate(update)
 
 		user = DB.users[ID];
 
-		if (user.stt === "blc" || !running) { /* Bot is off or user is blocked */
+		if (user.stt === "blc" || !running) /* Bot is off or user is blocked */
 			return;
-		}
 		else if(user.stt === "rm")
-		{
 			user.stt = "tmp";
-		}
 		else if(user.stt === "tmp")
-		{
-			if(DBB.phoneRegister)
-			{
-				let contactIsValid = false;
-				if(message.contact)
-				{
-					if(!message.forward_from && !message.forward_from_chat && message.contact.user_id === message.from.id && (message.contact.phone_number.startsWith("98") || message.contact.phone_number.startsWith("+98"))) /* validation */
-					{
-						message.text = "/start";
-						user.stt = "ok";
-						contactIsValid = true;
-					}
-				}
-				if(!contactIsValid)
-				{
-					call("sendMessage",{
-						chat_id: message.chat.id,
-						text: (message.contact && !contactIsValid) ? "❌غیر قابل قبول" : UIT.shareContactText,
-						reply_markup: {
-							one_time_keyboard:true,
-							resize_keyboard: true,
-							keyboard: [
-								[{text: UIT.shareContactButton, request_contact:true}]
-							]
-						}
-					});
-					return;
-				}
-			}
-			else
-			{
-				user.stt = "ok";
-			}
-		}
+			user.stt = "ok";
 
 		if(message.from.username && user.userN !== message.from.username) /* update username if exists */
 		{
@@ -1063,19 +886,6 @@ function handleUpdate(update)
 					sendMessage({
 						to: ID,
 						input: "🏠",
-						extra: {
-							reply_markup: {
-								keyboard: userKeyboard(),
-								resize_keyboard: true
-							}
-						}
-					});
-				break;
-				case UIT.myAcc:
-					return;
-					sendMessage({
-						to: ID,
-						input: `اطلاعات حساب شما:\n\n🎫 امتیاز: ${user.sc}\n🎟 تعداد دعوتی: ${user.inv}`.toPersianDigits(),
 						extra: {
 							reply_markup: {
 								keyboard: userKeyboard(),
@@ -1800,6 +1610,8 @@ function getVideoIndex(UICode)
 }
 
 const sendAudio = ({ID, msgObj, caption = DB.dynamicText.audioCaption, cacheObj}) => {
+	if(!cacheObj)
+		return;
 	const sendAudioOptions = {
 		chat_id: ID,
 		audio: cacheObj.msg,
@@ -1864,10 +1676,6 @@ const getTimeDist = (then, getDay = false) => {
 		timeDiff = Math.round(timeDiff / (30 * 24 * 60));
 		return `${timeDiff} month${timeDiff>1?'s':''} ago`;
 	}
-}
-
-function getChannels(){
-	return DBB.channels;
 }
 
 function bcHandler({ownerID, message, element = 0, sum = 0, forward = false})
@@ -1990,20 +1798,14 @@ function dynamicText({text = '', message = null, specialParams = null, getWords 
 		return {
 			version: "1.0.0",
 			words: {
-				name: { key: "[NAME]", value: "نام کاربر" },
-				accountValue: { key: "[ACCOUNT_VALUE]", value: "امتیاز مورد نیاز برای دریافت اکانت" },
-				inviteLink: { key: "[INVITE_LINK]", value: "لینک دعوت" },
-				channels: { key: "[CHANNELS]", value: "لیست کانال‌ها به همراه لینک" },
-				code: { key: "[CODE]", value: "کد احراز هویت برداشت ویباکس" },
-				userScore: { key: "[USER_SCORE]", value: "امتیاز کاربر" },
-				userInvites: { key: "[USER_INVITES]", value: "تعداد دعوتی کاربر" }
+				name: { key: "[NAME]", value: " User account name" }
 			}
 		};
 	}
 	if(typeof text !== "string" || !text.length){
 		return;
 	}
-	return text.replace(/\[(NAME|ACCOUNT_VALUE|INVITE_LINK|CODE|CHANNELS|USER_SCORE|USER_INVITES)]/g,function(word){
+	return text.replace(/\[(NAME)]/g,function(word){
 		const WORD = word.slice(1,-1);
 		switch(WORD){
 			case "NAME":
@@ -2012,43 +1814,9 @@ function dynamicText({text = '', message = null, specialParams = null, getWords 
 					return message.from.first_name;
 				}
 			break;
-			case "ACCOUNT_VALUE":
-				return DBB.accountValue.toString().toPersianDigits();
-			break;
-			case "USER_SCORE":
-			case "USER_INVITES":
-				if(message && message.chat && message.chat.id && DB.users[message.chat.id])
-				{
-					switch(word){
-						case "[USER_SCORE]":
-							return DB.users[message.chat.id].sc.toString().toPersianDigits();
-							break;
-						case "[USER_INVITES]":
-							return DB.users[message.chat.id].inv.toString().toPersianDigits();
-							break;
-					}
-				}
-				return DBB.vbRatio.toString().toPersianDigits();
-			break;
-			case "CHANNELS":
-				return getChannels().map((channel)=>{
-					return `${channel.link.toLocaleLowerCase().includes("/joinchat/")?`🔗 ${channel.link.split('//')[1]}`:`🆔 @${channel.link.split('/').pop()}`}`
-				}).join('\n');
-			break;
-			case "INVITE_LINK":
-				if(message && message.chat)
-				{
-					return "t.me/"+botUsername+"?start=invite"+message.chat.id;
-				}
-			break;
 		}
-		/* CODE - VB_AMOUNT */
 		if(specialParams && Object.keys(specialParams).includes(WORD))
 		{
-			if(WORD === "CODE")
-			{
-				return "‎"+specialParams[WORD];
-			}
 			return specialParams[WORD];
 		}
 		return word;

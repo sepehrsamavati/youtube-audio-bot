@@ -40,7 +40,8 @@
 ## To-Do
 - [x] Create config file
 - [x] Create npm package
-- [ ] Translate all strings to English
-- [ ] Remove dead code
+- [x] Translate all strings to English
+- [x] Remove dead code
 - [ ] Complete GitHub README
+- [ ] Fix timeout bug (should cancel operation)
 - [ ] Fix `/cancel` feature
