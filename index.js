@@ -1,4 +1,4 @@
-const { token, appVersion, dir, maxThreads, TIMEOUT, dataFile, admins } = require("./config");
+const { token, appVersion, dir, maxThreads, TIMEOUT, dataFile, admins, ffmpegExe } = require("./config");
 const botUrl = "https://api.telegram.org/bot" + token + "/";
 const MIN_INTERVAL = 10, MIN_DELAY = 500, sevenDays = 7*24*60*60*1000; /* 3/5/2021 */
 let owners=[...admins];
