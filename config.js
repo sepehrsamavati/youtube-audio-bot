@@ -6,7 +6,7 @@ const config = {
 	maxThreads: 2, // Downloads limit
 	timeout: 20, // Step timeout in seconds (download, convert and ...)
 	admins: [123456], // Array of IDs *ONLY USES IN DB SEED* (Telegram account ID / requires at least 1 admin / first admin is owner)
-	version: "1.2.0"
+	version: "1.2.1"
 };
 
 exports.token = config.token;

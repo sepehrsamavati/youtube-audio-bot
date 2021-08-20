@@ -33,13 +33,13 @@ let DB = {
 		stats: "📊 Stats",
 		help: "❔ Help",
 		random: "🎲 Random song",
-		top5: "🥇 Top 5",
-		weekTop: "⏲ Last Week Top",
+		top5: "🎖 Top 5",
+		weekTop: "🥇 Last Week Top",
 		mostLikes: "♥ Most Likes",
 		recentDownloads: "🗂 Recent Downloads",
 		addAdmin: "➕ Add admin",
 		remAdmin: "➖ Remove admin",
-		return: "🔙 return",
+		return: "🔙 Return",
 		edtSup: "⚠️ Edited messages aren't supported.",
 		submit: "✅ Submit",
 		cancel: "❌ Cancel",
@@ -52,7 +52,9 @@ let DB = {
 		/* Settings */
 		settings: "⚙️ Settings",
 		startText: "📃 Start text",
-		helpText: "❔ Help text"
+		helpText: "❔ Help text",
+		publicMode: "Public mode",
+		shareAvailable: "Share"
 	},
 	Bot: {
 		owners: owners,
@@ -61,6 +63,8 @@ let DB = {
 		uniqueCacheUsage: 0,
 		totalBCs: 0,
 		lastBC: null,
+		public: false,
+		share: true,
 		download: 0,
 		upload: 0,
 		lastweekDownloads: [],
@@ -94,6 +98,7 @@ const userKeyboard = () => {
 	];
 };
 const audioKeyboard = (video, ID) => {
+	const keyboard = [];
 	let cacheObj, heartToShow = "♥", dataQuery = "like";
 
 	if(typeof video === "number")
@@ -122,7 +127,14 @@ const audioKeyboard = (video, ID) => {
 		dataQuery += cacheObj.id
 	}
 
-	return [[{text: heartToShow, callback_data: dataQuery}, {text: "Share", switch_inline_query: "getVid"+dataQuery.slice(4)}]];
+	keyboard.push([{text: heartToShow, callback_data: dataQuery}]);
+
+	if(DBB.share)
+	{
+		keyboard[0].push({text: "Share", switch_inline_query: "getVid"+dataQuery.slice(4)});
+	}
+
+	return keyboard;
 };
 function saveDataWP()
 	{
@@ -458,6 +470,7 @@ function handleUpdate(update)
 								reply_markup: {
 									keyboard: [
 										[{text: UIT.startText}, {text: UIT.helpText}],
+										[{text: UIT.shareAvailable}, {text: UIT.publicMode}],
 										[{text: UIT.return}]
 									],
 									resize_keyboard: true
@@ -646,19 +659,32 @@ function handleUpdate(update)
 														owner.m = "set_start";
 														settingText = `Current value:\n\n'${DB.dynamicText.start}'\n\n\nSend new message`;
 														availableDTs = ["name"];
-													break;
+														break;
 													case UIT.helpText:
 														owner.m = "set_help";
 														settingText = `Current value:\n\n'${DB.dynamicText.help}'\n\n\nSend new message`;
 														availableDTs = ["name"];
-													break;
+														break;
+													case UIT.shareAvailable:
+														owner.m = "set_share";
+														onOfCurrentStatus = DBB.share;
+														settingText =`Share feature on or off\n\nCurrent value: ${onOfCurrentStatus?UIT.on:UIT.off}\nSelect new value`;
+														settingTypeSelect = true;
+														break;
+													case UIT.publicMode:
+														owner.m = "set_publicmode";
+														onOfCurrentStatus = DBB.public;
+														settingText =`Only promoted users can use the bot (private) or everyone can use (public)\n\nCurrent value: ${onOfCurrentStatus?UIT.on:UIT.off}\nSelect new value`;
+														settingTypeSelect = true;
+														break;
+
 													default:
 														call("sendMessage",{
 															chat_id: ID,
 															text: UIT.faild
 														});
 														return;
-													break;
+														break;
 												}
 												if(settingTypeSelect)
 												{
@@ -702,7 +728,22 @@ function handleUpdate(update)
 													break;
 												}
 
-												if(typeof input === "string")
+												if(typeof input === "boolean")
+												{
+													switch(toSet){
+														case "share":
+															title = "Share feature";
+															newValue = input;
+															DBB.share = newValue;
+															break;
+														case "publicmode":
+															title = "Public mode";
+															newValue = input;
+															DBB.public = newValue;
+															break;
+													}
+												}
+												else if(typeof input === "string")
 												{
 													switch(toSet){
 														case "start":
@@ -804,11 +845,6 @@ function handleUpdate(update)
 					});
 				break;
 				case "/cancel":
-					sendMessage({
-						to: ID,
-						input: "This feature is not available - Developing..."
-					});
-					return;
 					if(isUserAllowed(ID))
 					{
 						const userRequest = Object.entries(currentQueue).find( R => R[1].from == ID);
@@ -846,9 +882,22 @@ function handleUpdate(update)
 					});
 					break;
 				case UIT.random:
-					sendAudio({
-						ID, msgObj: message, cacheObj: DBB.videos[Math.floor(Math.random()*DBB.videos.length)]
-					});
+					if(isUserAllowed(ID))
+					{
+						sendAudio({
+							ID, msgObj: message, cacheObj: DBB.videos[Math.floor(Math.random()*DBB.videos.length)]
+						});
+					}
+					else
+					{
+						sendMessage({
+							to: ID,
+							input: dynamicText({
+								text: DB.dynamicText.notPromoted,
+								message: message
+							})
+						});
+					}
 					break;
 				case UIT.top5:
 					const countToGet = 5;
@@ -1081,7 +1130,7 @@ function handleUpdate(update)
 	else if (inlineQuery)
 	{
 		const ID = inlineQuery.from.id;
-		if(isUserAllowed(ID))
+		if(isUserAllowed(ID) && DBB.share)
 		{
 			if(inlineQuery.query.startsWith("getVid"))
 			{
@@ -1092,13 +1141,13 @@ function handleUpdate(update)
 					inlineResults.push({
 						type: "audio",
 						id: foundVideo.id,
-						audio_file_id: foundVideo.msg,
+						audio_file_id: foundVideo.msg
 						//caption: `More songs @${botUsername}`,
-						reply_markup: {
+						/*reply_markup: {
 							inline_keyboard: [
 								[{text: "📲 Listen in bot", url: "t.me/"+botUsername+"?start=getV"+getUICode(DBB.videos.indexOf(foundVideo))}]
 							]
-						}
+						}*/
 					});
 				}
 				call("answerInlineQuery", {
@@ -1130,7 +1179,6 @@ const TIMER_ON = () => { /* check if not responding cancel progress - delete fil
 		const queueAudios = Object.entries(currentQueue);
 		if(queueAudios.length === 0)
 		{
-			//clearDir();
 			timer = false;
 			return;
 		}
@@ -1145,8 +1193,10 @@ const TIMER_ON = () => { /* check if not responding cancel progress - delete fil
 				});
 				userObj.lr = new Date().toISOString();
 				delete currentQueue[A[0]];
-				["webp", "jpg", "mp4", "mp3"].forEach( format => deleteFile(dir+A[1].localID+'.'+format) );
-				deleteFile(generateName(A[0]));
+				setTimeout(()=>{
+					["webp", "jpg", "mp4", "mp3"].forEach( format => deleteFile(dir+A[1].localID+'.'+format) );
+					deleteFile(generateName(A[0]));
+				}, 5000);
 			}
 		});
 		if(timer)
@@ -1174,17 +1224,19 @@ async function startProcess(vid){
 	{
 		return;
 	}
-	const fakeDelay = new Date() - currentQueue[vid].lastUpdate - MIN_DELAY;
+	const stepObject = {...currentQueue[vid]};
+	const fakeDelay = new Date() - stepObject.lastUpdate - MIN_DELAY;
 	setTimeout(function(){
+		if(!currentQueue[vid]) return;
 		call("editMessageText", {
-			chat_id: currentQueue[vid].from,
-			message_id: currentQueue[vid].updateID,
+			chat_id: stepObject.from,
+			message_id: stepObject.updateID,
 			text: "📥 [2/5] Downloading MP4"
 		}, function(res){
 			if(res && currentQueue[vid])
 			{
-				currentQueue[vid].lastUpdate = new Date();
-				currentQueue[vid].updateID = res.message_id;
+				stepObject.lastUpdate = new Date();
+				stepObject.updateID = res.message_id;
 
 				if(basicInfo.videoDetails.author.name.endsWith(" - Topic") && basicInfo.videoDetails.author.name.length > 8) /* remove ' - Topic' */
 				{
@@ -1194,47 +1246,38 @@ async function startProcess(vid){
 				const videoTitleSplit = basicInfo.videoDetails.title.split(" - ");
 				if(videoTitleSplit.length === 2)
 				{
-					currentQueue[vid].title = videoTitleSplit[1];
-					currentQueue[vid].artist = videoTitleSplit[0];
-					currentQueue[vid].album = basicInfo.videoDetails.author.name;
+					stepObject.title = videoTitleSplit[1];
+					stepObject.artist = videoTitleSplit[0];
+					stepObject.album = basicInfo.videoDetails.author.name;
 				}
 				else
 				{
-					currentQueue[vid].title = basicInfo.videoDetails.title;
-					currentQueue[vid].artist = basicInfo.videoDetails.author.name;
-					if(currentQueue[vid].title.startsWith(currentQueue[vid].artist+" - ") && currentQueue[vid].title.length > currentQueue[vid].artist.length+3)
+					stepObject.title = basicInfo.videoDetails.title;
+					stepObject.artist = basicInfo.videoDetails.author.name;
+					if(stepObject.title.startsWith(stepObject.artist+" - ") && stepObject.title.length > stepObject.artist.length+3)
 					{
-						currentQueue[vid].title = currentQueue[vid].title.slice(currentQueue[vid].artist.length+3);
+						stepObject.title = stepObject.title.slice(stepObject.artist.length+3);
 					}
 				}
 
 
 				if(basicInfo.videoDetails.publishDate)
 				{
-					currentQueue[vid].year = basicInfo.videoDetails.publishDate.split("-").shift();
+					stepObject.year = basicInfo.videoDetails.publishDate.split("-").shift();
 				}
 				if(basicInfo.videoDetails.media
 					&& basicInfo.videoDetails.media
 					&& basicInfo.videoDetails.media.song
 					&& basicInfo.videoDetails.media.artist)
 				{
-					currentQueue[vid].title = basicInfo.videoDetails.media.song;
-					currentQueue[vid].artist = basicInfo.videoDetails.media.artist;
-					currentQueue[vid].album = basicInfo.videoDetails.media.album;
+					stepObject.title = basicInfo.videoDetails.media.song;
+					stepObject.artist = basicInfo.videoDetails.media.artist;
+					stepObject.album = basicInfo.videoDetails.media.album;
 				}
-				currentQueue[vid].thumbnail = basicInfo.videoDetails.thumbnails.pop().url;
+				stepObject.thumbnail = basicInfo.videoDetails.thumbnails.pop().url;
+				if(currentQueue[vid])
+					currentQueue[vid] = {...stepObject};
 				download(vid);
-				/*
-				https.get(`https://img.youtube.com/vi/${vid}/hqdefault.jpg`, function(res) {
-					if(res.statusCode == 200)
-					{
-						currentQueue[vid].thumbnail = `https://img.youtube.com/vi/${vid}/hqdefault.jpg`;
-					}
-					download({
-						vid: vid
-					});
-				});
-				*/
 			}
 		});
 	}, fakeDelay > 0 ? 10 : Math.abs(fakeDelay));
@@ -1243,22 +1286,23 @@ async function startProcess(vid){
 async function download(vid) {
 	if(currentQueue[vid])
 	{
-		//const obj = await ytdl.getInfo(vid);
-		const fileAddress = dir+currentQueue[vid].localID;
+		const stepObject = {...currentQueue[vid]};
+		const fileAddress = dir+stepObject.localID;
 		try {
 			const videoFileAddress = fileAddress+'.mp4';
 			ytdl(vid, {quality: "highestaudio"}).pipe(fs.createWriteStream(videoFileAddress).on("finish", async function(){
 
-				currentQueue[vid].mp4Size = await getFilesizeInMegaBytes(videoFileAddress);
+				stepObject.mp4Size = await getFilesizeInMegaBytes(videoFileAddress);
 
-				http.get(currentQueue[vid].thumbnail , function(res){
-					res.pipe(fs.createWriteStream(fileAddress+(currentQueue[vid].thumbnail.endsWith(".jpg") ? ".jpg" : ".webp"))).on("finish", async function(){
+				http.get(stepObject.thumbnail , function(res){
+					res.pipe(fs.createWriteStream(fileAddress+(stepObject.thumbnail.endsWith(".jpg") ? ".jpg" : ".webp"))).on("finish", async function(){
 
-						currentQueue[vid].thumbSize = await getFilesizeInMegaBytes(fileAddress+(currentQueue[vid].thumbnail.endsWith(".jpg") ? ".jpg" : ".webp"));
-						DBB.download += currentQueue[vid].mp4Size + currentQueue[vid].thumbSize;
+						stepObject.thumbSize = await getFilesizeInMegaBytes(fileAddress+(stepObject.thumbnail.endsWith(".jpg") ? ".jpg" : ".webp"));
+						DBB.download += stepObject.mp4Size + stepObject.thumbSize;
 
-						const fakeDelay = new Date() - currentQueue[vid].lastUpdate - MIN_DELAY;
+						const fakeDelay = new Date() - stepObject.lastUpdate - MIN_DELAY;
 						setTimeout(function(){
+							if(!currentQueue[vid]) return;
 							call("editMessageText", {
 								chat_id: currentQueue[vid].from,
 								message_id: currentQueue[vid].updateID,
@@ -1266,8 +1310,10 @@ async function download(vid) {
 							}, function(res){
 								if(res)
 								{
-									currentQueue[vid].lastUpdate = new Date();
-									currentQueue[vid].updateID = res.message_id;
+									stepObject.lastUpdate = new Date();
+									stepObject.updateID = res.message_id;
+									if(currentQueue[vid])
+										currentQueue[vid] = {...stepObject};
 									convert(vid);
 								}
 							});
@@ -1288,56 +1334,44 @@ function convert(vid)
 {
 	if(currentQueue[vid])
 	{
-		const fileAddress = dir+currentQueue[vid].localID;
+		const stepObject = {...currentQueue[vid]};
+		const fileAddress = dir+stepObject.localID;
 		const videoFileAddress = fileAddress+'.mp4';
-		//var outStream = fs.createWriteStream('audio.mp3');
 			const mp3File = new ffmpeg({ source: videoFileAddress })
-				//.addInput(fileAddress+'.jpg')
-				// .outputOptions(
-				// 	'-id3v2_version', '3',
-				// 	'-metadata', 'title='+currentQueue[vid].title,
-				// 	'-metadata', 'artist='+currentQueue[vid].artist
-				// )
 				.setFfmpegPath(ffmpegExe)
-				//.withNoVideo('libx264')
 				.withAudioCodec('libmp3lame')
-				//.withAudioBitrate('128k').withAudioChannels(2).withAudioQuality(5)
 				.toFormat('mp3')
 				.on('error', function(err) {
-					currentQueue[vid].error = "Error in converting";
+					stepObject.error = "Error in converting";
 					console.log('An error occurred: ' + err.message);
 				})
 				.on('end', function() {
-					const fakeDelay = new Date() - currentQueue[vid].lastUpdate - MIN_DELAY;
+					const fakeDelay = new Date() - stepObject.lastUpdate - MIN_DELAY;
 					setTimeout(function(){
+						if(!currentQueue[vid]) return;
 						call("editMessageText", {
-							chat_id: currentQueue[vid].from,
-							message_id: currentQueue[vid].updateID,
+							chat_id: stepObject.from,
+							message_id: stepObject.updateID,
 							text: "📸 [4/5] Generating cover"
 						}, async function(res){
 							if(res)
 							{
-								currentQueue[vid].mp3Size = await getFilesizeInMegaBytes(fileAddress+".mp3");
-								if(currentQueue[vid].mp3Size > 50)
+								stepObject.mp3Size = await getFilesizeInMegaBytes(fileAddress+".mp3");
+								if(stepObject.mp3Size > 50)
 								{
-									currentQueue[vid].error = "File size is over 50 MB";
+									stepObject.error = "File size is over 50 MB";
 									return;
 								}
-								currentQueue[vid].lastUpdate = new Date();
-								currentQueue[vid].updateID = res.message_id;
+								stepObject.lastUpdate = new Date();
+								stepObject.updateID = res.message_id;
+								if(currentQueue[vid])
+									currentQueue[vid] = {...stepObject};
 								generateThumb(vid);
 							}
 						});
 					}, fakeDelay > 0 ? 10 : Math.abs(fakeDelay));
 				});
-				// if(currentQueue[vid].album)
-				// {
-				// 	mp3File.addOutputOptions(
-				// 		'-metadata', 'album='+currentQueue[vid].album
-				// 	)
-				// }
 				mp3File.saveToFile(fileAddress+'.mp3');
-				// .writeToStream(outStream, { end: true });
 	}
 }
 
@@ -1345,17 +1379,20 @@ function generateThumb(vid)
 {
 	if(currentQueue[vid])
 	{
-		const fileAddress = dir+currentQueue[vid].localID;
-		if(currentQueue[vid].thumbnail.endsWith(".jpg"))
+		const stepObject = {...currentQueue[vid]};
+		const fileAddress = dir+stepObject.localID;
+		if(stepObject.thumbnail.endsWith(".jpg"))
 		{
 			setMeta(vid);
 			return;
 		}
 		sharp(fileAddress+".webp").toFile(fileAddress+".jpg").then((newFileInfo) => {
-			currentQueue[vid].maxIs = newFileInfo.height > newFileInfo.width ? "height" : "width"
+			stepObject.maxIs = newFileInfo.height > newFileInfo.width ? "height" : "width";
+			if(currentQueue[vid])
+					currentQueue[vid] = {...stepObject};
 			setMeta(vid);
 		}).catch((err) => {
-			currentQueue[vid].error = "Couldn't convert cover";
+			stepObject.error = "Couldn't convert cover";
 		});
 		/*
 		webp.dwebp(fileAddress+".webp", "-o",logging="-v").then((response) => {
@@ -1376,35 +1413,39 @@ function setMeta(vid)
 {
 	if(currentQueue[vid])
 	{
-		const fileAddress = dir+currentQueue[vid].localID;
+		const stepObject = {...currentQueue[vid]};
+		const fileAddress = dir+stepObject.localID;
 		const options = {
-			title: currentQueue[vid].title,
-			artist: currentQueue[vid].artist,
-			year: currentQueue[vid].year,
+			title: stepObject.title,
+			artist: stepObject.artist,
+			year: stepObject.year,
 			APIC: fileAddress+".jpg"
 		};
-		if(currentQueue[vid].album)
+		if(stepObject.album)
 		{
-			options.album = currentQueue[vid].album;
+			options.album = stepObject.album;
 		}
 		const success = NodeID3.write(options, fileAddress+".mp3", function(err){
 			if(err)
 			{
-				currentQueue[vid].error = "Couldn't set cover";
+				stepObject.error = "Couldn't set cover";
 			}
 			else
 			{
-				const fakeDelay = new Date() - currentQueue[vid].lastUpdate - MIN_DELAY;
+				const fakeDelay = new Date() - stepObject.lastUpdate - MIN_DELAY;
 				setTimeout(function(){
+					if(!currentQueue[vid]) return;
 					call("editMessageText", {
-						chat_id: currentQueue[vid].from,
-						message_id: currentQueue[vid].updateID,
+						chat_id: stepObject.from,
+						message_id: stepObject.updateID,
 						text: "📤 [5/5] Uploading to Telegram"
 					}, function(res){
 						if(res)
 						{
-							currentQueue[vid].lastUpdate = new Date();
-							currentQueue[vid].updateID = res.message_id;
+							stepObject.lastUpdate = new Date();
+							stepObject.updateID = res.message_id;
+							if(currentQueue[vid])
+								currentQueue[vid] = {...stepObject};
 							upload(vid);
 						}
 					});
@@ -1417,13 +1458,16 @@ function setMeta(vid)
 async function upload(vid){
 	if(currentQueue[vid])
 	{
-		const fileLocalId = dir+currentQueue[vid].localID;
-		const reqFromUser = DB.users[currentQueue[vid].from],
+		const stepObject = {...currentQueue[vid]};
+		const fileLocalId = dir+stepObject.localID;
+		const reqFromUser = DB.users[stepObject.from],
 		trackFileName = generateName(vid);
 		if(await fileExist(trackFileName))
 		{
-			currentQueue[vid].lastUpdate = new Date();
+			stepObject.lastUpdate = new Date();
 			setTimeout(function(){
+				if(currentQueue[vid])
+					currentQueue[vid] = {...stepObject};
 				upload(vid);
 			}, 5000);
 			return;
@@ -1433,20 +1477,20 @@ async function upload(vid){
 			fs.rename(fileLocalId+".mp3", trackFileName, (error) => {
 				if(error)
 				{
-					currentQueue[vid].error = "Error while renaming before upload";
+					stepObject.error = "Error while renaming before upload";
 					return;
 				}
 				const resizeOptions = {};
-				resizeOptions[currentQueue[vid].maxIs] = 300;
+				resizeOptions[stepObject.maxIs] = 300;
 				sharp(fileLocalId+".jpg").resize(resizeOptions).toBuffer(function(err, buffer) {
 					if(err)
 					{
-						currentQueue[vid].error = "Couldn't resize cover for Telegram";
+						stepObject.error = "Couldn't resize cover for Telegram";
 					}
 					fs.writeFile(fileLocalId+".jpg", buffer, function(e) {
 						if(e)
 						{
-							currentQueue[vid].error = "Error while saving resized cover for Telegram";
+							stepObject.error = "Error while saving resized cover for Telegram";
 						}
 						else
 						{
@@ -1463,31 +1507,31 @@ async function upload(vid){
 										DBB.videos.push({
 											id: vid,
 											msg: body.result.audio.file_id,
-											dl: [currentQueue[vid].from],
-											title: currentQueue[vid].title,
+											dl: [stepObject.from],
+											title: stepObject.title,
 											likes: []
 										});
 									}
 									DBB.lastweekDownloads.push({
 										date: new Date().toISOString(),
-										from: currentQueue[vid].from,
+										from: stepObject.from,
 										video: vid,
-										usage: Math.round(currentQueue[vid].mp3Size + currentQueue[vid].thumbSize + currentQueue[vid].mp4Size)
+										usage: Math.round(stepObject.mp3Size + stepObject.thumbSize + stepObject.mp4Size)
 									});
 									DBB.totalDownloads++;
-									DBB.upload += currentQueue[vid].thumbSize + currentQueue[vid].mp3Size;
-									reqFromUser.d += Math.round(currentQueue[vid].thumbSize + currentQueue[vid].mp4Size);
-									reqFromUser.u += Math.round(currentQueue[vid].thumbSize + currentQueue[vid].mp3Size);
+									DBB.upload += stepObject.thumbSize + stepObject.mp3Size;
+									reqFromUser.d += Math.round(stepObject.thumbSize + stepObject.mp4Size);
+									reqFromUser.u += Math.round(stepObject.thumbSize + stepObject.mp3Size);
 									call("deleteMessage", {
-										chat_id: currentQueue[vid].from,
-										message_id: currentQueue[vid].updateID
+										chat_id: stepObject.from,
+										message_id: stepObject.updateID
 									});
 								}
 								else
 								{
 									call("editMessageText", {
-										chat_id: currentQueue[vid].from,
-										message_id: currentQueue[vid].updateID,
+										chat_id: stepObject.from,
+										message_id: stepObject.updateID,
 										text: "❌ Error while uploading"
 									});
 								}
@@ -1498,11 +1542,11 @@ async function upload(vid){
 								saveData();
 							});
 							const f = r.form();
-							f.append('chat_id', currentQueue[vid].from);
-							f.append('title', currentQueue[vid].title);
-							f.append('performer', currentQueue[vid].artist);
+							f.append('chat_id', stepObject.from);
+							f.append('title', stepObject.title);
+							f.append('performer', stepObject.artist);
 							f.append('caption', DB.dynamicText.audioCaption);
-							f.append('reply_to_message_id', currentQueue[vid].userMsgId);
+							f.append('reply_to_message_id', stepObject.userMsgId);
 							f.append('reply_markup', JSON.stringify({inline_keyboard: audioKeyboard(vid, null) }) );
 							f.append('audio', fs.createReadStream(trackFileName));
 							f.append('thumb', fs.createReadStream(fileLocalId+".jpg"));
@@ -1559,11 +1603,23 @@ function fileExist(path)
 	}
 }
 
-async function deleteFile(path)
+async function deleteFile(path, tried = 0)
 {
 	if(await fileExist(path))
 	{
-		fs.unlinkSync(path);
+		try {
+			fs.unlinkSync(path);
+		}
+		catch (e)
+		{
+			if(tried < 5)
+			{
+				++tried;
+				setTimeout(() => {
+					deleteFile(path, tried);
+				}, 10000 * tried);
+			}
+		}
 	}
 }
 
@@ -1591,7 +1647,7 @@ function isUserAllowed(objOrId)
 		}
 		userObj = DB.users[objOrId];
 	}
-	if(userObj && userObj.promoted)
+	if(DBB.public || (userObj && userObj.promoted))
 	{
 		return true;
 	}
@@ -1699,8 +1755,6 @@ function bcHandler({ownerID, message, element = 0, sum = 0, forward = false})
 				}
 				else
 				{
-					/*delete DB.users[userID];
-					element-=1;*/
 					if(!["blc","main"].includes(DB.users[userID].stt))
 					{
 						DB.users[userID].stt = "rm";

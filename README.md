@@ -1,4 +1,4 @@
-# :sparkler: YouTube Audio bot :fire:
+# :sparkler: NodeJS YouTube Audio bot :fire:
 ***:inbox_tray: Download MP3 from YouTube on Telegram :headphones:***
 
 ## Usage
@@ -6,14 +6,14 @@
 - Send message `...` (yes, three dots) to get admin panel
 - Use `/on` `/off` to turn the bot on and off temporary (saved in memory)
 - Reply `/bc` and `/fbc` to a message to broadcast (or broadcast with forwarding it)
-- Only promoted users and admins can use the bot and download files
+- Only promoted users and admins can use the bot and download files (or enable public mode so everyone can use it)
 - `/delID` `/usageID` `/getID` `/promoteID` `/blockID` `/unblockID` to operate on user with id `ID`
 - `/find@username` find user with username `@username`
 
 
 *User*
 - Send `/start` to get user panel
-- Send any valid YT link or video ID to start download progress (you should be an admin or promoted)
+- Send any valid YT link or video ID to start download progress (you should be an admin or promoted or public mode enabled)
 - You can have only 1 download in progress
 - There is queue limit for downloads at the same time (default: 2)
 
@@ -43,7 +43,7 @@ Key | Value
 `dataFile` | Path to a file that bot reads/writes data from/to.
 `maxThreads` | Maximum number of allowed downloads at the same time. (queue limit)
 `timeout` | Timeout for each step of download in seconds. (end-user steps, 5 steps)
-`admins` | Array of admins ID. (Telegram account ID)
+`admins` | Array of admins ID. (Telegram account ID - applied only on DB seed)
 `version` | Bot version code.
 
 *Change required*
@@ -57,7 +57,7 @@ Key | Value
 - [x] Translate all strings to English
 - [x] Remove dead code
 - [x] Complete GitHub README
-- [ ] Add option to enable/disable share feature
-- [ ] Add option to enable/disable promotion required (public/private mode)
-- [ ] Fix timeout bug (should cancel operation)
-- [ ] Fix `/cancel` feature
+- [x] Add option to enable/disable share feature
+- [x] Add option to enable/disable promotion required (public/private mode)
+- [x] Fix timeout bug (should cancel operation)
+- [x] Fix `/cancel` feature
