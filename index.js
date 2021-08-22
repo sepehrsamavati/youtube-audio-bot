@@ -10,7 +10,8 @@ ytdl = require('ytdl-core'),
 http = require('https'),
 ffmpeg = require ('fluent-ffmpeg'),
 sharp = require('sharp'),
-NodeID3 = require('node-id3');
+NodeID3 = require('node-id3'),
+pixels = require('image-pixels');
 sharp.cache(false);
 String.prototype.toPersianDigits = function(){
 	let persianNumbers = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹']; // Hackers-Mania S.s. 2017
@@ -1386,26 +1387,70 @@ function generateThumb(vid)
 			setMeta(vid);
 			return;
 		}
-		sharp(fileAddress+".webp").toFile(fileAddress+".jpg").then((newFileInfo) => {
+		sharp(fileAddress+".webp").toFile(fileAddress+".jpg").then(async (newFileInfo) => {
 			stepObject.maxIs = newFileInfo.height > newFileInfo.width ? "height" : "width";
-			if(currentQueue[vid])
-					currentQueue[vid] = {...stepObject};
-			setMeta(vid);
-		}).catch((err) => {
-			stepObject.error = "Couldn't convert cover";
-		});
-		/*
-		webp.dwebp(fileAddress+".webp", "-o",logging="-v").then((response) => {
-			if(response.startsWith("cannot open input file"))
+
+			const {data, width, height} = await pixels(fileAddress+".jpg")
+
+			function hasSideColor() {
+				const getPixelColor = (x, y) => {
+					const position = (x+y*width)*4;
+					let result = "";
+					for(let i=0 ; i<3 ; i++)
+					{
+						result += data[position+i].toString();
+					}
+					return result;
+				},
+				solidColorAreaWidth = (width - height) / 2,
+				checkCounts = 5,
+				targetColor = getPixelColor(solidColorAreaWidth/2, height/2);
+				const padding = solidColorAreaWidth * 0.1,
+				colorChecker = (spotsChecked) => {
+					const randomX = Math.round(Math.random()*(solidColorAreaWidth-(2*padding)))+padding+(spotsChecked%2 ? height+solidColorAreaWidth : 0 ); /* from padding to area-padding */
+					const randomY = Math.floor(spotsChecked/2) * (height/checkCounts);
+					if(spotsChecked >= checkCounts*2)
+						return true;
+					if(getPixelColor(randomX, randomY) === targetColor)
+						return colorChecker(spotsChecked+1);
+					else
+						return false;
+				};
+				return colorChecker(0);
+			}
+
+			if(width > height && hasSideColor()) /* Crop thumbnail if both sides of image has the same solid color */
 			{
-				currentQueue[vid].error = "Couldn't convert cover";
+				sharp(fileAddress+".jpg")
+				.extract({ width: height, height, left: (width - height) / 2, top: 0 })
+				.toBuffer(function(err, buffer) {
+					if(err)
+					{
+						stepObject.error = "Couldn't crop cover";
+					}
+					fs.writeFile(fileAddress+".jpg", buffer, function(e) {
+						if(e)
+						{
+							stepObject.error = "Error while saving cropped cover";
+						}
+						else
+						{
+							if(currentQueue[vid])
+								currentQueue[vid] = {...stepObject};
+							setMeta(vid);
+						}
+					});
+				});
 			}
 			else
 			{
+				if(currentQueue[vid])
+					currentQueue[vid] = {...stepObject};
 				setMeta(vid);
 			}
+		}).catch((err) => {
+			stepObject.error = "Couldn't convert cover";
 		});
-		*/
 	}
 }
 
