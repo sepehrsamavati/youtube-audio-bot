@@ -1382,14 +1382,20 @@ function generateThumb(vid)
 	{
 		const stepObject = {...currentQueue[vid]};
 		const fileAddress = dir+stepObject.localID;
+		stepObject.maxIs = "width";
 		if(stepObject.thumbnail.endsWith(".jpg"))
 		{
-			setMeta(vid);
+			cropSides();
 			return;
 		}
 		sharp(fileAddress+".webp").toFile(fileAddress+".jpg").then(async (newFileInfo) => {
 			stepObject.maxIs = newFileInfo.height > newFileInfo.width ? "height" : "width";
-
+			cropSides();
+		}).catch((err) => {
+			stepObject.error = "Couldn't convert cover";
+		});
+		async function cropSides()
+		{
 			const {data, width, height} = await pixels(fileAddress+".jpg")
 
 			function hasSideColor() {
@@ -1407,7 +1413,7 @@ function generateThumb(vid)
 				targetColor = getPixelColor(solidColorAreaWidth/2, height/2);
 				const padding = solidColorAreaWidth * 0.1,
 				colorChecker = (spotsChecked) => {
-					const randomX = Math.round(Math.random()*(solidColorAreaWidth-(2*padding)))+padding+(spotsChecked%2 ? height+solidColorAreaWidth : 0 ); /* from padding to area-padding */
+					const randomX = Math.floor( Math.round(Math.random()*(solidColorAreaWidth-(2*padding)))+padding+(spotsChecked%2 ? height+solidColorAreaWidth : 0 ) ); /* from padding to area-padding */
 					const randomY = Math.floor(spotsChecked/2) * (height/checkCounts);
 					if(spotsChecked >= checkCounts*2)
 						return true;
@@ -1448,9 +1454,7 @@ function generateThumb(vid)
 					currentQueue[vid] = {...stepObject};
 				setMeta(vid);
 			}
-		}).catch((err) => {
-			stepObject.error = "Couldn't convert cover";
-		});
+		}
 	}
 }
 
