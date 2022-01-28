@@ -909,7 +909,7 @@ function handleUpdate(update)
 					});
 					break;
 				case UIT.mostLikes:
-					const mostLikedCountToGet = 5;
+					const mostLikedCountToGet = 10;
 					const topLikes = [...DBB.videos].reverse().sort((A,B) => B.likes.length - A.likes.length).slice(0, mostLikedCountToGet);
 					sendMessage({
 						to: ID,
@@ -917,7 +917,7 @@ function handleUpdate(update)
 					});
 					break;
 				case UIT.recentDownloads:
-					const recentCountToGet = 5;
+					const recentCountToGet = 15;
 					const recentList = [...DBB.videos].slice(recentCountToGet * -1).reverse();
 					sendMessage({
 						to: ID,
@@ -925,7 +925,7 @@ function handleUpdate(update)
 					});
 					break;
 				case UIT.weekTop:
-					const weekCountToGet = 5, lastWeekIds = DBB.lastweekDownloads.map( V => V.video );
+					const weekCountToGet = 10, lastWeekIds = DBB.lastweekDownloads.map( V => V.video );
 					const topWeekDownloads = [...DBB.videos].filter( V => lastWeekIds.includes(V.id) ).sort((A,B) => B.dl.length - A.dl.length).slice(0, weekCountToGet);
 					sendMessage({
 						to: ID,
@@ -1163,12 +1163,19 @@ function handleUpdate(update)
 /* YouTube download START */
 function getVideoID(input)
 {
-	if(ytdl.validateURL(input))
-		return ytdl.getVideoID(input);
-	else if(ytdl.validateID(input))
-		return input;
-	else
+	try
+	{
+		if(ytdl.validateURL(input))
+			return ytdl.getVideoID(input);
+		else if(ytdl.validateID(input))
+			return input;
+		else
+			return false;
+	} catch (e)
+	{
+		console.log(e.message)
 		return false;
+	}
 }
 
 function getLocalID(vid) {
@@ -1218,7 +1225,10 @@ async function startProcess(vid){
 		basicInfo = await ytdl.getBasicInfo(vid)
 	}
 	catch(e) {
-		currentQueue[vid].error = "Fake video ID";
+		if(e.message && e.message === "Status code: 410")
+			currentQueue[vid].error = "Video not available! (deleted or blocked in server's country)";
+		else
+			currentQueue[vid].error = "Fake video ID";
 		return;
 	}
 	if(!currentQueue[vid])
@@ -1425,7 +1435,7 @@ function generateThumb(vid)
 				return colorChecker(0);
 			}
 
-			if(width > height && hasSideColor()) /* Crop thumbnail if both sides of image has the same solid color */
+			if(width >= 720 && width > height && hasSideColor()) /* Crop thumbnail if both sides of image has the same solid color */
 			{
 				sharp(fileAddress+".jpg")
 				.extract({ width: height, height, left: (width - height) / 2, top: 0 })
