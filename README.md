@@ -1,9 +1,9 @@
-# :sparkler: NodeJS YouTube Audio bot :fire:
+# NodeJS YouTube Audio bot
 ***:inbox_tray: Download MP3 from YouTube on Telegram :headphones:***
 
 ## Usage
 *Admin*
-- Send message `...` (yes, three dots) to get admin panel
+- Send message `...` (three dots) to get admin panel
 - Use `/on` `/off` to turn the bot on and off temporary (saved in memory)
 - Reply `/bc` and `/fbc` to a message to broadcast (or broadcast with forwarding it)
 - Only promoted users and admins can use the bot and download files (or enable public mode so everyone can use it)
@@ -13,8 +13,8 @@
 
 *User*
 - Send `/start` to get user panel
-- Send any valid YT link or video ID to start download progress (you should be an admin or promoted or public mode enabled)
-- You can have only 1 download in progress
+- Send any valid YT link or video ID to start download progress
+- Each user can have only 1 download in progress
 - There is queue limit for downloads at the same time (default: 2)
 
 ## Download steps
@@ -38,26 +38,15 @@
 Key | Value
 ------------ | -------------
 `token` | Telegram bot API token
-`dir` | Path to files directory. All downloads, converts and renames will occur here.<br/>**Note:** All files in this directory will be deleted when the bot starts. (don't change it to `./`)
-`ffmpegExe` | Path to a working ffmpeg to convert MP4 to MP3.
-`dataFile` | Path to a file that bot reads/writes data from/to.
-`maxThreads` | Maximum number of allowed downloads at the same time. (queue limit)
-`timeout` | Timeout for each step of download in seconds. (end-user steps, 5 steps)
-`admins` | Array of admins ID. (Telegram account ID - applied only on DB seed)
+`dir` | Path to files directory. All downloads, converts and renames will occur here.<br/>**Note:** Any file in this directory will be deleted on app start. (don't change it to `./`)
+`ffmpegExe` | Path to a working ffmpeg (converts MP4 to MP3).
+`dataFile` | Path to a file that bot reads/writes JSON data from/to.
+`maxThreads` | Maximum number of concurrent downloads. (queue limit)
+`timeout` | Timeout for each step of the progress in seconds. (end-user steps, 5 steps)
+`admins` | Array of chat ID. (Telegram account/chat ID - applied only on data seed)
 `version` | Bot version code.
 
-*Change required*
+*Change required:*
 + Token
 + Path to ffmpeg exe
-+ Admins
-
-## To-Do
-- [x] Create config file
-- [x] Create npm package
-- [x] Translate all strings to English
-- [x] Remove dead code
-- [x] Complete GitHub README
-- [x] Add option to enable/disable share feature
-- [x] Add option to enable/disable promotion required (public/private mode)
-- [x] Fix timeout bug (should cancel operation)
-- [x] Fix `/cancel` feature
++ Admins (if you want to manage the bot)
