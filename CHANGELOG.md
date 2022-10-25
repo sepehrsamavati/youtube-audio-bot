@@ -1,7 +1,16 @@
+## [1.2.4] - 2022-10-25
+
+### Changed
+- Replace vulnerable dependencies
+- Update dependencies
+
+
+
 ## [1.2.3] - 2021-09-01
 
 ### Fix
 - Cover crop bugs (float number for pixels index, no crop if file is already jpg)
+
 
 
 ## [1.2.2] - 2021-08-22

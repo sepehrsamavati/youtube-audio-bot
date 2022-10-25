@@ -10,8 +10,7 @@ ytdl = require('ytdl-core'),
 http = require('https'),
 ffmpeg = require ('fluent-ffmpeg'),
 sharp = require('sharp'),
-NodeID3 = require('node-id3'),
-pixels = require('image-pixels');
+NodeID3 = require('node-id3');
 sharp.cache(false);
 String.prototype.toPersianDigits = function(){
 	let persianNumbers = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹']; // Hackers-Mania S.s. 2017
@@ -1143,12 +1142,6 @@ function handleUpdate(update)
 						type: "audio",
 						id: foundVideo.id,
 						audio_file_id: foundVideo.msg
-						//caption: `More songs @${botUsername}`,
-						/*reply_markup: {
-							inline_keyboard: [
-								[{text: "📲 Listen in bot", url: "t.me/"+botUsername+"?start=getV"+getUICode(DBB.videos.indexOf(foundVideo))}]
-							]
-						}*/
 					});
 				}
 				call("answerInlineQuery", {
@@ -1398,7 +1391,7 @@ function generateThumb(vid)
 			cropSides();
 			return;
 		}
-		sharp(fileAddress+".webp").toFile(fileAddress+".jpg").then(async (newFileInfo) => {
+		sharp(fileAddress+".webp").toFile(fileAddress+".jpg").then(async (newFileInfo) => { /* convert webp to jpg */
 			stepObject.maxIs = newFileInfo.height > newFileInfo.width ? "height" : "width";
 			cropSides();
 		}).catch((err) => {
@@ -1406,15 +1399,21 @@ function generateThumb(vid)
 		});
 		async function cropSides()
 		{
-			const {data, width, height} = await pixels(fileAddress+".jpg")
+			const { data, info } = await sharp(fileAddress+".jpg")
+			.raw()
+			.toBuffer({ resolveWithObject: true });
+
+			const pixels = data;
+			const width = info.width;
+			const height = info.height;
 
 			function hasSideColor() {
 				const getPixelColor = (x, y) => {
-					const position = (x+y*width)*4;
+					const position = (x+y*width)*3; /* Pixels data array color channel count */
 					let result = "";
-					for(let i=0 ; i<3 ; i++)
+					for(let i=0 ; i<3 ; i++) /* RGB */
 					{
-						result += data[position+i].toString();
+						result += pixels[position+i].toString();
 					}
 					return result;
 				},
@@ -1540,8 +1539,8 @@ async function upload(vid){
 					return;
 				}
 				const resizeOptions = {};
-				resizeOptions[stepObject.maxIs] = 300;
-				sharp(fileLocalId+".jpg").resize(resizeOptions).toBuffer(function(err, buffer) {
+				resizeOptions[stepObject.maxIs] = 400;
+				sharp(fileLocalId+".jpg").resize(resizeOptions).toBuffer(function(err, buffer) { /* resize for upload */
 					if(err)
 					{
 						stepObject.error = "Couldn't resize cover for Telegram";
