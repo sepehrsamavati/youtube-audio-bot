@@ -1,11 +1,12 @@
 {
   "name": "ytabot",
-  "version": "1.2.4",
+  "version": "2.0.0-alpha.1",
   "description": "Download MP3 from YouTube in Telegram messenger.",
   "main": "index.js",
   "scripts": {
-    "start": "node index"
+    "build": "tsc"
   },
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sepehrsamavati/youtube-audio-bot.git"
@@ -25,12 +26,17 @@
   },
   "homepage": "https://github.com/sepehrsamavati/youtube-audio-bot#readme",
   "dependencies": {
+    "axios": "^1.3.4",
+    "dotenv": "^16.0.3",
     "fluent-ffmpeg": "^2.1.2",
     "fs": "0.0.1-security",
     "https": "^1.0.0",
+    "mongoose": "^7.0.0",
     "node-id3": "^0.2.3",
-    "request": "^2.88.2",
     "sharp": "^0.31.1",
     "ytdl-core": "^4.11.2"
+  },
+  "devDependencies": {
+    "typescript": "^4.9.5"
   }
 }
