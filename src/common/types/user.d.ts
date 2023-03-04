@@ -8,4 +8,5 @@ type User = {
         down: number;
     };
     lastRequest: Date;
+    promotedBy?: number;
 }

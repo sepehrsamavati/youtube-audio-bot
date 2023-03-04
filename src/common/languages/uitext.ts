@@ -20,9 +20,18 @@ const UIText: UITextObj[] = [
         on: "⚪ On",
         off: "⚫ Off",
         ok: "✅",
-        faild: "❌",
+        failed: "❌",
         noAccess: "❌ You have no access!",
         commandNotFound: "❌ Command not found!",
+
+        downloadSteps: {
+            getInfo: "ℹ️ [1/5] Getting info",
+            downloadVideo: "📥 [2/5] Downloading MP4",
+            convertToAudio: "🎙 [3/5] Converting to MP3",
+            generateCover: "📸 [4/5] Generating cover",
+            upload: "📤 [5/5] Uploading to Telegram"
+        },
+
         /* Settings */
         settings: "⚙️ Settings",
         startText: "📃 Start text",

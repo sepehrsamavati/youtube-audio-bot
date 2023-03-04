@@ -1,5 +1,6 @@
 import TelegramMethodEnum from "../enums/tgMethod.enum.js";
-import { Handler, TgMsgUpdate } from "../interfaces/tgBot.interface";
+import { Handler } from "../interfaces/tgBot.interface";
+import { TgMsgUpdate } from "../types/tgBot.js";
 import TelegramCall from "./tgCall.js";
 
 export default class HandlerHelper implements Handler {

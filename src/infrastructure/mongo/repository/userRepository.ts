@@ -30,7 +30,8 @@ export default class UserRepository implements IUserRepository {
                 downloads: user.downloads,
                 lastRequest: user.lastRequest,
                 status: user.status,
-                usage: user.usage
+                usage: user.usage,
+				promotedBy: user.promotedBy
 			};
 		} catch(e) {
 			return null;
@@ -44,7 +45,8 @@ export default class UserRepository implements IUserRepository {
             downloads: user.downloads,
             usage: user.usage,
             lastRequest: user.lastRequest,
-            status: user.status
+            status: user.status,
+			promotedBy: user.promotedBy
 		});
 	}
 };

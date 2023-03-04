@@ -17,9 +17,18 @@ export type UITextObj = {
     on: string;
     off: string;
     ok: string;
-    faild: string;
+    failed: string;
     noAccess: string;
     commandNotFound: string;
+
+    downloadSteps: {
+        getInfo: string;
+        downloadVideo: string;
+        convertToAudio: string;
+        generateCover: string;
+        upload: string;
+    },
+
     /* Settings */
     settings: string;
     startText: string;

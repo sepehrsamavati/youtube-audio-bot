@@ -1,7 +1,7 @@
 import { findUser as auth } from "./helpers/auth.js";
-import { TgMsgUpdate } from "../../common/interfaces/tgBot.interface";
 import HandlerHelper from "../../common/helpers/handlerHelper.js";
 import i18n from "./helpers/i18n.js";
+import { TgMsgUpdate } from "../../common/types/tgBot.js";
 
 class UpdateHandler {
 	async handleUpdate(update: TgMsgUpdate) {
