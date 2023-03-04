@@ -1,4 +1,5 @@
 import ytdl from "ytdl-core";
+import ffmpeg from "fluent-ffmpeg";
 import fs from 'node:fs';
 import path from 'node:path';
 import config from "../config";
@@ -70,7 +71,7 @@ export default class VideoApplication implements IVideoApplication {
         throw new Error("Method not implemented.");
     }
     async download(video: QueueVideo): Promise<void> {
-        const baseFileAddress = path.join(config.cacheDirectory, video.localId);
+        const baseFileAddress = video.fileAddress = path.join(config.cacheDirectory, video.localId);
         const videoFileAddress = baseFileAddress + '.mp4';
 
         const videoWriteStream = fs.createWriteStream(videoFileAddress);
@@ -94,5 +95,28 @@ export default class VideoApplication implements IVideoApplication {
         });
 
         ytdl(video.id, {quality: "highestaudio"}).pipe(videoWriteStream);
+    }
+    async convert(video: QueueVideo): Promise<void> {
+        const baseFileAddress = video.fileAddress
+		const audioFileAddress = baseFileAddress+'.mp3';
+		const videoFileAddress = baseFileAddress+'.mp4';
+			const mp3File = ffmpeg({ source: videoFileAddress })
+				.setFfmpegPath(config.ffmpegExe)
+				.withAudioCodec('libmp3lame')
+				.toFormat('mp3')
+				.on('error', function(err) {
+					video.error = "Error in converting";
+					console.log('An error occurred: ' + err.message);
+				})
+				.on('end', function() {
+					video.mp3Size = getFileSizeInMegaBytes(audioFileAddress);
+                    if(video.mp3Size > 50)
+                    {
+                        video.error = "File size is over 50 MB";
+                        return;
+                    }
+                    // DONE;
+				});
+				mp3File.saveToFile(audioFileAddress);
     }
 };

@@ -14,8 +14,11 @@ type QueueVideo = {
     lastUpdate: Date;
     stepMessageId: MessageID;
     step: QueueVideoStep;
+    fileAddress: string;
+    error?: string;
 
     mp4Size: number;
+    mp3Size: number;
     thumbnail: string;
     thumbSize: number;
 }

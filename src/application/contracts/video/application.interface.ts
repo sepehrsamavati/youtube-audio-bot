@@ -11,4 +11,5 @@ export default interface IVideoApplication {
     startProgress(vid: string): Promise<void>;
     getInfo(video: QueueVideo): Promise<void>;
     download(video: QueueVideo): Promise<void>;
+    convert(video: QueueVideo): Promise<void>;
 }

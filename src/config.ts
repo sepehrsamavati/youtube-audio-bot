@@ -10,7 +10,7 @@ const config = {
     },
 	defaultLang: "en",
 	cacheDirectory: "./.data/YTAudio/files/",
-	ffmpegExe: process.env.YTA_FFMPEG_EXE,
+	ffmpegExe: process.env.YTA_FFMPEG_EXE ?? "",
 	maxThreads: parseInt(process.env.YTA_CONCURRENT_DOWNLOADS ?? "2"),
 	timeout: parseInt(process.env.YTA_STEP_TIMEOUT ?? "20"),
 	admins: (process.env.YTA_DATA_INIT_ADMINS ?? "").split(',').map(id => parseInt(id)),
