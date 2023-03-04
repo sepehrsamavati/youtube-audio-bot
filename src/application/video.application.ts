@@ -8,9 +8,11 @@ import OperationResult from "../common/models/operationResult";
 import { QueueVideo, Video } from "../common/types/video";
 import IVideoApplication from "./contracts/video/application.interface";
 import getFileSizeInMegaBytes from "../common/helpers/getFileSize";
+import cropThumbnailSides from "../common/helpers/cropThumbnailSides";
+import sharp from "sharp";
 
 export default class VideoApplication implements IVideoApplication {
-    constructor(){}
+    constructor() { }
     queue: QueueVideo[] = [];
     get(videoId: string, userId: number): Promise<Video | null> {
         throw new Error("Method not implemented.");
@@ -29,38 +31,32 @@ export default class VideoApplication implements IVideoApplication {
 
         const info: any = {};
 
-        if(basicInfo.videoDetails.author.name.endsWith(" - Topic") && basicInfo.videoDetails.author.name.length > 8) /* remove ' - Topic' */
-        {
+        if (basicInfo.videoDetails.author.name.endsWith(" - Topic") && basicInfo.videoDetails.author.name.length > 8) /* remove ' - Topic' */ {
             basicInfo.videoDetails.author.name = basicInfo.videoDetails.author.name.slice(0, -8);
         }
 
         const videoTitleSplit = basicInfo.videoDetails.title.split(" - ");
-        if(videoTitleSplit.length === 2)
-        {
+        if (videoTitleSplit.length === 2) {
             info.title = videoTitleSplit[1];
             info.artist = videoTitleSplit[0];
             info.album = basicInfo.videoDetails.author.name;
         }
-        else
-        {
+        else {
             info.title = basicInfo.videoDetails.title;
             info.artist = basicInfo.videoDetails.author.name;
-            if(info.title.startsWith(info.artist+" - ") && info.title.length > info.artist.length+3)
-            {
-                info.title = info.title.slice(info.artist.length+3);
+            if (info.title.startsWith(info.artist + " - ") && info.title.length > info.artist.length + 3) {
+                info.title = info.title.slice(info.artist.length + 3);
             }
         }
 
 
-        if(basicInfo.videoDetails.publishDate)
-        {
+        if (basicInfo.videoDetails.publishDate) {
             info.year = basicInfo.videoDetails.publishDate.split("-").shift();
         }
-        if(basicInfo.videoDetails.media
+        if (basicInfo.videoDetails.media
             && basicInfo.videoDetails.media
             && basicInfo.videoDetails.media.song
-            && basicInfo.videoDetails.media.artist)
-        {
+            && basicInfo.videoDetails.media.artist) {
             info.title = basicInfo.videoDetails.media.song;
             info.artist = basicInfo.videoDetails.media.artist;
             //info.album = basicInfo.videoDetails.media.album;
@@ -76,47 +72,67 @@ export default class VideoApplication implements IVideoApplication {
 
         const videoWriteStream = fs.createWriteStream(videoFileAddress);
 
-        videoWriteStream.on("finish", async function(){
+        videoWriteStream.on("finish", async function () {
 
             video.mp4Size = getFileSizeInMegaBytes(videoFileAddress);
 
-            http.get(video.thumbnail , function(res){
+            http.get(video.thumbnail, function (res) {
                 const thumbnailFileAddress = baseFileAddress + (video.thumbnail.endsWith(".jpg") ? ".jpg" : ".webp");
                 const thumbnailWriteStream = fs.createWriteStream(thumbnailFileAddress);
                 res.pipe(thumbnailWriteStream)
-                .on("finish", async function(){
+                    .on("finish", async function () {
 
-                    video.thumbSize = getFileSizeInMegaBytes(thumbnailFileAddress);
+                        video.thumbSize = getFileSizeInMegaBytes(thumbnailFileAddress);
 
-                   // DONE;
-                });
+                        // DONE;
+                    });
             });
 
         });
 
-        ytdl(video.id, {quality: "highestaudio"}).pipe(videoWriteStream);
+        ytdl(video.id, { quality: "highestaudio" }).pipe(videoWriteStream);
     }
     async convert(video: QueueVideo): Promise<void> {
         const baseFileAddress = video.fileAddress
-		const audioFileAddress = baseFileAddress+'.mp3';
-		const videoFileAddress = baseFileAddress+'.mp4';
-			const mp3File = ffmpeg({ source: videoFileAddress })
-				.setFfmpegPath(config.ffmpegExe)
-				.withAudioCodec('libmp3lame')
-				.toFormat('mp3')
-				.on('error', function(err) {
-					video.error = "Error in converting";
-					console.log('An error occurred: ' + err.message);
-				})
-				.on('end', function() {
-					video.mp3Size = getFileSizeInMegaBytes(audioFileAddress);
-                    if(video.mp3Size > 50)
-                    {
-                        video.error = "File size is over 50 MB";
-                        return;
-                    }
-                    // DONE;
-				});
-				mp3File.saveToFile(audioFileAddress);
+        const audioFileAddress = baseFileAddress + '.mp3';
+        const videoFileAddress = baseFileAddress + '.mp4';
+        const mp3File = ffmpeg({ source: videoFileAddress })
+            .setFfmpegPath(config.ffmpegExe)
+            .withAudioCodec('libmp3lame')
+            .toFormat('mp3')
+            .on('error', function (err) {
+                video.error = "Error in converting";
+                console.log('An error occurred: ' + err.message);
+            })
+            .on('end', function () {
+                video.mp3Size = getFileSizeInMegaBytes(audioFileAddress);
+                if (video.mp3Size > 50) {
+                    video.error = "File size is over 50 MB";
+                    return;
+                }
+                // DONE;
+            });
+        mp3File.saveToFile(audioFileAddress);
+    }
+    async generateCover(video: QueueVideo): Promise<void> {
+		const baseFileAddress = video.fileAddress;
+        const jpgFilePath = baseFileAddress+".jpg";
+        
+        const cropSides = async () => {
+            const result = await cropThumbnailSides(jpgFilePath);
+        };
+
+		let biggerSide = "width";
+		if(video.thumbnail.endsWith(".jpg"))
+		{
+			cropSides();
+			return;
+		}
+		sharp(baseFileAddress+".webp").toFile(jpgFilePath).then(async (newFileInfo) => { /* convert webp to jpg */
+			biggerSide = newFileInfo.height > newFileInfo.width ? "height" : "width";
+			cropSides();
+		}).catch((err) => {
+			video.error = "Couldn't convert cover";
+		});
     }
 };

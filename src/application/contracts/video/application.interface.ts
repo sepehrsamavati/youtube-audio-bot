@@ -12,4 +12,5 @@ export default interface IVideoApplication {
     getInfo(video: QueueVideo): Promise<void>;
     download(video: QueueVideo): Promise<void>;
     convert(video: QueueVideo): Promise<void>;
+    generateCover(video: QueueVideo): Promise<void>;
 }
