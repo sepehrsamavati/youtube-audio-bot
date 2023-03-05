@@ -1,9 +1,10 @@
 import { QueueVideoStep } from "../enums/video.enum.js";
+import { newLocalVideoID } from "../helpers/id.js";
 import { ChatID, MessageID } from "../types/tgBot.js";
 
 export class QueueVideo {
-    public id: string = "";
-    public localId: string = "";
+    public id: string;
+    public localId: string;
     public fromUser: User['tgId'] = -1;
     public userMessageId: ChatID = -1;
     public lastUpdate: Date = new Date();
@@ -21,5 +22,9 @@ export class QueueVideo {
     public thumbnail: string = "";
     public thumbSize: number = -1;
 
-    
+    constructor(id: string){
+        this.id = id;
+        this.localId = newLocalVideoID(this.id);
+        return this;
+    }
 }
