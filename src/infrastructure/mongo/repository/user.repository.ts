@@ -1,8 +1,8 @@
 import { HydratedDocument } from "mongoose";
-import IUserRepository from "../../../application/contracts/user/repository.interface";
-import UserModel from "../models/user";
-import config from "../../../config";
-import { UserMode } from "../../../common/enums/user.enum";
+import config from "../../../config.js";
+import UserModel from "../models/user.js";
+import { UserMode, UserStatus } from "../../../common/enums/user.enum.js";
+import IUserRepository from "../../../application/contracts/user/repository.interface.js";
 
 export default class UserRepository implements IUserRepository {
 	async createUser(tgId: number): Promise<User | null> {
@@ -10,10 +10,18 @@ export default class UserRepository implements IUserRepository {
 			const newUser = await UserModel.create({
 				tgId,
 				mode: UserMode.Default,
-				language: config.defaultLang
+				language: config.defaultLang,
+				downloads: 0,
+				lastRequest: 0,
+				status: UserStatus.OK,
+				usage: {
+					down: 0,
+					up: 0
+				}
 			});
 			return newUser;
 		} catch(e) {
+			debugger
 			return null;
 		}
 	}

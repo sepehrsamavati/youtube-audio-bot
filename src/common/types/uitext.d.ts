@@ -1,5 +1,6 @@
 export type UITextObj = {
     _lang: string;
+    _start: string;
     stats: string;
     help: string;
     random: string;

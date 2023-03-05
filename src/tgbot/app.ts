@@ -1,6 +1,9 @@
-import log from "../common/helpers/log";
-import call from "../common/helpers/tgCall";
-import UpdateHandler from "./handlers/main";
+import log from "../common/helpers/log.js";
+import call from "../common/helpers/tgCall.js";
+import HomeHandler from "./handlers/home.handler.js";
+import UpdateHandler from "./handlers/main.js";
+
+const homeHandler = new HomeHandler();
 
 let nextUpdateId = 0;
 
@@ -30,7 +33,7 @@ const getUpdates = () => {
 			{
 				if (updates.length > 0) {
 					for (var i=0; i<updates.length; ++i) {
-                        const updateHandler = new UpdateHandler();
+                        const updateHandler = new UpdateHandler(homeHandler);
 						updateHandler.handleUpdate(updates[i]);
 					}
 					var lastUpdate = updates[updates.length-1];
@@ -40,3 +43,5 @@ const getUpdates = () => {
 			}
 	});
 };
+
+startBot();

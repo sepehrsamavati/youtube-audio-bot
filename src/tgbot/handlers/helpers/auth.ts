@@ -1,6 +1,6 @@
-import UserApplication from "../../../application/user.application";
-import { ChatID } from "../../../common/types/tgBot";
-import UserRepository from "../../../infrastructure/mongo/repository/user.repository";
+import { ChatID } from "../../../common/types/tgBot.js";
+import UserApplication from "../../../application/user.application.js";
+import UserRepository from "../../../infrastructure/mongo/repository/user.repository.js";
 
 const cache: any = {};
 

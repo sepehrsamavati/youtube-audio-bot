@@ -3,6 +3,7 @@ import { UITextObj } from "../types/uitext";
 const UIText: UITextObj[] = [
     {
         _lang: "en",
+        _start: "🤟 Hi [NAME], welcome to YouTube Audio bot\n⁉ Help: /help",
         stats: "📊 Stats",
         help: "❔ Help",
         random: "🎲 Random song",

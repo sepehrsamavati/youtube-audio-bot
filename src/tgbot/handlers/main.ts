@@ -1,7 +1,10 @@
+import i18n from "./helpers/i18n.js";
 import { findUser as auth } from "./helpers/auth.js";
 import HandlerHelper from "../../common/helpers/handlerHelper.js";
-import i18n from "./helpers/i18n.js";
 import { TgMsgUpdate } from "../../common/types/tgBot.js";
+import TelegramMethodEnum from "../../common/enums/tgMethod.enum.js";
+import { UserMode } from "../../common/enums/user.enum.js";
+import HomeHandler from "./home.handler.js";
 
 class UpdateHandler {
 	async handleUpdate(update: TgMsgUpdate) {
@@ -16,17 +19,41 @@ class UpdateHandler {
 		helper.UIT = UIT;
 		helper.langCode = langCode;
 
-		if(this.#continue)
-		{
-			if(message)
-			{
-				helper.sendText(UIT.commandNotFound);
-				this.end();
+		if (this.#continue) {
+			if (message) {
+				switch (helper.user?.mode) {
+					case UserMode.Default:
+						await this.homeHandler.handler(helper);
+						break;
+				}
+
+				if (this.#continue) {
+					switch (message.text?.toLowerCase()) {
+						case "/start":
+							helper.call(TelegramMethodEnum.SendText, {
+								chat_id: helper.ID,
+								text: UIT._start,
+								// reply_markup: {
+								// 	one_time_keyboard: false,
+								// 	keyboard: [
+								// 		[{ text: UIT. }],
+								// 	],
+								// 	resize_keyboard: true
+								// }
+							});
+							this.end();
+							break;
+						default:
+							helper.sendText(UIT.commandNotFound);
+							this.end();
+					}
+				}
 			}
 		}
 	}
 
-	constructor(){
+	constructor(private homeHandler: HomeHandler) {
+		this.homeHandler = homeHandler;
 		this.helper = new HandlerHelper();
 		this.helper.end = this.end;
 	}
@@ -36,7 +63,7 @@ class UpdateHandler {
 	public helper: HandlerHelper;
 
 	end = () => {
-		if(this.#continue)
+		if (this.#continue)
 			this.#continue = false;
 		else
 			console.warn("Handler end duplicate call!");

@@ -1,6 +1,6 @@
 import OperationResult from "../common/models/operationResult.js";
-import UserRepository from "../infrastructure/mongo/repository/user.repository.js";
 import IUserApplication from "./contracts/user/application.interface.js";
+import UserRepository from "../infrastructure/mongo/repository/user.repository.js";
 
 export default class UserApplication implements IUserApplication {
     constructor(
@@ -16,7 +16,7 @@ export default class UserApplication implements IUserApplication {
     }
 
     async getByTgId(id: number): Promise<User | null> {
-        let user = await this.userRepository.findByTgId(id);
+        let user = await this.userRepository.findByTgId(id) ?? await this.userRepository.createUser(id);
         return user;
     }
 };

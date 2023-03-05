@@ -1,6 +1,6 @@
-import axios from "axios";
 import fs from "node:fs";
-import config from "../../config";
+import axios from "axios";
+import config from "../../config.js";
 
 const botUrl = config.tgbot.botUrl;
 
