@@ -1,7 +1,7 @@
-enum UserMode {
+export enum UserMode {
     Default = 1
 }
 
-enum UserStatus {
+export enum UserStatus {
     OK = 1
 }

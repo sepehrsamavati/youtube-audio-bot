@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { Video } from "../../../common/types/video";
 
 const schema = new mongoose.Schema<Video>({
     id: {

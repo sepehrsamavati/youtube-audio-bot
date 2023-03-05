@@ -1,6 +1,6 @@
-import OperationResult from "../../../common/models/operationResult";
-import { ChatID } from "../../../common/types/tgBot";
-import { QueueVideo, Video } from "../../../common/types/video";
+import OperationResult from "../../../common/models/operationResult.js";
+import { QueueVideo } from "../../../common/models/queueVideo.js";
+import { ChatID } from "../../../common/types/tgBot.js";
 
 export default interface IVideoApplication {
     queue: QueueVideo[];
@@ -8,10 +8,10 @@ export default interface IVideoApplication {
     like(videoId: string, userId: ChatID): Promise<OperationResult>;
     removeLike(videoId: string, userId: ChatID): Promise<OperationResult>;
     add(video: Video): Promise<OperationResult>;
-    startProgress(vid: string): Promise<void>;
-    getInfo(video: QueueVideo): Promise<void>;
-    download(video: QueueVideo): Promise<void>;
-    convert(video: QueueVideo): Promise<void>;
-    generateCover(video: QueueVideo): Promise<void>;
-    setMeta(video: QueueVideo): Promise<void>;
+
+    getInfo(video: QueueVideo): Promise<OperationResult>;
+    download(video: QueueVideo): Promise<OperationResult>;
+    convert(video: QueueVideo): Promise<OperationResult>;
+    generateCover(video: QueueVideo): Promise<OperationResult>;
+    setMeta(video: QueueVideo): Promise<OperationResult>;
 }

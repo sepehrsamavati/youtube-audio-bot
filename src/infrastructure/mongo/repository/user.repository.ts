@@ -3,6 +3,7 @@ import IUserRepository from "../../../application/contracts/user/repository.inte
 import { updateCache } from "../../../tgbot/handlers/helpers/auth.js";
 import UserModel from "../models/user";
 import config from "../../../config";
+import { UserMode } from "../../../common/enums/user.enum";
 
 export default class UserRepository implements IUserRepository {
 	async createUser(tgId: number): Promise<User | null> {

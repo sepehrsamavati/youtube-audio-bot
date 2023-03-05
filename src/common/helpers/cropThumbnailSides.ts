@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import sharp from "sharp";
-import OperationResult from "../models/operationResult";
+import OperationResult from "../models/operationResult.js";
 
 const hasSideColor = (pixels: Buffer, width: number, height: number) => {
     const getPixelColor = (x: number, y: number) => {
@@ -57,13 +57,13 @@ export default async (jpgFilePath: string) => new Promise<OperationResult>(async
                 }
                 else
                 {
-                    resolve(operationResult);
+                    resolve(operationResult.succeeded());
                 }
             });
         });
     }
     else
     {
-        resolve(operationResult);
+        resolve(operationResult.failed());
     }
 });

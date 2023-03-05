@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import fileExist from './fileExists';
+import fileExist from './fileExists.js';
 
 export default function getFileSizeInMegaBytes(filename: string) {
 	if(fileExist(filename))
