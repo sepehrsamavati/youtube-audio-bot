@@ -19,6 +19,10 @@ type QueueVideo = {
 
     mp4Size: number;
     mp3Size: number;
+    title: string;
+    artist: string;
+    album: string;
+    year: string;
     thumbnail: string;
     thumbSize: number;
 }

@@ -27,6 +27,7 @@ export type UITextObj = {
         convertToAudio: string;
         generateCover: string;
         upload: string;
+        setMeta: string;
     },
 
     /* Settings */

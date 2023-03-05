@@ -3,5 +3,6 @@ enum QueueVideoStep {
     DownloadVideo = 2,
     ConvertToAudio = 3,
     GenerateCover = 4,
-    Upload = 5
+    SetMeta = 5,
+    Upload = 6
 }

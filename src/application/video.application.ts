@@ -1,15 +1,16 @@
-import ytdl from "ytdl-core";
-import ffmpeg from "fluent-ffmpeg";
 import fs from 'node:fs';
 import path from 'node:path';
-import config from "../config";
 import http from 'node:https';
+import sharp from "sharp";
+import ytdl from "ytdl-core";
+import NodeID3 from "node-id3";
+import ffmpeg from "fluent-ffmpeg";
+import config from "../config";
 import OperationResult from "../common/models/operationResult";
 import { QueueVideo, Video } from "../common/types/video";
 import IVideoApplication from "./contracts/video/application.interface";
 import getFileSizeInMegaBytes from "../common/helpers/getFileSize";
 import cropThumbnailSides from "../common/helpers/cropThumbnailSides";
-import sharp from "sharp";
 
 export default class VideoApplication implements IVideoApplication {
     constructor() { }
@@ -27,6 +28,7 @@ export default class VideoApplication implements IVideoApplication {
         throw new Error("Method not implemented.");
     }
     async getInfo(video: QueueVideo): Promise<void> {
+        video.step = QueueVideoStep.GetInfo;
         const basicInfo = await ytdl.getBasicInfo(video.id);
 
         const info: any = {};
@@ -67,6 +69,7 @@ export default class VideoApplication implements IVideoApplication {
         throw new Error("Method not implemented.");
     }
     async download(video: QueueVideo): Promise<void> {
+        video.step = QueueVideoStep.DownloadVideo;
         const baseFileAddress = video.fileAddress = path.join(config.cacheDirectory, video.localId);
         const videoFileAddress = baseFileAddress + '.mp4';
 
@@ -93,6 +96,7 @@ export default class VideoApplication implements IVideoApplication {
         ytdl(video.id, { quality: "highestaudio" }).pipe(videoWriteStream);
     }
     async convert(video: QueueVideo): Promise<void> {
+        video.step = QueueVideoStep.ConvertToAudio;
         const baseFileAddress = video.fileAddress
         const audioFileAddress = baseFileAddress + '.mp3';
         const videoFileAddress = baseFileAddress + '.mp4';
@@ -115,6 +119,7 @@ export default class VideoApplication implements IVideoApplication {
         mp3File.saveToFile(audioFileAddress);
     }
     async generateCover(video: QueueVideo): Promise<void> {
+        video.step = QueueVideoStep.GenerateCover;
 		const baseFileAddress = video.fileAddress;
         const jpgFilePath = baseFileAddress+".jpg";
         
@@ -133,6 +138,31 @@ export default class VideoApplication implements IVideoApplication {
 			cropSides();
 		}).catch((err) => {
 			video.error = "Couldn't convert cover";
+		});
+    }
+    async setMeta(video: QueueVideo): Promise<void> {
+        video.step = QueueVideoStep.SetMeta;
+
+        const baseFileAddress = video.fileAddress;
+		const options: any = {
+			title: video.title,
+			artist: video.artist,
+			year: video.year,
+			APIC: baseFileAddress+".jpg"
+		};
+		if(video.album)
+		{
+			options.album = video.album;
+		}
+		NodeID3.write(options, baseFileAddress+".mp3", function(err){
+			if(err)
+			{
+				video.error = "Couldn't set cover";
+			}
+			else
+			{
+                // DONE;
+			}
 		});
     }
 };

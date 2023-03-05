@@ -1,5 +1,5 @@
 import OperationResult from "../common/models/operationResult";
-import UserRepository from "../infrastructure/mongo/repository/userRepository";
+import UserRepository from "../infrastructure/mongo/repository/user.repository";
 import IUserApplication from "./contracts/user/application.interface";
 
 export default class UserApplication implements IUserApplication {
