@@ -14,7 +14,7 @@ const config = {
 	maxThreads: parseInt(process.env.YTA_CONCURRENT_DOWNLOADS ?? "2"),
 	timeout: parseInt(process.env.YTA_STEP_TIMEOUT ?? "20"),
 	admins: (process.env.YTA_DATA_INIT_ADMINS ?? "").split(',').map(id => parseInt(id)),
-	connectionString: "",
+	connectionString: process.env.YTA_MONGODB ?? "",
 	version: "-"
 };
 

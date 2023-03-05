@@ -1,6 +1,5 @@
 import { HydratedDocument } from "mongoose";
 import IUserRepository from "../../../application/contracts/user/repository.interface";
-import { updateCache } from "../../../tgbot/handlers/helpers/auth.js";
 import UserModel from "../models/user";
 import config from "../../../config";
 import { UserMode } from "../../../common/enums/user.enum";
@@ -37,17 +36,5 @@ export default class UserRepository implements IUserRepository {
 		} catch(e) {
 			return null;
 		}
-	}
-
-	private updateCache(user: HydratedDocument<User>){
-		updateCache(user.tgId, {
-			tgId: user.tgId,
-			mode: user.mode,
-            downloads: user.downloads,
-            usage: user.usage,
-            lastRequest: user.lastRequest,
-            status: user.status,
-			promotedBy: user.promotedBy
-		});
 	}
 };
