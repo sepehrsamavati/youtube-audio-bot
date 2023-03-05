@@ -55,7 +55,7 @@ export default class VideoApplication implements IVideoApplication {
     }
 
     static Downloader = class {
-        async getInfo(video: QueueVideo): Promise<OperationResult> {
+        static async getInfo(video: QueueVideo): Promise<OperationResult> {
             const res = new OperationResult();
             video.step = QueueVideoStep.GetInfo;
             try {
@@ -99,7 +99,7 @@ export default class VideoApplication implements IVideoApplication {
                 return res.failed(video.error);
             }
         }
-        async download(video: QueueVideo): Promise<OperationResult> {
+        static async download(video: QueueVideo): Promise<OperationResult> {
             const res = new OperationResult();
             video.step = QueueVideoStep.DownloadVideo;
             return new Promise(resolve => {
@@ -131,7 +131,7 @@ export default class VideoApplication implements IVideoApplication {
                 }
             });
         }
-        async convert(video: QueueVideo): Promise<OperationResult> {
+        static async convert(video: QueueVideo): Promise<OperationResult> {
             const res = new OperationResult();
             video.step = QueueVideoStep.ConvertToAudio;
             return new Promise(resolve => {
@@ -162,7 +162,7 @@ export default class VideoApplication implements IVideoApplication {
                 }
             });
         }
-        async generateCover(video: QueueVideo): Promise<OperationResult> {
+        static async generateCover(video: QueueVideo): Promise<OperationResult> {
             const res = new OperationResult();
             video.step = QueueVideoStep.GenerateCover;
             return new Promise(resolve => {
@@ -191,7 +191,7 @@ export default class VideoApplication implements IVideoApplication {
                 }
             });
         }
-        async setMeta(video: QueueVideo): Promise<OperationResult> {
+        static async setMeta(video: QueueVideo): Promise<OperationResult> {
             const res = new OperationResult();
             video.step = QueueVideoStep.SetMeta;
             return new Promise(resolve => {
