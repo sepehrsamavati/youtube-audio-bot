@@ -1,6 +1,3 @@
-import { HydratedDocument } from "mongoose";
-import config from "../../../config.js";
-import { UserMode, UserStatus } from "../../../common/enums/user.enum.js";
 import ILikeRepository from "../../../application/contracts/like/repository.interface.js";
 import OperationResult from "../../../common/models/operationResult.js";
 import LikeModel from "../models/like.js";
