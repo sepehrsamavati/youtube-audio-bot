@@ -3,5 +3,6 @@ export enum UserMode {
 }
 
 export enum UserStatus {
-    OK = 1
+    OK = 1,
+    Owner = 10
 }
