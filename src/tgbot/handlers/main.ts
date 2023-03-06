@@ -5,6 +5,7 @@ import { TgMsgUpdate } from "../../common/types/tgBot.js";
 import TelegramMethodEnum from "../../common/enums/tgMethod.enum.js";
 import { UserMode } from "../../common/enums/user.enum.js";
 import HomeHandler from "./home.handler.js";
+import inlineKeyboards from "./helpers/inlineKeyboards.js";
 
 class UpdateHandler {
 	async handleUpdate(update: TgMsgUpdate) {
@@ -19,9 +20,9 @@ class UpdateHandler {
 		helper.UIT = UIT;
 		helper.langCode = langCode;
 
-		if (this.#continue) {
+		if(helper.user && this.#continue) {
 			if (message) {
-				switch (helper.user?.mode) {
+				switch (helper.user.mode) {
 					case UserMode.Default:
 						await this.homeHandler.handler(helper);
 						break;
@@ -33,19 +34,16 @@ class UpdateHandler {
 							helper.call(TelegramMethodEnum.SendText, {
 								chat_id: helper.ID,
 								text: UIT._start,
-								// reply_markup: {
-								// 	one_time_keyboard: false,
-								// 	keyboard: [
-								// 		[{ text: UIT. }],
-								// 	],
-								// 	resize_keyboard: true
-								// }
+								reply_markup: {
+									one_time_keyboard: false,
+									keyboard: inlineKeyboards.user(helper.user, helper.UIT),
+									resize_keyboard: true
+								}
 							});
 							this.end();
 							break;
 						default:
-							helper.sendText(UIT.commandNotFound);
-							this.end();
+							helper.sendText(UIT.commandNotFound).end();
 					}
 				}
 			}

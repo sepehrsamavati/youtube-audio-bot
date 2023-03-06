@@ -19,5 +19,6 @@ export default class HandlerHelper implements Handler {
 			chat_id: this.ID,
 			text: message
 		});
+		return this;
 	}
 };
