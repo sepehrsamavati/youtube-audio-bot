@@ -1,6 +1,7 @@
 import { QueueVideoStep } from "../enums/video.enum.js";
 import { newLocalVideoID } from "../helpers/id.js";
 import { ChatID, MessageID } from "../types/tgBot.js";
+import { UITextObj } from "../types/uitext.js";
 
 export class QueueVideo {
     public id: string;
@@ -11,7 +12,7 @@ export class QueueVideo {
     public stepMessageId: MessageID = -1;
     public step: QueueVideoStep = QueueVideoStep.GetInfo;
     public fileAddress: string = "";
-    public error?: string;
+    public error?: keyof UITextObj;
 
     public mp4Size: number = -1;
     public mp3Size: number = -1;

@@ -12,9 +12,12 @@ import getFileSizeInMegaBytes from "../common/helpers/getFileSize.js";
 import cropThumbnailSides from "../common/helpers/cropThumbnailSides.js";
 import { QueueVideo } from '../common/models/queueVideo.js';
 import { QueueVideoStep } from '../common/enums/video.enum.js';
+import VideoRepository from '../infrastructure/mongo/repository/video.repository.js';
 
 export default class VideoApplication implements IVideoApplication {
-    constructor() { }
+    constructor(
+        private videoRepository: VideoRepository
+    ) {}
 
     queue: QueueVideo[] = [];
 
@@ -55,6 +58,22 @@ export default class VideoApplication implements IVideoApplication {
     }
 
     static Downloader = class {
+        static validateVideoId(idOrUrl: string) {
+            try
+            {
+                if(ytdl.validateURL(idOrUrl))
+                    return ytdl.getVideoID(idOrUrl);
+                else if(ytdl.validateID(idOrUrl))
+                    return idOrUrl;
+                else
+                    return null;
+            } catch (e)
+            {
+                if(e instanceof Error)
+                    console.error(e.message)
+                return null;
+            }
+        }
         static async getInfo(video: QueueVideo): Promise<OperationResult> {
             const res = new OperationResult();
             video.step = QueueVideoStep.GetInfo;
@@ -144,13 +163,13 @@ export default class VideoApplication implements IVideoApplication {
                         .withAudioCodec('libmp3lame')
                         .toFormat('mp3')
                         .on('error', function (err) {
-                            video.error = "Error in converting";
+                            video.error = "convertError";
                             console.log('An error occurred: ' + err.message);
                         })
                         .on('end', function () {
                             video.mp3Size = getFileSizeInMegaBytes(audioFileAddress);
                             if (video.mp3Size > 50) {
-                                video.error = "File size is over 50 MB";
+                                video.error = "fileSizeOver50";
                                 resolve(res.failed(video.error));
                             } else {
                                 resolve(res.succeeded());
@@ -172,7 +191,7 @@ export default class VideoApplication implements IVideoApplication {
     
                     const cropSides = async () => {
                         const result = await cropThumbnailSides(jpgFilePath);
-                        return result;
+                        resolve(result);
                     };
     
                     let biggerSide = "width";
@@ -183,7 +202,7 @@ export default class VideoApplication implements IVideoApplication {
                         biggerSide = newFileInfo.height > newFileInfo.width ? "height" : "width";
                         cropSides();
                     }).catch((err) => {
-                        video.error = "Couldn't convert cover";
+                        video.error = "coverConvertError";
                         resolve(res.failed(video.error));
                     });
                 } catch {
@@ -208,7 +227,7 @@ export default class VideoApplication implements IVideoApplication {
                     }
                     NodeID3.write(options, baseFileAddress + ".mp3", function (err) {
                         if (err) {
-                            video.error = "Couldn't set cover";
+                            video.error = "setCoverError";
                             resolve(res.failed(video.error));
                         }
                         else

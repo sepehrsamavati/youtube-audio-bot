@@ -24,22 +24,28 @@ const UIText: UITextObj[] = [
         failed: "❌",
         noAccess: "❌ You have no access!",
         commandNotFound: "❌ Command not found!",
+        invalidVideo: "❌ Video is not valid!",
 
-        downloadSteps: {
-            getInfo: "ℹ️ [1/6] Getting info",
-            downloadVideo: "📥 [2/6] Downloading MP4",
-            convertToAudio: "🎙 [3/6] Converting to MP3",
-            generateCover: "📸 [4/6] Generating cover",
-            setMeta: "📤 [5/6] Setting meta data",
-            upload: "📤 [7/6] Uploading to Telegram"
-        },
+        getInfo: "ℹ️ [1/6] Getting info",
+        downloadVideo: "📥 [2/6] Downloading MP4",
+        convertToAudio: "🎙 [3/6] Converting to MP3",
+        generateCover: "📸 [4/6] Generating cover",
+        setMeta: "📤 [5/6] Setting meta data",
+        upload: "📤 [7/6] Uploading to Telegram",
 
         /* Settings */
         settings: "⚙️ Settings",
         startText: "📃 Start text",
         helpText: "❔ Help text",
         publicMode: "Public mode",
-        shareAvailable: "Share"
+        shareAvailable: "Share",
+
+        convertError: "Error in converting",
+        fileSizeOver50: "File size is over 50 MB",
+        coverConvertError: "Couldn't convert cover",
+        coverCropError: "Couldn't crop cover",
+        croppedCoverSaveError: "Error while saving cropped cover",
+        setCoverError: "Couldn't set cover",
     }
 ];
 

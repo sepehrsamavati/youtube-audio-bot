@@ -10,7 +10,7 @@ export default class TelegramBot {
 	#nextUpdateId = 0;
 
 	constructor(services: YTAServices) {
-		this.homeHandler = new HomeHandler(services.videoApplication);
+		this.homeHandler = new HomeHandler(services.videoApplication, services.userApplication);
 		this.#startBot();
 	}
 

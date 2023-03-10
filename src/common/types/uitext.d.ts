@@ -21,15 +21,15 @@ export type UITextObj = {
     failed: string;
     noAccess: string;
     commandNotFound: string;
+    invalidVideo: string;
 
-    downloadSteps: {
-        getInfo: string;
-        downloadVideo: string;
-        convertToAudio: string;
-        generateCover: string;
-        upload: string;
-        setMeta: string;
-    },
+    /* Download Steps */
+    getInfo: string;
+    downloadVideo: string;
+    convertToAudio: string;
+    generateCover: string;
+    upload: string;
+    setMeta: string;
 
     /* Settings */
     settings: string;
@@ -37,4 +37,12 @@ export type UITextObj = {
     helpText: string;
     publicMode: string;
     shareAvailable: string;
+
+    /* Errors */
+    convertError: string;
+    fileSizeOver50: string;
+    coverConvertError: string;
+    coverCropError: string;
+    croppedCoverSaveError: string;
+    setCoverError: string;
 };

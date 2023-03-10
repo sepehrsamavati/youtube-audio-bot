@@ -48,12 +48,12 @@ export default async (jpgFilePath: string) => new Promise<OperationResult>(async
         .toBuffer(function(err, buffer) {
             if(err)
             {
-                resolve(operationResult.failed("Couldn't crop cover"));
+                resolve(operationResult.failed("coverCropError"));
             }
             fs.writeFile(jpgFilePath, buffer, function(err) {
                 if(err)
                 {
-                    resolve(operationResult.failed("Error while saving cropped cover"));
+                    resolve(operationResult.failed("croppedCoverSaveError"));
                 }
                 else
                 {
