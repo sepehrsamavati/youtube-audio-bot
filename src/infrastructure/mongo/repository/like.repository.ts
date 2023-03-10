@@ -20,7 +20,7 @@ export default class LikeRepository implements ILikeRepository {
 		}
 		return result;
 	}
-	async removeLiked(vid: string, uid: number): Promise<OperationResult> {
+	async removeLike(vid: string, uid: number): Promise<OperationResult> {
 		const result = new OperationResult();
 		try {
 			await LikeModel.deleteOne({
