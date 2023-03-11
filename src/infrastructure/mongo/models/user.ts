@@ -18,6 +18,10 @@ const schema = new mongoose.Schema<User>({
         type: Number,
         required: true
     },
+    promotedBy: {
+        type: Number,
+        required: false
+    },
     usage: {
         up: {
             type: Number,

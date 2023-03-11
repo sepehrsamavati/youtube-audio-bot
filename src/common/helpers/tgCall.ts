@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import axios from "axios";
 import config from "../../config.js";
+import FormData from "form-data";
 
 const botUrl = config.tgbot.botUrl;
 

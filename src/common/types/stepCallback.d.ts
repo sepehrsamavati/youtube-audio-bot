@@ -1,0 +1,1 @@
+type StepCallback = (queueVideo: QueueVideo, stepSuccess: boolean) => void;

@@ -1,6 +1,7 @@
 enum TelegramMethodEnum {
-    SendText = "SendMessage",
-    SendMessage = "SendMessage",
+    SendText = "sendMessage",
+    SendMessage = "sendMessage",
+    SendAudio = "sendAudio",
 };
 
 export default TelegramMethodEnum;

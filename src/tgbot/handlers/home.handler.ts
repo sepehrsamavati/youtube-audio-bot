@@ -1,7 +1,10 @@
+import fs from "node:fs";
 import UserApplication from "../../application/user.application.js";
 import VideoApplication from "../../application/video.application.js";
+import { QueueVideoStep } from "../../common/enums/video.enum.js";
 import HandlerHelper from "../../common/helpers/handlerHelper.js";
 import HandlerBase from "../../common/models/handlerBase.js";
+import TelegramMethodEnum from "../../common/enums/tgMethod.enum.js";
 import { QueueVideo } from "../../common/models/queueVideo.js";
 
 export default class HomeHandler implements HandlerBase {
@@ -20,22 +23,17 @@ export default class HomeHandler implements HandlerBase {
                 if(!videoId)
                     return sendText(UIT.invalidVideo).end();
 
-                const queueVideo = new QueueVideo(videoId);
-
-                const info = await VideoApplication.Downloader.getInfo(queueVideo);
-                if(!info.ok) return sendText(info.message).end();
-
-                const download = await VideoApplication.Downloader.download(queueVideo);
-                if(!download.ok) return sendText(info.message).end();
-
-                const convert = await VideoApplication.Downloader.convert(queueVideo);
-                if(!convert.ok) return sendText(info.message).end();
-
-                const genCover = await VideoApplication.Downloader.generateCover(queueVideo);
-                if(!genCover.ok) return sendText(info.message).end();
-
-                const setMeta = await VideoApplication.Downloader.setMeta(queueVideo);
-                if(!setMeta.ok) return sendText(info.message).end();
+                this.videoApplication.startDownload(videoId, (queueVideo: QueueVideo, success: boolean) => {
+                    console.log(QueueVideoStep[queueVideo.step], success)
+                    if(queueVideo.step === QueueVideoStep.SetMeta && success) {
+                        call(TelegramMethodEnum.SendAudio, {
+                            chat_id: ID,
+                            file: queueVideo.fileAddress+".mp3"
+                        }, (data) => {
+                            debugger
+                        });
+                    }
+                });
 
             } else {
                 sendText(UIT[canSubmit.message]).end();

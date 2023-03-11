@@ -17,7 +17,7 @@ import VideoRepository from '../infrastructure/mongo/repository/video.repository
 export default class VideoApplication implements IVideoApplication {
     constructor(
         private videoRepository: VideoRepository
-    ) {}
+    ) { }
 
     queue: QueueVideo[] = [];
 
@@ -34,42 +34,71 @@ export default class VideoApplication implements IVideoApplication {
         throw new Error("Method not implemented.");
     }
 
-    addToQueue(video: QueueVideo): boolean {
-        if(this.getFromQueue(video.id)) {
+    #addToQueue(video: QueueVideo): boolean {
+        if (this.#getFromQueue(video.id)) {
             return false;
         }
         this.queue.push(video);
         return true;
     }
 
-    getFromQueue(id: string): QueueVideo | undefined {
+    #getFromQueue(id: string): QueueVideo | undefined {
         return this.queue.find(qv => qv.id === id);
     }
 
-    removeFromQueue(id: string): boolean {
-        const queueVideo = this.getFromQueue(id);
-        if(!queueVideo) return false;
+    #removeFromQueue(id: string): boolean {
+        const queueVideo = this.#getFromQueue(id);
+        if (!queueVideo) return false;
 
         const index = this.queue.indexOf(queueVideo);
-        if(index === -1) return false;
+        if (index === -1) return false;
 
         this.queue.splice(index, 1);
         return true;
     }
+    async startDownload(videoId: string, stepCallback: StepCallback) {
+        const queueVideo = new QueueVideo(videoId);
+        this.#addToQueue(queueVideo);
+
+        const taskEnd = () => {
+            this.#removeFromQueue(queueVideo.id);
+        }, stepFinish = (success: boolean) => {
+            stepCallback({...queueVideo}, success);
+        };
+
+        const info = await VideoApplication.Downloader.getInfo(queueVideo);
+        stepFinish(info.ok);
+        if (!info.ok) return taskEnd();
+
+        const download = await VideoApplication.Downloader.download(queueVideo);
+        stepFinish(download.ok);
+        if (!download.ok) return taskEnd();
+
+        const convert = await VideoApplication.Downloader.convert(queueVideo);
+        stepFinish(convert.ok);
+        if (!convert.ok) return taskEnd();
+
+        const genCover = await VideoApplication.Downloader.generateCover(queueVideo);
+        stepFinish(genCover.ok);
+        if (!genCover.ok) return taskEnd();
+
+        const setMeta = await VideoApplication.Downloader.setMeta(queueVideo);
+        stepFinish(setMeta.ok);
+
+        taskEnd();
+    }
 
     static Downloader = class {
         static validateVideoId(idOrUrl: string) {
-            try
-            {
-                if(ytdl.validateURL(idOrUrl))
+            try {
+                if (ytdl.validateURL(idOrUrl))
                     return ytdl.getVideoID(idOrUrl);
-                else if(ytdl.validateID(idOrUrl))
+                else if (ytdl.validateID(idOrUrl))
                     return idOrUrl;
                 else
                     return null;
-            } catch (e)
-            {
-                if(e instanceof Error)
+            } catch (e) {
+                if (e instanceof Error)
                     console.error(e.message)
                 return null;
             }
@@ -80,11 +109,11 @@ export default class VideoApplication implements IVideoApplication {
             try {
                 const basicInfo = await ytdl.getBasicInfo(video.id);
                 const { videoDetails } = basicInfo;
-    
+
                 if (videoDetails.author.name.endsWith(" - Topic") && videoDetails.author.name.length > 8) /* remove ' - Topic' */ {
                     videoDetails.author.name = videoDetails.author.name.slice(0, -8);
                 }
-    
+
                 const videoTitleSplit = videoDetails.title.split(" - ");
                 if (videoTitleSplit.length === 2) {
                     video.title = videoTitleSplit[1];
@@ -98,8 +127,8 @@ export default class VideoApplication implements IVideoApplication {
                         video.title = video.title.slice(video.artist.length + 3);
                     }
                 }
-    
-    
+
+
                 if (videoDetails.publishDate) {
                     video.year = videoDetails.publishDate.split("-").shift() ?? "0";
                 }
@@ -110,9 +139,9 @@ export default class VideoApplication implements IVideoApplication {
                     video.artist = videoDetails.media.artist;
                     //info.album = videoDetails.media.album;
                 }
-    
+
                 video.thumbnail = videoDetails.thumbnails.pop()?.url ?? "";
-    
+
                 return res.succeeded();
             } catch {
                 return res.failed(video.error);
@@ -125,25 +154,25 @@ export default class VideoApplication implements IVideoApplication {
                 try {
                     const baseFileAddress = video.fileAddress = path.join(config.cacheDirectory, video.localId);
                     const videoFileAddress = baseFileAddress + '.mp4';
-    
+
                     const videoWriteStream = fs.createWriteStream(videoFileAddress);
-    
+
                     videoWriteStream.on("finish", async function () {
                         video.mp4Size = getFileSizeInMegaBytes(videoFileAddress);
-    
+
                         http.get(video.thumbnail, function (thumbnailStream) {
                             const thumbnailFileAddress = baseFileAddress + (video.thumbnail.endsWith(".jpg") ? ".jpg" : ".webp");
                             const thumbnailWriteStream = fs.createWriteStream(thumbnailFileAddress);
                             thumbnailStream.pipe(thumbnailWriteStream)
                                 .on("finish", async function () {
-    
+
                                     video.thumbSize = getFileSizeInMegaBytes(thumbnailFileAddress);
-    
+
                                     resolve(res.succeeded());
                                 });
                         });
                     });
-    
+
                     ytdl(video.id, { quality: "highestaudio" }).pipe(videoWriteStream);
                 } catch {
                     resolve(res.failed(video.error));
@@ -188,12 +217,12 @@ export default class VideoApplication implements IVideoApplication {
                 try {
                     const baseFileAddress = video.fileAddress;
                     const jpgFilePath = baseFileAddress + ".jpg";
-    
+
                     const cropSides = async () => {
                         const result = await cropThumbnailSides(jpgFilePath);
                         resolve(result);
                     };
-    
+
                     let biggerSide = "width";
                     if (video.thumbnail.endsWith(".jpg")) {
                         cropSides();
