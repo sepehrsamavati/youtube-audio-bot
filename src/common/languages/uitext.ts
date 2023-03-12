@@ -35,7 +35,7 @@ const UIText: UITextObj[] = [
         convertToAudio: "🎙 [3/6] Converting to MP3",
         generateCover: "📸 [4/6] Generating cover",
         setMeta: "📤 [5/6] Setting meta data",
-        upload: "📤 [7/6] Uploading to Telegram",
+        upload: "📤 [6/6] Uploading to Telegram",
 
         /* Settings */
         settings: "⚙️ Settings",
@@ -50,6 +50,7 @@ const UIText: UITextObj[] = [
         coverCropError: "Couldn't crop cover",
         croppedCoverSaveError: "Error while saving cropped cover",
         setCoverError: "Couldn't set cover",
+        uploadError: "Couldn't upload audio!"
     }
 ];
 

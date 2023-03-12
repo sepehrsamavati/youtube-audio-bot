@@ -49,4 +49,5 @@ export type UITextObj = {
     coverCropError: string;
     croppedCoverSaveError: string;
     setCoverError: string;
+    uploadError: string;
 };

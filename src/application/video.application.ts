@@ -86,33 +86,49 @@ export default class VideoApplication implements IVideoApplication {
         this.queue.splice(index, 1);
         return true;
     }
-    async startDownload(videoId: string, stepCallback: StepCallback) {
+    async startDownload(videoId: string, options: { minDelay: 500, stepCallback: StepCallback }) {
         const queueVideo = new QueueVideo(videoId);
         this.#addToQueue(queueVideo);
 
         const taskEnd = () => {
             this.#removeFromQueue(queueVideo.id);
         }, stepFinish = (success: boolean) => {
-            stepCallback({ ...queueVideo }, success);
-        };
+            queueVideo.lastUpdate = new Date();
+            options.stepCallback({ ...queueVideo }, success);
+        }, stepSleep = () => new Promise<void>(resolve => {
+            const delay = options.minDelay - (new Date().getTime() - queueVideo.lastUpdate.getTime());
+            console.log(delay)
+            if(delay > 10) {
+                setTimeout(()=>{
+                    resolve();
+                }, delay).unref();
+            } else {
+                resolve();
+            }
+        });
 
         const info = await VideoApplication.Downloader.getInfo(queueVideo);
+        await stepSleep();
         stepFinish(info.ok);
         if (!info.ok) return taskEnd();
 
         const download = await VideoApplication.Downloader.download(queueVideo);
+        await stepSleep();
         stepFinish(download.ok);
         if (!download.ok) return taskEnd();
 
         const convert = await VideoApplication.Downloader.convert(queueVideo);
+        await stepSleep();
         stepFinish(convert.ok);
         if (!convert.ok) return taskEnd();
 
         const genCover = await VideoApplication.Downloader.generateCover(queueVideo);
+        await stepSleep();
         stepFinish(genCover.ok);
         if (!genCover.ok) return taskEnd();
 
         const setMeta = await VideoApplication.Downloader.setMeta(queueVideo);
+        await stepSleep();
         stepFinish(setMeta.ok);
 
         taskEnd();
