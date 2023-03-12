@@ -13,25 +13,44 @@ import cropThumbnailSides from "../common/helpers/cropThumbnailSides.js";
 import { QueueVideo } from '../common/models/queueVideo.js';
 import { QueueVideoStep } from '../common/enums/video.enum.js';
 import VideoRepository from '../infrastructure/mongo/repository/video.repository.js';
+import LikeRepository from '../infrastructure/mongo/repository/like.repository.js';
+import ViewRepository from '../infrastructure/mongo/repository/view.repository.js';
 
 export default class VideoApplication implements IVideoApplication {
     constructor(
-        private videoRepository: VideoRepository
+        private videoRepository: VideoRepository,
+        private likeRepository: LikeRepository,
+        private viewRepository: ViewRepository,
     ) { }
 
     queue: QueueVideo[] = [];
 
-    get(videoId: string, userId: number): Promise<Video | null> {
-        throw new Error("Method not implemented.");
+    async get(videoId: string, userId: number): Promise<Video | null> {
+        const video = await this.videoRepository.findById(videoId);
+        if(video && !await this.viewRepository.isViewed(videoId, userId))
+            await this.viewRepository.add(videoId, userId);
+        return video;
     }
-    like(videoId: string, userId: number): Promise<OperationResult> {
-        throw new Error("Method not implemented.");
+    async like(videoId: string, userId: number): Promise<OperationResult> {
+        let operationResult = new OperationResult();
+        if(await this.likeRepository.isLiked(videoId, userId)) {
+            operationResult.failed("alreadyLiked");
+        } else {
+            operationResult = await this.likeRepository.like(videoId, userId);
+        }
+        return operationResult;
     }
-    removeLike(videoId: string, userId: number): Promise<OperationResult> {
-        throw new Error("Method not implemented.");
+    async removeLike(videoId: string, userId: number): Promise<OperationResult> {
+        let operationResult = new OperationResult();
+        if(await this.likeRepository.isLiked(videoId, userId)) {
+            operationResult = await this.likeRepository.removeLike(videoId, userId);
+        } else {
+            operationResult.failed("isNotLiked");
+        }
+        return operationResult;
     }
     add(video: Video): Promise<OperationResult> {
-        throw new Error("Method not implemented.");
+        return this.videoRepository.create(video);
     }
 
     #addToQueue(video: QueueVideo): boolean {

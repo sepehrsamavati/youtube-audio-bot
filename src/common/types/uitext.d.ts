@@ -23,6 +23,9 @@ export type UITextObj = {
     commandNotFound: string;
     invalidVideo: string;
 
+    alreadyLiked: string;
+    isNotLiked: string;
+
     /* Download Steps */
     getInfo: string;
     downloadVideo: string;
