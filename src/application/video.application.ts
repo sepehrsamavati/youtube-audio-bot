@@ -25,11 +25,25 @@ export default class VideoApplication implements IVideoApplication {
 
     queue: QueueVideo[] = [];
 
-    async get(videoId: string, userId: number): Promise<Video | null> {
-        const video = await this.videoRepository.findById(videoId);
-        if(video && !await this.viewRepository.isViewed(videoId, userId))
-            await this.viewRepository.add(videoId, userId);
-        return video;
+    get(videoId: string): Promise<Video | null> {
+        return this.videoRepository.findById(videoId);
+    }
+    async getAudio(videoId: string, userId: number): Promise<AudioViewModel | null> {
+        const video = await this.get(videoId);
+        if(video)
+        {
+            if(!await this.viewRepository.isViewed(videoId, userId))
+                await this.viewRepository.add(videoId, userId);
+
+            return {
+                vid: video.id,
+                title: video.title,
+                tgFileId: video.tgFileId,
+                isLiked: await this.likeRepository.isLiked(video.id, userId)
+            };
+        }
+        else
+            return null;
     }
     async like(videoId: string, userId: number): Promise<OperationResult> {
         let operationResult = new OperationResult();

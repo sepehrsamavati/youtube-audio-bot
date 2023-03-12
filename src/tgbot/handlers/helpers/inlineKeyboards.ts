@@ -19,5 +19,16 @@ export default {
             [{ text: UIT.top5 }, { text: UIT.mostLikes }],
             [{ text: UIT.help }]
         ];
+    },
+    audio: {
+        normal: (audio: AudioViewModel, UIT: UITextObj) => {
+            const likeQuery = `like${audio.vid}`;
+            return [
+                [
+                    { text: audio.isLiked ? "💚" : "♥", callback_data: likeQuery },
+                    { text: UIT.share, switch_inline_query: `getVid${audio.vid}` }
+                ]
+            ];
+        }
     }
 };

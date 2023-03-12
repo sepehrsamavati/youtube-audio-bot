@@ -26,6 +26,7 @@ const UIText: UITextObj[] = [
         commandNotFound: "❌ Command not found!",
         invalidVideo: "❌ Video is not valid!",
 
+        share: "Share",
         alreadyLiked: "❌ Already liked!",
         isNotLiked: "❌ Unable to remove like!",
 
