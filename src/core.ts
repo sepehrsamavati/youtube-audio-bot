@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import config from './config.js';
-import './infrastructure/mongo/connection.js';
+import * as database from './infrastructure/mongo/connection.js';
 import VideoApplication from './application/video.application.js';
 import TelegramBot from './tgbot/app.js';
 import YTAServices from './common/interfaces/yta.interface.js';
@@ -10,6 +10,8 @@ import VideoRepository from './infrastructure/mongo/repository/video.repository.
 
 if(!fs.existsSync(config.cacheDirectory))
     fs.mkdirSync(config.cacheDirectory, { recursive: true });
+
+database.connect();
 
 class Services implements YTAServices {
     videoApplication: VideoApplication;
@@ -25,5 +27,10 @@ class Services implements YTAServices {
 }
 
 const services = new Services();
-    
+
 const tgBot = new TelegramBot(services);
+
+process.once("SIGINT", async () => {
+    await database.closeConnection();
+    process.exit();
+});
