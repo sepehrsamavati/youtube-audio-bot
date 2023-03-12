@@ -1,5 +1,6 @@
-import { UserStatus } from "../../../common/enums/user.enum.js";
 import { UITextObj } from "../../../common/types/uitext.js";
+import { User } from "../../../common/types/user.js";
+import config from "../../../config.js";
 
 export default {
     admin: (admin: User, UIT: UITextObj) => {
@@ -7,7 +8,7 @@ export default {
             [{ text: UIT.stats }, { text: UIT.settings }],
             [{ text: UIT.vidStats }]
         ];
-        if (admin && admin.status === UserStatus.Owner) {
+        if (admin && config.owners.includes(admin.tgId)) {
             keyboard.splice(3, 0, [{ text: UIT.addAdmin }, { text: UIT.remAdmin }]);
         }
         return keyboard;

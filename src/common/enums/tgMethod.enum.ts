@@ -1,4 +1,4 @@
-enum TelegramMethodEnum {
+export enum TelegramMethodEnum {
     SendText = "sendMessage",
     SendMessage = "sendMessage",
     SendAudio = "sendAudio",
@@ -6,5 +6,3 @@ enum TelegramMethodEnum {
     EditMessageText = "editMessageText",
     EditText = "editMessageText",
 };
-
-export default TelegramMethodEnum;

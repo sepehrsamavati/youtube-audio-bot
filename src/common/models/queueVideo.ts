@@ -1,7 +1,7 @@
 import { QueueVideoStep } from "../enums/video.enum.js";
 import { newLocalVideoID } from "../helpers/id.js";
-import { ChatID, MessageID } from "../types/tgBot.js";
 import { UITextObj } from "../types/uitext.js";
+import { User } from "../types/user.js";
 
 export class QueueVideo {
     public id: string;

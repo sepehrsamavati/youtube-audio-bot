@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { User } from "../../../common/types/user.js";
 
 const schema = new mongoose.Schema<User>({
 	tgId: {
@@ -11,6 +12,10 @@ const schema = new mongoose.Schema<User>({
 		required: true
 	},
     status: {
+        type: Number,
+        required: true
+    },
+    type: {
         type: Number,
         required: true
     },

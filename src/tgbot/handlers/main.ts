@@ -2,7 +2,7 @@ import i18n from "./helpers/i18n.js";
 import { findUser as auth } from "./helpers/auth.js";
 import HandlerHelper from "../../common/helpers/handlerHelper.js";
 import { TgMsgUpdate } from "../../common/types/tgBot.js";
-import TelegramMethodEnum from "../../common/enums/tgMethod.enum.js";
+import { TelegramMethodEnum } from "../../common/enums/tgMethod.enum.js";
 import { UserMode } from "../../common/enums/user.enum.js";
 import HomeHandler from "./home.handler.js";
 import inlineKeyboards from "./helpers/inlineKeyboards.js";

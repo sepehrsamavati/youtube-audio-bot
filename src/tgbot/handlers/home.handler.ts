@@ -3,7 +3,7 @@ import VideoApplication from "../../application/video.application.js";
 import { QueueVideoStep } from "../../common/enums/video.enum.js";
 import HandlerHelper from "../../common/helpers/handlerHelper.js";
 import HandlerBase from "../../common/models/handlerBase.js";
-import TelegramMethodEnum from "../../common/enums/tgMethod.enum.js";
+import { TelegramMethodEnum } from "../../common/enums/tgMethod.enum.js";
 import { QueueVideo } from "../../common/models/queueVideo.js";
 import { ChatID, MessageID, TgMsgUpdate } from "../../common/types/tgBot.js";
 

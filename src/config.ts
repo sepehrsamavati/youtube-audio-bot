@@ -13,7 +13,7 @@ const config = {
 	ffmpegExe: process.env.YTA_FFMPEG_EXE ?? "",
 	maxThreads: parseInt(process.env.YTA_CONCURRENT_DOWNLOADS ?? "2"),
 	timeout: parseInt(process.env.YTA_STEP_TIMEOUT ?? "20"),
-	admins: (process.env.YTA_TG_OWNERS ?? "").split(',').map(id => parseInt(id)),
+	owners: (process.env.YTA_TG_OWNERS ?? "").split(',').map(id => parseInt(id)),
 	connectionString: process.env.YTA_MONGODB ?? "",
 	version: "-"
 };

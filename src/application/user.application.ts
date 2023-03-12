@@ -1,6 +1,7 @@
 import OperationResult from "../common/models/operationResult.js";
 import IUserApplication from "./contracts/user/application.interface.js";
 import UserRepository from "../infrastructure/mongo/repository/user.repository.js";
+import { User } from "../common/types/user.js";
 
 export default class UserApplication implements IUserApplication {
     constructor(
