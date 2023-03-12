@@ -9,6 +9,7 @@ import UserRepository from './infrastructure/mongo/repository/user.repository.js
 import VideoRepository from './infrastructure/mongo/repository/video.repository.js';
 import LikeRepository from './infrastructure/mongo/repository/like.repository.js';
 import ViewRepository from './infrastructure/mongo/repository/view.repository.js';
+import clearDirectory from './common/helpers/clearDirectory.js';
 
 if (!fs.existsSync(config.cacheDirectory))
     fs.mkdirSync(config.cacheDirectory, { recursive: true });
@@ -30,6 +31,8 @@ class Services implements YTAServices {
         this.userApplication = new UserApplication(userRepository);
     }
 }
+
+clearDirectory(config.cacheDirectory);
 
 const services = new Services();
 

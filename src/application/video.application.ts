@@ -15,6 +15,7 @@ import { QueueVideoStep } from '../common/enums/video.enum.js';
 import VideoRepository from '../infrastructure/mongo/repository/video.repository.js';
 import LikeRepository from '../infrastructure/mongo/repository/like.repository.js';
 import ViewRepository from '../infrastructure/mongo/repository/view.repository.js';
+import deleteFile from '../common/helpers/deleteFile.js';
 
 export default class VideoApplication implements IVideoApplication {
     constructor(
@@ -25,14 +26,10 @@ export default class VideoApplication implements IVideoApplication {
 
     queue: QueueVideo[] = [];
 
-    get(videoId: string): Promise<Video | null> {
-        return this.videoRepository.findById(videoId);
-    }
     async getAudio(videoId: string, userId: number): Promise<AudioViewModel | null> {
-        const video = await this.get(videoId);
-        if(video)
-        {
-            if(!await this.viewRepository.isViewed(videoId, userId))
+        const video = await this.videoRepository.findById(videoId);
+        if (video) {
+            if (!await this.viewRepository.isViewed(videoId, userId))
                 await this.viewRepository.add(videoId, userId);
 
             return {
@@ -47,7 +44,7 @@ export default class VideoApplication implements IVideoApplication {
     }
     async like(videoId: string, userId: number): Promise<OperationResult> {
         let operationResult = new OperationResult();
-        if(await this.likeRepository.isLiked(videoId, userId)) {
+        if (await this.likeRepository.isLiked(videoId, userId)) {
             operationResult.failed("alreadyLiked");
         } else {
             operationResult = await this.likeRepository.like(videoId, userId);
@@ -56,7 +53,7 @@ export default class VideoApplication implements IVideoApplication {
     }
     async removeLike(videoId: string, userId: number): Promise<OperationResult> {
         let operationResult = new OperationResult();
-        if(await this.likeRepository.isLiked(videoId, userId)) {
+        if (await this.likeRepository.isLiked(videoId, userId)) {
             operationResult = await this.likeRepository.removeLike(videoId, userId);
         } else {
             operationResult.failed("isNotLiked");
@@ -96,7 +93,7 @@ export default class VideoApplication implements IVideoApplication {
         const taskEnd = () => {
             this.#removeFromQueue(queueVideo.id);
         }, stepFinish = (success: boolean) => {
-            stepCallback({...queueVideo}, success);
+            stepCallback({ ...queueVideo }, success);
         };
 
         const info = await VideoApplication.Downloader.getInfo(queueVideo);
@@ -260,7 +257,9 @@ export default class VideoApplication implements IVideoApplication {
                     if (video.thumbnail.endsWith(".jpg")) {
                         cropSides();
                     }
-                    sharp(baseFileAddress + ".webp").toFile(jpgFilePath).then(async (newFileInfo) => { /* convert webp to jpg */
+
+                    /* convert webp to jpg */
+                    sharp(baseFileAddress + ".webp").toFile(jpgFilePath).then(async (newFileInfo) => {
                         biggerSide = newFileInfo.height > newFileInfo.width ? "height" : "width";
                         cropSides();
                     }).catch((err) => {
@@ -299,6 +298,10 @@ export default class VideoApplication implements IVideoApplication {
                     resolve(res.failed(video.error));
                 }
             });
+        }
+        static flush(video: QueueVideo): void {
+            ["webp", "jpg", "mp4", "mp3"]
+                .forEach(ext => deleteFile(`${video.fileAddress}.${ext}`));
         }
     }
 };

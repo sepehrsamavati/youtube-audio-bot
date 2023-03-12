@@ -7,9 +7,7 @@ export class QueueVideo {
     public id: string;
     public localId: string;
     public fromUser: User['tgId'] = -1;
-    public userMessageId: ChatID = -1;
     public lastUpdate: Date = new Date();
-    public stepMessageId: MessageID = -1;
     public step: QueueVideoStep = QueueVideoStep.GetInfo;
     public fileAddress: string = "";
     public error?: keyof UITextObj;

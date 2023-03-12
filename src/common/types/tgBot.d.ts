@@ -11,6 +11,7 @@ export type TgMsgUpdate = {
         text?: string;
         chat: Chat;
         from: Chat;
+        message_id: MessageID;
         contact?: {
             user_id: ChatID;
             phone_number: string;
