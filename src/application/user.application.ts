@@ -20,6 +20,10 @@ export default class UserApplication implements IUserApplication {
         return operationResult.succeeded();
     }
 
+    getListOfAdmins(): Promise<number[]> {
+        return this.userRepository.getAdmins();
+    }
+
     async getByTgId(id: number): Promise<User | null> {
         let user = await this.userRepository.findByTgId(id) ?? await this.userRepository.createUser(id);
         return user;

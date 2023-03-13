@@ -21,6 +21,25 @@ export default {
             [{ text: UIT.help }]
         ];
     },
+    return: (UIT: UITextObj) => {
+        return {
+            keyboard: [[{ text: UIT.return }]],
+            resize_keyboard: true,
+            one_time_keyboard: true
+        };
+    },
+    cancel: (UIT: UITextObj) => {
+        return {
+            keyboard: [[{ text: UIT.cancel }]],
+            resize_keyboard: true,
+            one_time_keyboard: true
+        };
+    },
+    create: (rows: string[][]) => {
+        return rows.map(row => row.map(button => {
+            return { text: button };
+        }));
+    },
     audio: {
         normal: (audio: AudioViewModel | string, UIT: UITextObj) => {
             let id = "", isLiked = false;

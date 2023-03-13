@@ -23,6 +23,10 @@ export type UITextObj = {
     commandNotFound: string;
     invalidVideo: string;
 
+    currentAdmins: string;
+    sendUserIdToAddAdmin: string;
+    selectItemToRemove: string;
+
     share: string;
     alreadyLiked: string;
     isNotLiked: string;

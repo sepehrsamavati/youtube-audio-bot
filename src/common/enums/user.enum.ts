@@ -1,5 +1,7 @@
 export enum UserMode {
-    Default = 1
+    Default = 1,
+    AddAdmin = 20,
+    RemoveAdmin = 21
 }
 
 export enum UserStatus {

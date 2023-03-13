@@ -48,4 +48,12 @@ export default class UserRepository implements IUserRepository {
 			return null;
 		}
 	}
+	async getAdmins(): Promise<number[]> {
+		try {
+			const admins = await UserModel.find({ type: UserType.Admin });
+			return admins.map(admin => admin.tgId);
+		} catch {
+			return [];
+		}
+	}
 };
