@@ -6,11 +6,12 @@ import HandlerBase from "../../common/models/handlerBase.js";
 import { TelegramMethodEnum } from "../../common/enums/tgMethod.enum.js";
 import { QueueVideo } from "../../common/models/queueVideo.js";
 import { ChatID, MessageID, TgMsgUpdate } from "../../common/types/tgBot.js";
+import inlineKeyboards from "./helpers/inlineKeyboards.js";
 
 export default class HomeHandler implements HandlerBase {
     constructor(
         private videoApplication: VideoApplication,
-        private userApplication: UserApplication
+        public userApplication: UserApplication
     ) { }
     public async handler(handlerData: HandlerHelper) {
         const { update, sendText, UIT, user, call, ID, end } = handlerData;
@@ -35,15 +36,14 @@ export default class HomeHandler implements HandlerBase {
                     this.videoApplication.startDownload(videoId, {
                         minDelay: 500,
                         stepCallback: (queueVideo: QueueVideo, success: boolean) => {
-                            console.log(QueueVideoStep[queueVideo.step], success)
-    
-                            if(!success) {
+
+                            if (!success) {
                                 return;
                             }
-                            
+
                             let text = "ERROR";
-    
-                            switch(queueVideo.step) {
+
+                            switch (queueVideo.step) {
                                 case QueueVideoStep.GetInfo:
                                     text = UIT.downloadVideo;
                                     break;
@@ -60,21 +60,28 @@ export default class HomeHandler implements HandlerBase {
                                     text = UIT.upload;
                                     break;
                             }
-    
+
+                            /* Update steps status message */
                             call(TelegramMethodEnum.EditMessageText, {
                                 chat_id: ID,
                                 message_id: stepMessageId,
                                 text
                             });
-    
+
+                            /* Successful end */
                             if (queueVideo.step === QueueVideoStep.SetMeta) {
                                 call(TelegramMethodEnum.SendAudio, {
                                     chat_id: ID,
                                     file: queueVideo.fileAddress + ".mp3",
-                                    reply_to_message_id: userMessageId
+                                    reply_to_message_id: userMessageId,
+                                    reply_markup: inlineKeyboards.audio.normal(queueVideo.id, UIT)
                                 }, (data) => {
-                                    if(data !== null)
-                                    {
+                                    if (data !== null) {
+                                        this.videoApplication.add({
+                                            id: queueVideo.id,
+                                            tgFileId: data.audio.file_id,
+                                            title: queueVideo.title
+                                        }, ID);
                                         call(TelegramMethodEnum.DeleteMessage, {
                                             chat_id: ID,
                                             message_id: stepMessageId
@@ -83,10 +90,10 @@ export default class HomeHandler implements HandlerBase {
                                         call(TelegramMethodEnum.EditMessageText, {
                                             chat_id: ID,
                                             message_id: stepMessageId,
-                                            text: UIT.upload
+                                            text: UIT.uploadError
                                         });
                                     }
-                                    VideoApplication.Downloader.flush(queueVideo);
+                                    this.videoApplication.flush(queueVideo);
                                 });
                             }
                         }

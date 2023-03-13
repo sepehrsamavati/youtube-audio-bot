@@ -1,14 +1,10 @@
+import { User } from "../../../common/types/user.js";
 import { ChatID } from "../../../common/types/tgBot.js";
 import UserApplication from "../../../application/user.application.js";
-import UserRepository from "../../../infrastructure/mongo/repository/user.repository.js";
-import { User } from "../../../common/types/user.js";
 
 const cache: any = {};
 
-const userRepository = new UserRepository();
-const userApplication = new UserApplication(userRepository);
-
-const findUser = async (id: ChatID): Promise<User | undefined> => {
+const findUser = async (userApplication: UserApplication, id: ChatID): Promise<User | undefined> => {
     let user: User | undefined = cache[id];
     if(!user)
     {

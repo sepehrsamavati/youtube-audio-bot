@@ -31,7 +31,6 @@ export default class VideoApplication implements IVideoApplication {
         if (video) {
             if (!await this.viewRepository.isViewed(videoId, userId))
                 await this.viewRepository.add(videoId, userId);
-
             return {
                 vid: video.id,
                 title: video.title,
@@ -60,8 +59,11 @@ export default class VideoApplication implements IVideoApplication {
         }
         return operationResult;
     }
-    add(video: Video): Promise<OperationResult> {
-        return this.videoRepository.create(video);
+    async add(video: Video, userId: number): Promise<OperationResult> {
+        let result = await this.videoRepository.create(video);
+        if(result.ok)
+            await this.viewRepository.add(video.id, userId);
+        return result;
     }
 
     #addToQueue(video: QueueVideo): boolean {
@@ -97,7 +99,7 @@ export default class VideoApplication implements IVideoApplication {
             options.stepCallback({ ...queueVideo }, success);
         }, stepSleep = () => new Promise<void>(resolve => {
             const delay = options.minDelay - (new Date().getTime() - queueVideo.lastUpdate.getTime());
-            console.log(delay)
+
             if(delay > 10) {
                 setTimeout(()=>{
                     resolve();
@@ -132,6 +134,11 @@ export default class VideoApplication implements IVideoApplication {
         stepFinish(setMeta.ok);
 
         taskEnd();
+    }
+    flush(video: QueueVideo): void {
+        ["webp", "jpg", "mp4", "mp3"]
+            .forEach(ext => deleteFile(`${video.fileAddress}.${ext}`));
+        this.#removeFromQueue(video.id);
     }
 
     static Downloader = class {
@@ -314,10 +321,6 @@ export default class VideoApplication implements IVideoApplication {
                     resolve(res.failed(video.error));
                 }
             });
-        }
-        static flush(video: QueueVideo): void {
-            ["webp", "jpg", "mp4", "mp3"]
-                .forEach(ext => deleteFile(`${video.fileAddress}.${ext}`));
         }
     }
 };

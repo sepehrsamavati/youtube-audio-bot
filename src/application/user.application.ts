@@ -2,6 +2,7 @@ import OperationResult from "../common/models/operationResult.js";
 import IUserApplication from "./contracts/user/application.interface.js";
 import UserRepository from "../infrastructure/mongo/repository/user.repository.js";
 import { User } from "../common/types/user.js";
+import { UserType } from "../common/enums/user.enum.js";
 
 export default class UserApplication implements IUserApplication {
     constructor(
@@ -9,6 +10,9 @@ export default class UserApplication implements IUserApplication {
     ){}
     canSubmitRequest(user: User): OperationResult {
         const operationResult = new OperationResult();
+
+        if(user.type === UserType.Admin)
+            return operationResult.succeeded();
 
         if(!user.promotedBy)
             return operationResult.failed();

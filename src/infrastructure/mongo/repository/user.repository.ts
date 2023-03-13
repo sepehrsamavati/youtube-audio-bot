@@ -11,7 +11,7 @@ export default class UserRepository implements IUserRepository {
 			const newUser = await UserModel.create({
 				tgId,
 				mode: UserMode.Default,
-				type: UserType.Default,
+				type: config.owners.includes(tgId) ? UserType.Admin : UserType.Default,
 				language: config.defaultLang,
 				downloads: 0,
 				lastRequest: 0,

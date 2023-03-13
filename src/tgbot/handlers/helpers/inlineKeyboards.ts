@@ -22,14 +22,24 @@ export default {
         ];
     },
     audio: {
-        normal: (audio: AudioViewModel, UIT: UITextObj) => {
-            const likeQuery = `like${audio.vid}`;
-            return [
-                [
-                    { text: audio.isLiked ? "💚" : "♥", callback_data: likeQuery },
-                    { text: UIT.share, switch_inline_query: `getVid${audio.vid}` }
+        normal: (audio: AudioViewModel | string, UIT: UITextObj) => {
+            let id = "", isLiked = false;
+            if (typeof audio === "string") {
+                id = audio;
+                isLiked = false;
+            } else {
+                id = audio.vid;
+                isLiked = audio.isLiked;
+            }
+            const likeQuery = `like${id}`;
+            return {
+                inline_keyboard: [
+                    [
+                        { text: isLiked ? "💚" : "♥", callback_data: likeQuery },
+                        { text: UIT.share, switch_inline_query: `getVid${id}` }
+                    ]
                 ]
-            ];
+            };
         }
     }
 };

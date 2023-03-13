@@ -14,7 +14,7 @@ class UpdateHandler {
 
 		helper.update = update;
 		helper.ID = message?.chat.id ?? 0;
-		helper.user = await auth(helper.ID);
+		helper.user = await auth(this.homeHandler.userApplication, helper.ID);
 
 		const { UIT, langCode } = i18n(helper.user);
 		helper.UIT = UIT;
