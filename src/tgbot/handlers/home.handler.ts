@@ -23,6 +23,18 @@ export default class HomeHandler implements HandlerBase {
                 if (!videoId)
                     return sendText(UIT.invalidVideo).end();
 
+                const cacheVideo = await this.videoApplication.getAudio(videoId, ID);
+                if (cacheVideo)
+                {
+                    call(TelegramMethodEnum.SendAudio, {
+                        chat_id: ID,
+                        audio: cacheVideo.tgFileId,
+                        reply_markup: inlineKeyboards.audio.normal(cacheVideo.vid, UIT)
+                    });
+                    end();
+                    return;
+                }
+
                 const userMessageId: ChatID = update.message.message_id;
                 const sentMessage = await call(TelegramMethodEnum.SendMessage, {
                     chat_id: ID,

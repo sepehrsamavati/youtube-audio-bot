@@ -1,4 +1,4 @@
-import { HydratedDocument } from "mongoose";
+import { HydratedDocument, Types } from "mongoose";
 import config from "../../../config.js";
 import UserModel from "../models/user.js";
 import { UserMode, UserStatus, UserType } from "../../../common/enums/user.enum.js";
@@ -44,6 +44,15 @@ export default class UserRepository implements IUserRepository {
                 usage: user.usage,
 				promotedBy: user.promotedBy
 			};
+		} catch(e) {
+			return null;
+		}
+	}
+	async getIdByTgId(id: number): Promise<Types.ObjectId | null> {
+		try {
+			const user = await UserModel.findOne({ tgId: id });
+
+			return user?._id ?? null;
 		} catch(e) {
 			return null;
 		}

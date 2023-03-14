@@ -1,8 +1,8 @@
+import { Types } from "mongoose";
 import OperationResult from "../../../common/models/operationResult";
-import { ChatID } from "../../../common/types/tgBot";
 
 export default interface ILikeRepository {
-    isLiked(vid: string, uid: ChatID): Promise<boolean>;
-    like(vid: string, uid: ChatID): Promise<OperationResult>;
-    removeLike(vid: string, uid: ChatID): Promise<OperationResult>;
+    isLiked(vid: Types.ObjectId, uid: Types.ObjectId): Promise<boolean>;
+    like(vid: Types.ObjectId, uid: Types.ObjectId): Promise<OperationResult>;
+    removeLike(vid: Types.ObjectId, uid: Types.ObjectId): Promise<OperationResult>;
 }

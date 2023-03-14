@@ -23,11 +23,11 @@ class Services implements YTAServices {
     constructor() {
         const likeRepository = new LikeRepository();
         const viewRepository = new ViewRepository();
+        const userRepository = new UserRepository();
 
         const videoRepository = new VideoRepository();
-        this.videoApplication = new VideoApplication(videoRepository, likeRepository, viewRepository);
+        this.videoApplication = new VideoApplication(userRepository, videoRepository, likeRepository, viewRepository);
 
-        const userRepository = new UserRepository();
         this.userApplication = new UserApplication(userRepository);
     }
 }

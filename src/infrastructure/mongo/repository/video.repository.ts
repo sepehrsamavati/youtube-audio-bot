@@ -1,35 +1,31 @@
-import { HydratedDocument } from "mongoose";
-import IVideoRepository from "../../../application/contracts/video/repository.interface.js";
 import VideoModel from "../models/video.js";
-import OperationResult from "../../../common/models/operationResult.js";
+import { HydratedDocument, Types } from "mongoose";
+import IVideoRepository from "../../../application/contracts/video/repository.interface.js";
 
 export default class VideoRepository implements IVideoRepository {
-	async create(video: Video): Promise<OperationResult> {
-		const result = new OperationResult();
+	async create(video: Video): Promise<HydratedDocument<Video> | null> {
 		try {
-			await VideoModel.create({
+			return await VideoModel.create({
 				id: video.id,
 				tgFileId: video.tgFileId,
 				title: video.title
 			});
-			result.succeeded();
 		} catch(e) {
-			result.failed();
+			return null;
 		}
-		return result;
 	}
-	async findById(id: string): Promise<Video | null> {
+	async findByYtId(id: string): Promise<HydratedDocument<Video> | null> {
 		try {
-			const video: HydratedDocument<Video> | null = await VideoModel.findOne({ id });
-
-			if(!video)
-				return null;
-
-			return {
-				id: video.id,
-				tgFileId: video.tgFileId,
-				title: video.title
-			};
+			const video = await VideoModel.findOne({ id });
+			return video;
+		} catch(e) {
+			return null;
+		}
+	}
+	async getIdByYtId(id: string): Promise<Types.ObjectId | null> {
+		try {
+			const video = await VideoModel.findOne({ id });
+			return video?._id ?? null;
 		} catch(e) {
 			return null;
 		}

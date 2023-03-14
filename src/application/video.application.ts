@@ -16,9 +16,11 @@ import VideoRepository from '../infrastructure/mongo/repository/video.repository
 import LikeRepository from '../infrastructure/mongo/repository/like.repository.js';
 import ViewRepository from '../infrastructure/mongo/repository/view.repository.js';
 import deleteFile from '../common/helpers/deleteFile.js';
+import UserRepository from '../infrastructure/mongo/repository/user.repository.js';
 
 export default class VideoApplication implements IVideoApplication {
     constructor(
+        private userRepository: UserRepository,
         private videoRepository: VideoRepository,
         private likeRepository: LikeRepository,
         private viewRepository: ViewRepository,
@@ -26,44 +28,58 @@ export default class VideoApplication implements IVideoApplication {
 
     queue: QueueVideo[] = [];
 
-    async getAudio(videoId: string, userId: number): Promise<AudioViewModel | null> {
-        const video = await this.videoRepository.findById(videoId);
-        if (video) {
-            if (!await this.viewRepository.isViewed(videoId, userId))
-                await this.viewRepository.add(videoId, userId);
+    async getAudio(videoYtId: string, userTgId: number): Promise<AudioViewModel | null> {
+        const video = await this.videoRepository.findByYtId(videoYtId);
+        const userId = video ? await this.userRepository.getIdByTgId(userTgId) : null;
+        if (video && userId) {
+            if (!await this.viewRepository.isViewed(video._id, userId))
+                await this.viewRepository.add(video._id, userId);
             return {
                 vid: video.id,
                 title: video.title,
                 tgFileId: video.tgFileId,
-                isLiked: await this.likeRepository.isLiked(video.id, userId)
+                isLiked: await this.likeRepository.isLiked(video._id, userId)
             };
         }
         else
             return null;
     }
-    async like(videoId: string, userId: number): Promise<OperationResult> {
+    async like(videoYtId: string, userTgId: number): Promise<OperationResult> {
         let operationResult = new OperationResult();
-        if (await this.likeRepository.isLiked(videoId, userId)) {
-            operationResult.failed("alreadyLiked");
-        } else {
-            operationResult = await this.likeRepository.like(videoId, userId);
+        const videoId = await this.videoRepository.getIdByYtId(videoYtId);
+        const userId = videoId ? await this.userRepository.getIdByTgId(userTgId) : null;
+        if (videoId && userId) {
+            if (await this.likeRepository.isLiked(videoId, userId)) {
+                operationResult.failed("alreadyLiked");
+            } else {
+                operationResult = await this.likeRepository.like(videoId, userId);
+            }
         }
         return operationResult;
     }
-    async removeLike(videoId: string, userId: number): Promise<OperationResult> {
+    async removeLike(videoYtId: string, userTgId: number): Promise<OperationResult> {
         let operationResult = new OperationResult();
-        if (await this.likeRepository.isLiked(videoId, userId)) {
-            operationResult = await this.likeRepository.removeLike(videoId, userId);
-        } else {
-            operationResult.failed("isNotLiked");
+        const videoId = await this.videoRepository.getIdByYtId(videoYtId);
+        const userId = videoId ? await this.userRepository.getIdByTgId(userTgId) : null;
+        if (videoId && userId) {
+            if (await this.likeRepository.isLiked(videoId, userId)) {
+                operationResult = await this.likeRepository.removeLike(videoId, userId);
+            } else {
+                operationResult.failed("isNotLiked");
+            }
         }
         return operationResult;
     }
-    async add(video: Video, userId: number): Promise<OperationResult> {
-        let result = await this.videoRepository.create(video);
-        if(result.ok)
-            await this.viewRepository.add(video.id, userId);
-        return result;
+    async add(video: Video, userTgId: number): Promise<OperationResult> {
+        let operationResult = new OperationResult();
+        let dbVideo = await this.videoRepository.create(video);
+        if (dbVideo) {
+            const videoId = dbVideo._id;
+            const userId = await this.userRepository.getIdByTgId(userTgId);
+            if (userId)
+                operationResult = await this.viewRepository.add(videoId, userId);
+        }
+        return operationResult;
     }
 
     #addToQueue(video: QueueVideo): boolean {
@@ -100,8 +116,8 @@ export default class VideoApplication implements IVideoApplication {
         }, stepSleep = () => new Promise<void>(resolve => {
             const delay = options.minDelay - (new Date().getTime() - queueVideo.lastUpdate.getTime());
 
-            if(delay > 10) {
-                setTimeout(()=>{
+            if (delay > 10) {
+                setTimeout(() => {
                     resolve();
                 }, delay).unref();
             } else {

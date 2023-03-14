@@ -1,6 +1,7 @@
-import OperationResult from "../../../common/models/operationResult";
+import { HydratedDocument, Types } from "mongoose";
 
 export default interface IVideoRepository {
-    create(video: Video): Promise<OperationResult>;
-    findById(id: string): Promise<Video | null>;
+    create(video: Video): Promise<HydratedDocument<Video> | null>;
+    findByYtId(id: string): Promise<HydratedDocument<Video> | null>;
+    getIdByYtId(id: string): Promise<Types.ObjectId | null>;
 }

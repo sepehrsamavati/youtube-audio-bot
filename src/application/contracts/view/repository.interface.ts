@@ -1,7 +1,7 @@
+import { Types } from "mongoose";
 import OperationResult from "../../../common/models/operationResult";
-import { ChatID } from "../../../common/types/tgBot";
 
 export default interface IViewRepository {
-    isViewed(vid: string, uid: ChatID): Promise<boolean>;
-    add(vid: string, uid: ChatID): Promise<OperationResult>;
+    isViewed(vid: Types.ObjectId, uid: Types.ObjectId): Promise<boolean>;
+    add(vid: Types.ObjectId, uid: Types.ObjectId): Promise<OperationResult>;
 }
