@@ -1,21 +1,28 @@
+import { TelegramMethodEnum } from "../common/enums/tgMethod.enum.js";
 import log from "../common/helpers/log.js";
 import call from "../common/helpers/tgCall.js";
 import YTAServices from "../common/interfaces/yta.interface.js";
+import CallbackQueryHandler from "./handlers/callbackQuery.handler.js";
 import HomeHandler from "./handlers/home.handler.js";
+import InlineQueryHandler from "./handlers/inlineQuery.handler.js";
 import UpdateHandler from "./handlers/main.js";
 
 export default class TelegramBot {
 	homeHandler: HomeHandler;
+	callbackQueryHandler: CallbackQueryHandler;
+	inlineQueryHandler: InlineQueryHandler;
 
 	#nextUpdateId = 0;
 
 	constructor(services: YTAServices) {
 		this.homeHandler = new HomeHandler(services.videoApplication, services.userApplication);
+		this.callbackQueryHandler = new CallbackQueryHandler(services.userApplication, services.videoApplication);
+		this.inlineQueryHandler = new InlineQueryHandler(services.userApplication, services.videoApplication);
 		this.#startBot();
 	}
 
 	#startBot() {
-		call("getMe", null, (bot) => {
+		call(TelegramMethodEnum.GetMe, null, (bot) => {
 			if(!bot)
 			{
 				console.log("Telegram connection issue!");
@@ -31,7 +38,7 @@ export default class TelegramBot {
 	};
 	
 	#getUpdates() {
-		call("getUpdates", {
+		call(TelegramMethodEnum.GetUpdates, {
 			offset: this.#nextUpdateId,
 			limit: 100,
 			timeout: 10
@@ -40,7 +47,11 @@ export default class TelegramBot {
 				{
 					if (updates.length > 0) {
 						for (var i=0; i<updates.length; ++i) {
-							const updateHandler = new UpdateHandler(this.homeHandler);
+							const updateHandler = new UpdateHandler(
+								this.homeHandler,
+								this.callbackQueryHandler,
+								this.inlineQueryHandler
+							);
 							updateHandler.handleUpdate(updates[i]);
 						}
 						var lastUpdate = updates[updates.length-1];

@@ -6,6 +6,8 @@ import { TelegramMethodEnum } from "../../common/enums/tgMethod.enum.js";
 import { UserMode } from "../../common/enums/user.enum.js";
 import HomeHandler from "./home.handler.js";
 import inlineKeyboards from "./helpers/inlineKeyboards.js";
+import CallbackQueryHandler from "./callbackQuery.handler.js";
+import InlineQueryHandler from "./inlineQuery.handler.js";
 
 class UpdateHandler {
 	async handleUpdate(update: TgMsgUpdate) {
@@ -13,7 +15,11 @@ class UpdateHandler {
 		const message = update.message;
 
 		helper.update = update;
-		helper.ID = message?.chat.id ?? 0;
+		helper.ID =
+			message?.chat.id
+			?? update.callback_query?.message.chat.id
+			?? update.inline_query?.from.id
+			?? 0;
 		helper.user = await auth(this.homeHandler.userApplication, helper.ID);
 
 		const { UIT, langCode } = i18n(helper.user);
@@ -46,12 +52,19 @@ class UpdateHandler {
 							helper.sendText(UIT.commandNotFound).end();
 					}
 				}
+			} else if (update.callback_query) {
+				this.callbackQueryHandler.handler(helper);
+			} else if (update.inline_query) {
+				this.inlineQueryHandler.handler(helper);
 			}
 		}
 	}
 
-	constructor(private homeHandler: HomeHandler) {
-		this.homeHandler = homeHandler;
+	constructor(
+		private homeHandler: HomeHandler,
+		private callbackQueryHandler: CallbackQueryHandler,
+		private inlineQueryHandler: InlineQueryHandler
+		) {
 		this.helper = new HandlerHelper();
 		this.helper.end = this.end;
 	}

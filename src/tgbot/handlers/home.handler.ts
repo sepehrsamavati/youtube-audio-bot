@@ -29,7 +29,7 @@ export default class HomeHandler implements HandlerBase {
                     call(TelegramMethodEnum.SendAudio, {
                         chat_id: ID,
                         audio: cacheVideo.tgFileId,
-                        reply_markup: inlineKeyboards.audio.normal(cacheVideo.vid, UIT)
+                        reply_markup: inlineKeyboards.audio.normal(cacheVideo, UIT)
                     });
                     end();
                     return;

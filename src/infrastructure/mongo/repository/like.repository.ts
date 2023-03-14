@@ -1,7 +1,7 @@
 import { Types } from "mongoose";
+import LikeModel from "../models/like.js";
 import ILikeRepository from "../../../application/contracts/like/repository.interface.js";
 import OperationResult from "../../../common/models/operationResult.js";
-import LikeModel from "../models/like.js";
 
 export default class LikeRepository implements ILikeRepository {
 	async isLiked(vid: Types.ObjectId, uid: Types.ObjectId): Promise<boolean> {
@@ -15,7 +15,7 @@ export default class LikeRepository implements ILikeRepository {
 				video: vid,
 				user: uid
 			});
-			result.succeeded();
+			result.succeeded("liked");
 		} catch(e) {
 			result.failed();
 		}
@@ -28,7 +28,7 @@ export default class LikeRepository implements ILikeRepository {
 				video: vid,
 				user: uid
 			});
-			result.succeeded();
+			result.succeeded("likeRemoved");
 		} catch(e) {
 			result.failed();
 		}

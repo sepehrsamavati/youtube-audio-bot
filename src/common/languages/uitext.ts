@@ -26,6 +26,10 @@ const UIText: UITextObj[] = [
         commandNotFound: "❌ Command not found!",
         invalidVideo: "❌ Video is not valid!",
 
+        musicNotFound: "Couldn't find music",
+        liked: "Liked 💚",
+        likeRemoved: "Like removed 💔",
+
         currentAdmins: "Current admins",
         selectItemToRemove: "Select item to remove",
         sendUserIdToAddAdmin: "Send Telegram ID to add admin",

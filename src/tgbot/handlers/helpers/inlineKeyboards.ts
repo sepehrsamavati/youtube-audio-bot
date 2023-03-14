@@ -50,7 +50,7 @@ export default {
                 id = audio.vid;
                 isLiked = audio.isLiked;
             }
-            const likeQuery = `like${id}`;
+            const likeQuery = isLiked ? `remLike${id}` : `like${id}`;
             return {
                 inline_keyboard: [
                     [

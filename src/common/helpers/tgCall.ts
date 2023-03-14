@@ -2,10 +2,11 @@ import fs from "node:fs";
 import axios from "axios";
 import config from "../../config.js";
 import FormData from "form-data";
+import { TelegramMethodEnum } from "../enums/tgMethod.enum.js";
 
 const botUrl = config.tgbot.botUrl;
 
-export default function TelegramCall(method: string, params?: any, onResponse?: (data: any) => void) {
+export default function TelegramCall(method: TelegramMethodEnum, params?: any, onResponse?: (data: any) => void) {
 	let formData: any = null;
 	if (params && params.file) {
 		formData = new FormData();
