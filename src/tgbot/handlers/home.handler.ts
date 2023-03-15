@@ -5,7 +5,7 @@ import HandlerHelper from "../../common/helpers/handlerHelper.js";
 import HandlerBase from "../../common/models/handlerBase.js";
 import { TelegramMethodEnum } from "../../common/enums/tgMethod.enum.js";
 import { QueueVideo } from "../../common/models/queueVideo.js";
-import { ChatID, MessageID, TgMsgUpdate } from "../../common/types/tgBot.js";
+import { ChatID, MessageID } from "../../common/types/tgBot.js";
 import inlineKeyboards from "./helpers/inlineKeyboards.js";
 
 export default class HomeHandler implements HandlerBase {
@@ -52,7 +52,7 @@ export default class HomeHandler implements HandlerBase {
 
                     this.videoApplication.startDownload(videoId, {
                         minDelay: 500,
-                        stepCallback: (queueVideo: QueueVideo, success: boolean, error) => {
+                        stepCallback: (queueVideo: QueueVideo | null, success: boolean, error) => {
 
                             let text = (error ? UIT[error] : "ERROR") ?? "ERROR";
 
@@ -87,7 +87,7 @@ export default class HomeHandler implements HandlerBase {
                             });
 
                             /* Successful end */
-                            if (queueVideo.step === QueueVideoStep.SetMeta) {
+                            if (queueVideo?.step === QueueVideoStep.SetMeta) {
                                 call(TelegramMethodEnum.SendAudio, {
                                     chat_id: ID,
                                     file: queueVideo.fileAddress + ".mp3",
