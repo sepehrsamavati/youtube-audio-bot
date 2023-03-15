@@ -17,6 +17,7 @@ import LikeRepository from '../infrastructure/mongo/repository/like.repository.j
 import ViewRepository from '../infrastructure/mongo/repository/view.repository.js';
 import deleteFile from '../common/helpers/deleteFile.js';
 import UserRepository from '../infrastructure/mongo/repository/user.repository.js';
+import { StepCallback } from '../common/types/stepCallback.js';
 
 export default class VideoApplication implements IVideoApplication {
     constructor(
@@ -104,9 +105,18 @@ export default class VideoApplication implements IVideoApplication {
         this.queue.splice(index, 1);
         return true;
     }
-    async startDownload(videoId: string, options: { minDelay: 500, stepCallback: StepCallback }) {
+    async startDownload(videoId: string, options: { minDelay: number, stepCallback: StepCallback }) {
+        
+        if(this.queue.length >= config.concurrentLimit) {
+            options.stepCallback(null, false, "botIsBusy");
+            return;
+        }
+
         const queueVideo = new QueueVideo(videoId);
-        this.#addToQueue(queueVideo);
+        if(!this.#addToQueue(queueVideo)) {
+            options.stepCallback(null, false, "isBeingDownloaded");
+            return;
+        }
 
         const taskEnd = () => {
             this.#removeFromQueue(queueVideo.id);
@@ -124,6 +134,9 @@ export default class VideoApplication implements IVideoApplication {
                 resolve();
             }
         });
+
+        /* Validation OK */
+        stepFinish(true);
 
         const info = await VideoApplication.Downloader.getInfo(queueVideo);
         await stepSleep();

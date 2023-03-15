@@ -19,13 +19,20 @@ export default class HomeHandler implements HandlerBase {
             const canSubmit = this.userApplication.canSubmitRequest(user);
             if (canSubmit.ok) {
                 const videoId = VideoApplication.Downloader.validateVideoId(update.message.text);
+                const userMessageId: ChatID = update.message.message_id;
 
-                if (!videoId)
-                    return sendText(UIT.invalidVideo).end();
+                if (!videoId) {
+                    call(TelegramMethodEnum.SendMessage, {
+                        chat_id: ID,
+                        reply_to_message_id: userMessageId,
+                        text: UIT.getInfo
+                    });
+                    end();
+                    return
+                }
 
                 const cacheVideo = await this.videoApplication.getAudio(videoId, ID);
-                if (cacheVideo)
-                {
+                if (cacheVideo) {
                     call(TelegramMethodEnum.SendAudio, {
                         chat_id: ID,
                         audio: cacheVideo.tgFileId,
@@ -34,12 +41,10 @@ export default class HomeHandler implements HandlerBase {
                     end();
                     return;
                 }
-
-                const userMessageId: ChatID = update.message.message_id;
                 const sentMessage = await call(TelegramMethodEnum.SendMessage, {
                     chat_id: ID,
                     reply_to_message_id: userMessageId,
-                    text: UIT.getInfo
+                    text: UIT.validating
                 });
 
                 if (sentMessage !== null) {
@@ -47,30 +52,31 @@ export default class HomeHandler implements HandlerBase {
 
                     this.videoApplication.startDownload(videoId, {
                         minDelay: 500,
-                        stepCallback: (queueVideo: QueueVideo, success: boolean) => {
+                        stepCallback: (queueVideo: QueueVideo, success: boolean, error) => {
 
-                            if (!success) {
-                                return;
-                            }
+                            let text = (error ? UIT[error] : "ERROR") ?? "ERROR";
 
-                            let text = "ERROR";
-
-                            switch (queueVideo.step) {
-                                case QueueVideoStep.GetInfo:
-                                    text = UIT.downloadVideo;
-                                    break;
-                                case QueueVideoStep.DownloadVideo:
-                                    text = UIT.convertToAudio;
-                                    break;
-                                case QueueVideoStep.ConvertToAudio:
-                                    text = UIT.generateCover;
-                                    break;
-                                case QueueVideoStep.GenerateCover:
-                                    text = UIT.setMeta;
-                                    break;
-                                case QueueVideoStep.SetMeta:
-                                    text = UIT.upload;
-                                    break;
+                            if (queueVideo && success) {
+                                switch (queueVideo.step) {
+                                    case QueueVideoStep.Validate:
+                                        text = UIT.getInfo;
+                                        break;
+                                    case QueueVideoStep.GetInfo:
+                                        text = UIT.downloadVideo;
+                                        break;
+                                    case QueueVideoStep.DownloadVideo:
+                                        text = UIT.convertToAudio;
+                                        break;
+                                    case QueueVideoStep.ConvertToAudio:
+                                        text = UIT.generateCover;
+                                        break;
+                                    case QueueVideoStep.GenerateCover:
+                                        text = UIT.setMeta;
+                                        break;
+                                    case QueueVideoStep.SetMeta:
+                                        text = UIT.upload;
+                                        break;
+                                }
                             }
 
                             /* Update steps status message */

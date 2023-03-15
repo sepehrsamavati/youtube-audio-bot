@@ -8,7 +8,7 @@ export class QueueVideo {
     public localId: string;
     public fromUser: User['tgId'] = -1;
     public lastUpdate: Date = new Date();
-    public step: QueueVideoStep = QueueVideoStep.GetInfo;
+    public step: QueueVideoStep = QueueVideoStep.Validate;
     public fileAddress: string = "";
     public error?: keyof UITextObj;
 

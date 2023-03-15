@@ -22,10 +22,12 @@ export type UITextObj = {
     noAccess: string;
     commandNotFound: string;
     invalidVideo: string;
-
+    botIsBusy: string;
     musicNotFound: string;
     liked: string;
     likeRemoved: string;
+
+    isBeingDownloaded: string;
 
     currentAdmins: string;
     sendUserIdToAddAdmin: string;
@@ -36,6 +38,7 @@ export type UITextObj = {
     isNotLiked: string;
 
     /* Download Steps */
+    validating: string;
     getInfo: string;
     downloadVideo: string;
     convertToAudio: string;

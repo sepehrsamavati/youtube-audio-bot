@@ -25,10 +25,12 @@ const UIText: UITextObj[] = [
         noAccess: "❌ You have no access!",
         commandNotFound: "❌ Command not found!",
         invalidVideo: "❌ Video is not valid!",
-
+        botIsBusy: "⚠️ Bot is too busy, wait a minute & try again.",
         musicNotFound: "Couldn't find music",
         liked: "Liked 💚",
         likeRemoved: "Like removed 💔",
+
+        isBeingDownloaded: "Another user is downloading this video/audio, wait a minute & try again.",
 
         currentAdmins: "Current admins",
         selectItemToRemove: "Select item to remove",
@@ -38,6 +40,7 @@ const UIText: UITextObj[] = [
         alreadyLiked: "❌ Already liked!",
         isNotLiked: "❌ Unable to remove like!",
 
+        validating: "🔁 Validating...",
         getInfo: "ℹ️ [1/6] Getting info",
         downloadVideo: "📥 [2/6] Downloading MP4",
         convertToAudio: "🎙 [3/6] Converting to MP3",
