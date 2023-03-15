@@ -84,9 +84,9 @@ export default class VideoApplication implements IVideoApplication {
     }
 
     #addToQueue(video: QueueVideo): boolean {
-        if (this.#getFromQueue(video.id)) {
-            return false;
-        }
+        // if (this.#getFromQueue(video.id)) {
+        //     return false;
+        // }
         this.queue.push(video);
         return true;
     }
@@ -105,14 +105,20 @@ export default class VideoApplication implements IVideoApplication {
         this.queue.splice(index, 1);
         return true;
     }
-    async startDownload(videoId: string, options: { minDelay: number, stepCallback: StepCallback }) {
+    async startDownload(videoId: string, userTgId: number, options: { minDelay: number, stepCallback: StepCallback }) {
         
         if(this.queue.length >= config.concurrentLimit) {
             options.stepCallback(null, false, "botIsBusy");
             return;
         }
 
-        const queueVideo = new QueueVideo(videoId);
+        const queueVideo = new QueueVideo(videoId, userTgId);
+
+        if(this.queue.filter(qv => qv.fromUser === userTgId).length >= config.concurrentLimitPerUser) {
+            options.stepCallback(null, false, "reachedConcurrentDownloads");
+            return;
+        }
+
         if(!this.#addToQueue(queueVideo)) {
             options.stepCallback(null, false, "isBeingDownloaded");
             return;

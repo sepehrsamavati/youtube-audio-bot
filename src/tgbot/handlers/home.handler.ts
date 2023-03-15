@@ -50,7 +50,7 @@ export default class HomeHandler implements HandlerBase {
                 if (sentMessage !== null) {
                     const stepMessageId: MessageID = sentMessage.message_id;
 
-                    this.videoApplication.startDownload(videoId, {
+                    this.videoApplication.startDownload(videoId, ID, {
                         minDelay: 500,
                         stepCallback: (queueVideo: QueueVideo | null, success: boolean, error) => {
 

@@ -21,8 +21,9 @@ export class QueueVideo {
     public thumbnail: string = "";
     public thumbSize: number = -1;
 
-    constructor(id: string){
+    constructor(id: string, userId: number){
         this.id = id;
+        this.fromUser = userId;
         this.localId = newLocalVideoID(this.id);
         return this;
     }

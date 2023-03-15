@@ -22,12 +22,14 @@ export type UITextObj = {
     noAccess: string;
     commandNotFound: string;
     invalidVideo: string;
-    botIsBusy: string;
+
     musicNotFound: string;
     liked: string;
     likeRemoved: string;
 
+    botIsBusy: string;
     isBeingDownloaded: string;
+    reachedConcurrentDownloads: string;
 
     currentAdmins: string;
     sendUserIdToAddAdmin: string;

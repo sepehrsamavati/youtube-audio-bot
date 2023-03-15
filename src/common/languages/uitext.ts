@@ -25,12 +25,13 @@ const UIText: UITextObj[] = [
         noAccess: "❌ You have no access!",
         commandNotFound: "❌ Command not found!",
         invalidVideo: "❌ Video is not valid!",
-        botIsBusy: "⚠️ Bot is too busy, wait a minute & try again.",
         musicNotFound: "Couldn't find music",
         liked: "Liked 💚",
         likeRemoved: "Like removed 💔",
 
-        isBeingDownloaded: "Another user is downloading this video/audio, wait a minute & try again.",
+        botIsBusy: "⚠️ Bot is too busy, wait a minute & try again.",
+        isBeingDownloaded: "⚠️ Same video/audio is being downloaded, wait a minute & try again.",
+        reachedConcurrentDownloads: "❌ You've reached concurrent downloads limit!",
 
         currentAdmins: "Current admins",
         selectItemToRemove: "Select item to remove",
