@@ -4,6 +4,11 @@ export type MessageID = number;
 
 export type Chat = {
     id: ChatID;
+    type: "private" | "group" | "supergroup" | "channel";
+    username?: string;
+    first_name?: string;
+    last_name?: string;
+    is_forum?: true;
 }
 
 export type TelegramMessage = {
