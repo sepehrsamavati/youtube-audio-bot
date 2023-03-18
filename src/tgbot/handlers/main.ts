@@ -3,11 +3,14 @@ import { findUser as auth } from "./helpers/auth.js";
 import HandlerHelper from "../../common/helpers/handlerHelper.js";
 import { TgMsgUpdate } from "../../common/types/tgBot.js";
 import { TelegramMethodEnum } from "../../common/enums/tgMethod.enum.js";
-import { UserMode } from "../../common/enums/user.enum.js";
+import { UserMode, UserType } from "../../common/enums/user.enum.js";
 import HomeHandler from "./home.handler.js";
 import inlineKeyboards from "./helpers/inlineKeyboards.js";
 import CallbackQueryHandler from "./callbackQuery.handler.js";
 import InlineQueryHandler from "./inlineQuery.handler.js";
+import AdminHandler from "./admin.handler.js";
+import dynamicText from "./helpers/dynamicText.js";
+import UserApplication from "../../application/user.application.js";
 
 class UpdateHandler {
 	async handleUpdate(update: TgMsgUpdate) {
@@ -20,18 +23,16 @@ class UpdateHandler {
 			?? update.callback_query?.message.chat.id
 			?? update.inline_query?.from.id
 			?? 0;
-		helper.user = await auth(this.homeHandler.userApplication, helper.ID);
+		helper.user = await auth(this.userApplication, helper.ID);
 
 		const { UIT, langCode } = i18n(helper.user);
 		helper.UIT = UIT;
 		helper.langCode = langCode;
 
-		if(helper.user && this.#continue) {
+		if (helper.user && this.#continue) {
 			if (message) {
-				switch (helper.user.mode) {
-					case UserMode.Default:
-						await this.homeHandler.handler(helper);
-						break;
+				if (helper.user.type === UserType.Admin) {
+					await this.adminHandler.handler(helper);
 				}
 
 				if (this.#continue) {
@@ -39,7 +40,10 @@ class UpdateHandler {
 						case "/start":
 							helper.call(TelegramMethodEnum.SendText, {
 								chat_id: helper.ID,
-								text: UIT._start,
+								text: dynamicText({
+									text: UIT._start,
+									update
+								}),
 								reply_markup: {
 									one_time_keyboard: false,
 									keyboard: inlineKeyboards.user(helper.user, helper.UIT),
@@ -47,9 +51,15 @@ class UpdateHandler {
 								}
 							});
 							this.end();
+							await this.userApplication.setUserMode(helper.ID, UserMode.Default);
 							break;
-						default:
-							helper.sendText(UIT.commandNotFound).end();
+					}
+					if (this.#continue) {
+						switch (helper.user.mode) {
+							case UserMode.Default:
+								await this.homeHandler.handler(helper);
+								break;
+						}
 					}
 				}
 			} else if (update.callback_query) {
@@ -61,10 +71,12 @@ class UpdateHandler {
 	}
 
 	constructor(
+		private userApplication: UserApplication,
+		private adminHandler: AdminHandler,
 		private homeHandler: HomeHandler,
 		private callbackQueryHandler: CallbackQueryHandler,
 		private inlineQueryHandler: InlineQueryHandler
-		) {
+	) {
 		this.helper = new HandlerHelper();
 		this.helper.end = this.end;
 	}

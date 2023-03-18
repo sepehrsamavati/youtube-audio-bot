@@ -6,6 +6,16 @@ import IUserRepository from "../../../application/contracts/user/repository.inte
 import { User } from "../../../common/types/user.js";
 
 export default class UserRepository implements IUserRepository {
+	async updateUserMode(tgId: number, userMode: UserMode): Promise<boolean> {
+		try {
+			await UserModel.findOneAndUpdate({ tgId: tgId }, {
+				mode: userMode
+			});
+			return true;
+		} catch {
+			return false;
+		}
+	}
 	async createUser(tgId: number): Promise<User | null> {
 		try {
 			const newUser = await UserModel.create({

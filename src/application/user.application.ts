@@ -2,7 +2,7 @@ import OperationResult from "../common/models/operationResult.js";
 import IUserApplication from "./contracts/user/application.interface.js";
 import UserRepository from "../infrastructure/mongo/repository/user.repository.js";
 import { User } from "../common/types/user.js";
-import { UserType } from "../common/enums/user.enum.js";
+import { UserMode, UserType } from "../common/enums/user.enum.js";
 
 export default class UserApplication implements IUserApplication {
     constructor(
@@ -18,6 +18,14 @@ export default class UserApplication implements IUserApplication {
             return operationResult.failed();
 
         return operationResult.succeeded();
+    }
+
+    async setUserMode(tgId: number, mode: UserMode): Promise<OperationResult> {
+        const operationResult = new OperationResult();
+        if(await this.userRepository.updateUserMode(tgId, mode)) {
+            operationResult.succeeded();
+        }
+        return operationResult;
     }
 
     getListOfAdmins(): Promise<number[]> {

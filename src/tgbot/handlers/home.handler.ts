@@ -25,7 +25,7 @@ export default class HomeHandler implements HandlerBase {
                     call(TelegramMethodEnum.SendMessage, {
                         chat_id: ID,
                         reply_to_message_id: userMessageId,
-                        text: UIT.getInfo
+                        text: UIT.invalidVideo
                     });
                     end();
                     return
