@@ -5,11 +5,6 @@ export type User = {
     mode: UserMode;
     status: UserStatus;
     type: UserType;
-    downloads: number;
-    usage: {
-        up: number;
-        down: number;
-    };
     lastRequest: Date;
     promotedBy?: number;
 }

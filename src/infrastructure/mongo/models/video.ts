@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const schema = new mongoose.Schema<Video>({
+const schema = new mongoose.Schema({
     id: {
         type: String,
         required: true,
@@ -13,6 +13,21 @@ const schema = new mongoose.Schema<Video>({
     title: {
         type: String,
         required: true
+    },
+    by: {
+        type: mongoose.Types.ObjectId,
+        required: true,
+        ref: 'User'
+    },
+    size: {
+        up: {
+            type: Number,
+            required: true
+        },
+        down: {
+            type: Number,
+            required: true
+        }
     }
 }, { versionKey: false, collection: 'videos' });
 

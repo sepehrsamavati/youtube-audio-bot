@@ -71,14 +71,24 @@ export default class VideoApplication implements IVideoApplication {
         }
         return operationResult;
     }
-    async add(video: Video, userTgId: number): Promise<OperationResult> {
+    async add(queueVideo: QueueVideo, tgFileId: string): Promise<OperationResult> {
         let operationResult = new OperationResult();
-        let dbVideo = await this.videoRepository.create(video);
-        if (dbVideo) {
-            const videoId = dbVideo._id;
-            const userId = await this.userRepository.getIdByTgId(userTgId);
-            if (userId)
+        const userId = await this.userRepository.getIdByTgId(queueVideo.fromUser);
+        if (userId) {
+            const downloadSize = queueVideo.mp4Size + queueVideo.thumbSize;
+            const uploadSize = queueVideo.mp3Size + queueVideo.thumbSize;
+
+            const video = {
+                id: queueVideo.id,
+                tgFileId, title: queueVideo.title
+            };
+
+            let dbVideo = await this.videoRepository.create(video, userId, downloadSize, uploadSize);
+
+            if (dbVideo) {
+                const videoId = dbVideo._id;
                 operationResult = await this.viewRepository.add(videoId, userId);
+            }
         }
         return operationResult;
     }
@@ -106,20 +116,20 @@ export default class VideoApplication implements IVideoApplication {
         return true;
     }
     async startDownload(videoId: string, userTgId: number, options: { minDelay: number, stepCallback: StepCallback }) {
-        
-        if(this.queue.length >= config.concurrentLimit) {
+
+        if (this.queue.length >= config.concurrentLimit) {
             options.stepCallback(null, false, "botIsBusy");
             return;
         }
 
         const queueVideo = new QueueVideo(videoId, userTgId);
 
-        if(this.queue.filter(qv => qv.fromUser === userTgId).length >= config.concurrentLimitPerUser) {
+        if (this.queue.filter(qv => qv.fromUser === userTgId).length >= config.concurrentLimitPerUser) {
             options.stepCallback(null, false, "reachedConcurrentDownloads");
             return;
         }
 
-        if(!this.#addToQueue(queueVideo)) {
+        if (!this.#addToQueue(queueVideo)) {
             options.stepCallback(null, false, "isBeingDownloaded");
             return;
         }

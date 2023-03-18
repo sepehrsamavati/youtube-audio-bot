@@ -48,10 +48,8 @@ export default class UserRepository implements IUserRepository {
 				tgId: user.tgId,
 				mode: user.mode,
 				type: user.type,
-                downloads: user.downloads,
                 lastRequest: user.lastRequest,
                 status: user.status,
-                usage: user.usage,
 				promotedBy: user.promotedBy
 			};
 		} catch(e) {

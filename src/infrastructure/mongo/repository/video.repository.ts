@@ -3,12 +3,17 @@ import { HydratedDocument, Types } from "mongoose";
 import IVideoRepository from "../../../application/contracts/video/repository.interface.js";
 
 export default class VideoRepository implements IVideoRepository {
-	async create(video: Video): Promise<HydratedDocument<Video> | null> {
+	async create(video: Video, uid: Types.ObjectId, download: number, upload: number): Promise<HydratedDocument<Video> | null> {
 		try {
 			return await VideoModel.create({
 				id: video.id,
 				tgFileId: video.tgFileId,
-				title: video.title
+				title: video.title,
+				by: uid,
+				usage: {
+					up: upload,
+					down: download
+				}
 			});
 		} catch(e) {
 			return null;

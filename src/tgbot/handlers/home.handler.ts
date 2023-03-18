@@ -95,11 +95,7 @@ export default class HomeHandler implements HandlerBase {
                                     reply_markup: inlineKeyboards.audio.normal(queueVideo.id, UIT)
                                 }, (data) => {
                                     if (data !== null) {
-                                        this.videoApplication.add({
-                                            id: queueVideo.id,
-                                            tgFileId: data.audio.file_id,
-                                            title: queueVideo.title
-                                        }, ID);
+                                        this.videoApplication.add(queueVideo, data.audio.file_id);
                                         call(TelegramMethodEnum.DeleteMessage, {
                                             chat_id: ID,
                                             message_id: stepMessageId

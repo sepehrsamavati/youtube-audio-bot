@@ -19,23 +19,9 @@ const schema = new mongoose.Schema<User>({
         type: Number,
         required: true
     },
-    downloads: {
-        type: Number,
-        required: true
-    },
     promotedBy: {
         type: Number,
         required: false
-    },
-    usage: {
-        up: {
-            type: Number,
-            required: true
-        },
-        down: {
-            type: Number,
-            required: true
-        }
     },
     lastRequest: {
         type: Date,
