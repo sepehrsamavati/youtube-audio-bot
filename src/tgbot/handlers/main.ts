@@ -51,7 +51,7 @@ class UpdateHandler {
 								}
 							});
 							this.end();
-							await this.userApplication.setUserMode(helper.ID, UserMode.Default);
+							await this.helper.setUserMode(UserMode.Default);
 							break;
 					}
 					if (this.#continue) {
@@ -77,7 +77,7 @@ class UpdateHandler {
 		private callbackQueryHandler: CallbackQueryHandler,
 		private inlineQueryHandler: InlineQueryHandler
 	) {
-		this.helper = new HandlerHelper();
+		this.helper = new HandlerHelper(this.userApplication);
 		this.helper.end = this.end;
 	}
 

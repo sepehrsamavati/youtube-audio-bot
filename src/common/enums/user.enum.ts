@@ -1,7 +1,14 @@
 export enum UserMode {
+    /* Shared */
     Default = 1,
+
+    /* Admin */
     AddAdmin = 20,
-    RemoveAdmin = 21
+    RemoveAdmin = 21,
+
+    /* Settings */
+    AdminSettings = 30,
+    SetStartText = 31,
 }
 
 export enum UserStatus {
