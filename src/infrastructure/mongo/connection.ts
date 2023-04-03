@@ -3,10 +3,10 @@ import config from "../../config.js";
 
 mongoose.set('strictQuery', true);
 
-export const connect = () => {
-    mongoose.connect(config.connectionString).then(() => {
-        console.log("MongoDB connection established.");
-    });
+export const connect = async () => {
+    const connection = await mongoose.connect(config.connectionString);
+    console.log("MongoDB connection established.");
+    return connection;
 };
 
 export const closeConnection = async (): Promise<void> => {

@@ -29,6 +29,9 @@ export default class VideoApplication implements IVideoApplication {
 
     queue: QueueVideo[] = [];
 
+    async getRecentDownloads(count: number): Promise<Video[]> {
+        throw new Error('Method not implemented.');
+    }
     async getAudio(videoYtId: string, userTgId: number): Promise<AudioViewModel | null> {
         const video = await this.videoRepository.findByYtId(videoYtId);
         const userId = video ? await this.userRepository.getIdByTgId(userTgId) : null;

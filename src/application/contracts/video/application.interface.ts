@@ -7,4 +7,5 @@ export default interface IVideoApplication {
     like(videoId: string, userId: ChatID): Promise<OperationResult>;
     removeLike(videoId: string, userId: ChatID): Promise<OperationResult>;
     add(queueVideo: QueueVideo, tgFileId: string): Promise<OperationResult>;
+    getRecentDownloads(count: number): Promise<Video[]>;
 }

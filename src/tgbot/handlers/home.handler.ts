@@ -16,6 +16,11 @@ export default class HomeHandler implements HandlerBase {
     public async handler(handlerData: HandlerHelper) {
         const { update, sendText, UIT, user, call, ID, end } = handlerData;
         if (user && update.message?.text) {
+            switch(update.message.text) {
+                case UIT.recentDownloads:
+                    return;
+            }
+
             const canSubmit = this.userApplication.canSubmitRequest(user);
             if (canSubmit.ok) {
                 const videoId = VideoApplication.Downloader.validateVideoId(update.message.text);

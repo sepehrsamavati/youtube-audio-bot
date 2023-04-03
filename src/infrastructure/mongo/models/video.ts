@@ -14,6 +14,10 @@ const schema = new mongoose.Schema({
         type: String,
         required: true
     },
+    date: {
+        type: Date,
+        required: true
+    },
     by: {
         type: mongoose.Types.ObjectId,
         required: true,
