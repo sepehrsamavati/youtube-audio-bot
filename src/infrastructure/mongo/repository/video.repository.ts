@@ -2,6 +2,7 @@ import VideoModel from "../models/video.js";
 import { Document, HydratedDocument, Types } from "mongoose";
 import IVideoRepository from "../../../application/contracts/video/repository.interface.js";
 import LikeModel from "../models/like.js";
+import ViewModel from "../models/views.js";
 
 export default class VideoRepository implements IVideoRepository {
 	async create(video: Video, uid: Types.ObjectId, download: number, upload: number): Promise<HydratedDocument<Video> | null> {
@@ -39,17 +40,7 @@ export default class VideoRepository implements IVideoRepository {
 	}
 	async getMostViewed(count: number): Promise<HydratedDocument<Video>[]> {
 		try {
-			const videos = await VideoModel
-				.find()
-				.limit(count);
-			return videos;
-		} catch(e) {
-			return [];
-		}
-	}
-	async getMostLiked(count: number): Promise<HydratedDocument<Video>[]> {
-		try {
-			const videos = await LikeModel
+			const mostViewed = await ViewModel
 				.aggregate([
 					{
 						$group: {
@@ -65,7 +56,34 @@ export default class VideoRepository implements IVideoRepository {
 				])
                 .limit(count)
                 .exec();
-			return videos;
+			return ((await VideoModel.populate(mostViewed, { path: "_id" })) as any[])
+				.filter(item => item !== null)
+				.map(item => item._id);
+		} catch(e) {
+			return [];
+		}
+	}
+	async getMostLiked(count: number): Promise<HydratedDocument<Video>[]> {
+		try {
+			const likes = await LikeModel
+				.aggregate([
+					{
+						$group: {
+							_id: "$video",
+							count: { "$sum": 1 }
+						}
+					},
+					{
+						$sort: {
+							count: -1
+						}
+					}
+				])
+                .limit(count)
+                .exec();
+			return ((await VideoModel.populate(likes, { path: "_id" })) as any[])
+				.filter(item => item !== null)
+				.map(item => item._id);
 		} catch(e) {
 			return [];
 		}
