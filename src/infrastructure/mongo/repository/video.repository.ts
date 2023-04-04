@@ -1,13 +1,14 @@
+import { Types } from "mongoose";
 import VideoModel from "../models/video.js";
-import { Document, HydratedDocument, Types } from "mongoose";
-import IVideoRepository from "../../../application/contracts/video/repository.interface.js";
 import LikeModel from "../models/like.js";
 import ViewModel from "../models/views.js";
+import IVideo from "../../../common/interfaces/video.interface.js";
+import IVideoRepository from "../../../application/contracts/video/repository.interface.js";
 
 export default class VideoRepository implements IVideoRepository {
-	async create(video: Video, uid: Types.ObjectId, download: number, upload: number): Promise<HydratedDocument<Video> | null> {
+	async create(video: Video, uid: Types.ObjectId, download: number, upload: number): Promise<IVideo | null> {
 		try {
-			return await VideoModel.create({
+			const vid = await VideoModel.create({
 				id: video.id,
 				tgFileId: video.tgFileId,
 				title: video.title,
@@ -18,14 +19,25 @@ export default class VideoRepository implements IVideoRepository {
 					down: download
 				}
 			});
+			return {
+				_id: vid._id,
+				id: vid.id,
+				title: vid.title,
+				tgFileId: vid.tgFileId
+			};
 		} catch(e) {
 			return null;
 		}
 	}
-	async findByYtId(id: string): Promise<HydratedDocument<Video> | null> {
+	async findByYtId(id: string): Promise<IVideo | null> {
 		try {
 			const video = await VideoModel.findOne({ id });
-			return video;
+			return video ? {
+				_id: video._id,
+				id: video.id,
+				title: video.title,
+				tgFileId: video.tgFileId,
+			} : null;
 		} catch(e) {
 			return null;
 		}
@@ -38,7 +50,7 @@ export default class VideoRepository implements IVideoRepository {
 			return null;
 		}
 	}
-	async getMostViewed(count: number): Promise<HydratedDocument<Video>[]> {
+	async getMostViewed(count: number): Promise<Video[]> {
 		try {
 			const mostViewed = await ViewModel
 				.aggregate([
@@ -58,12 +70,19 @@ export default class VideoRepository implements IVideoRepository {
                 .exec();
 			return ((await VideoModel.populate(mostViewed, { path: "_id" })) as any[])
 				.filter(item => item !== null)
-				.map(item => item._id);
+				.map(item => {
+					const video = item._id;
+					return {
+						id: video.id,
+						title: video.title,
+						tgFileId: video.tgFileId,
+					};
+				});
 		} catch(e) {
 			return [];
 		}
 	}
-	async getMostLiked(count: number): Promise<HydratedDocument<Video>[]> {
+	async getMostLiked(count: number): Promise<Video[]> {
 		try {
 			const likes = await LikeModel
 				.aggregate([
@@ -83,17 +102,35 @@ export default class VideoRepository implements IVideoRepository {
                 .exec();
 			return ((await VideoModel.populate(likes, { path: "_id" })) as any[])
 				.filter(item => item !== null)
-				.map(item => item._id);
+				.map(item => {
+					const video = item._id;
+					return {
+						id: video.id,
+						title: video.title,
+						tgFileId: video.tgFileId,
+					};
+				});
 		} catch(e) {
 			return [];
 		}
 	}
-	async getByDateRange(limit: number, from: Date, to: Date): Promise<HydratedDocument<Video>[]> {
+	async getByDateRange(limit: number, from: Date, to: Date): Promise<Video[]> {
 		try {
 			const videos = await VideoModel
-				.find()
+				.find({
+					date: {
+						$gte: from,
+						$lte: to
+					}
+				})
 				.limit(limit);
-			return videos;
+			return videos.map(video => {
+				return {
+					id: video.id,
+					title: video.title,
+					tgFileId: video.tgFileId,
+				};
+			});
 		} catch(e) {
 			return [];
 		}
