@@ -30,7 +30,13 @@ export default class VideoApplication implements IVideoApplication {
     queue: QueueVideo[] = [];
 
     async getRecentDownloads(count: number): Promise<Video[]> {
-        throw new Error('Method not implemented.');
+        return this.videoRepository.getRecentAdded(count);
+    }
+    async getLastWeekDownloads(count: number): Promise<Video[]> {
+        const now = new Date();
+        const lastWeek = new Date();
+        lastWeek.setDate(lastWeek.getDate() - 7);
+        return await this.videoRepository.getByDateRange(count, lastWeek, now);
     }
     async getAudio(videoYtId: string, userTgId: number): Promise<AudioViewModel | null> {
         const video = await this.videoRepository.findByYtId(videoYtId);

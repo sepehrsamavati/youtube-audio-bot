@@ -114,6 +114,25 @@ export default class VideoRepository implements IVideoRepository {
 			return [];
 		}
 	}
+	async getRecentAdded(count: number): Promise<Video[]> {
+		try {
+			const videos = await VideoModel
+				.find()
+                .sort({
+                    date: -1
+                })
+				.limit(count);
+			return videos.map(video => {
+				return {
+					id: video.id,
+					title: video.title,
+					tgFileId: video.tgFileId,
+				};
+			});
+		} catch(e) {
+			return [];
+		}
+	}
 	async getByDateRange(limit: number, from: Date, to: Date): Promise<Video[]> {
 		try {
 			const videos = await VideoModel

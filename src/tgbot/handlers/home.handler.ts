@@ -7,6 +7,7 @@ import { TelegramMethodEnum } from "../../common/enums/tgMethod.enum.js";
 import { QueueVideo } from "../../common/models/queueVideo.js";
 import { ChatID, MessageID } from "../../common/types/tgBot.js";
 import inlineKeyboards from "./helpers/inlineKeyboards.js";
+import { getUICode } from "./helpers/videoIdBase64.js";
 
 export default class HomeHandler implements HandlerBase {
     constructor(
@@ -18,6 +19,24 @@ export default class HomeHandler implements HandlerBase {
         if (user && update.message?.text) {
             switch(update.message.text) {
                 case UIT.recentDownloads:
+                    const getRecentCount = 15;
+                    const recentDownloads = await this.videoApplication.getRecentDownloads(getRecentCount);
+                    sendText(
+                            `📆 Recent ${recentDownloads.length} downloads`
+                            + `\n\n\n${recentDownloads.map((video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}`).join("\n\n")}`
+                            );
+                    end();
+                    return;
+                case UIT.weekTop:
+                    const getWeekCount = 5;
+                    const lastWeekDownloads = await this.videoApplication.getLastWeekDownloads(getWeekCount);
+                    sendText(
+                            lastWeekDownloads.length
+                            ? `🔥 Top ${lastWeekDownloads.length} last week downloads`
+                            +`\n\n\n${lastWeekDownloads.map( (video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}` ).join("\n\n")}`
+                            : "No downloads!"
+                            );
+                    end();
                     return;
             }
 

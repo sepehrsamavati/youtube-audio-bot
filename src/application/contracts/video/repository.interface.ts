@@ -7,5 +7,6 @@ export default interface IVideoRepository {
     getIdByYtId(id: string): Promise<Types.ObjectId | null>;
     getMostViewed(count: number): Promise<Video[]>;
     getMostLiked(count: number): Promise<Video[]>;
+    getRecentAdded(count: number): Promise<Video[]>;
     getByDateRange(limit: number, from: Date, to: Date): Promise<Video[]>;
 }
