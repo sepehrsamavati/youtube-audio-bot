@@ -1,6 +1,6 @@
 import config from "../../config.js";
-import UITextData from "./uitextData.js";
-import { UITextObj } from "../types/uitext";
+import UITextData from "./UITextData.js";
+import { UITextObj } from "../types/uitext.js";
 
 class UIText {
     private static texts: UITextObj[] = UITextData;

@@ -1,6 +1,6 @@
 import UserApplication from "../application/user.application.js";
 import { TelegramMethodEnum } from "../common/enums/tgMethod.enum.js";
-import log from "../common/helpers/log.js";
+import { log } from "../common/helpers/log.js";
 import call from "../common/helpers/tgCall.js";
 import YTAServices from "../common/interfaces/yta.interface.js";
 import AdminHandler from "./handlers/admin.handler.js";

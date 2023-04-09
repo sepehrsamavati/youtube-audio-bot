@@ -1,6 +1,7 @@
 import { UITextObj } from "../../../common/types/uitext.js";
 
 export default interface IUserInterfaceTextRepository {
-    set(uitList: UITextObj[]): Promise<boolean>;
-    get(): Promise<UITextObj[] | null>;
+    add(lang: string, key: string, value: string): Promise<boolean>;
+    set(lang: string, key: string, value: string): Promise<boolean>;
+    getAll(): Promise<Partial<UITextObj>[] | null>;
 }
