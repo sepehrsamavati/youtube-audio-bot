@@ -11,6 +11,7 @@ export default class UITextApplication implements IUserInterfaceTextApplication 
     async set(lang: string, key: string, value: string): Promise<OperationResult> {
         const operationResult = new OperationResult();
         if(await this.uitextRepository.set(lang, key, value)) {
+            UIText.set(lang, key as keyof UITextObj, value);
             operationResult.succeeded();
         }
         return operationResult;

@@ -46,7 +46,7 @@ const UITextData: UITextObj[] = [
         downloadVideo: "📥 [2/6] Downloading MP4",
         convertToAudio: "🎙 [3/6] Converting to MP3",
         generateCover: "📸 [4/6] Generating cover",
-        setMeta: "📤 [5/6] Setting meta data",
+        setMeta: "🖋 [5/6] Setting meta data",
         upload: "📤 [6/6] Uploading to Telegram",
 
         /* Settings */
@@ -55,7 +55,11 @@ const UITextData: UITextObj[] = [
         helpText: "❔ Help text",
         publicMode: "Public mode",
         shareAvailable: "Share",
+        valueTurnedTo: "%s1 turned %s2",
+        valueChangedTo: "%s1 changed to %s2",
+        invalidValue: "%s1\n\n❌ Invalid value%s2",
 
+        invalidDataFormat: "Invalid Format",
         convertError: "Error in converting",
         fileSizeOver50: "File size is over 50 MB",
         coverConvertError: "Couldn't convert cover",

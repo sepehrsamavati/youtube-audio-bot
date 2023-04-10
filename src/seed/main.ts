@@ -6,6 +6,6 @@ await connect();
 
 const repositories = new Repositories();
 
-uitext(repositories.uitextRepository);
+uitext(repositories.UITRepository);
 
 await closeConnection();

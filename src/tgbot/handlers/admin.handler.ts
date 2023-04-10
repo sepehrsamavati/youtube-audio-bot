@@ -1,18 +1,21 @@
+import config from "../../config.js";
+import UITextApplication from "../../application/uitext.application.js";
 import UserApplication from "../../application/user.application.js";
 import { TelegramMethodEnum } from "../../common/enums/tgMethod.enum.js";
 import { UserMode } from "../../common/enums/user.enum.js";
 import HandlerHelper from "../../common/helpers/handlerHelper.js";
 import HandlerBase from "../../common/models/handlerBase.js";
-import config from "../../config.js";
 import { DynamicTextHelp, dynamicTextHelp } from "./helpers/dynamicText.js";
 import inlineKeyboards from "./helpers/inlineKeyboards.js";
+import SettingsInputValidation from "./helpers/settingsInputValidation.js";
 
 export default class AdminHandler implements HandlerBase {
     constructor(
-        private userApplication: UserApplication
+        private userApplication: UserApplication,
+        private UITApplication: UITextApplication
     ) {}
     public async handler(handlerData: HandlerHelper) {
-        const { update, sendText, UIT, user, call, ID, end, setUserMode } = handlerData;
+        const { update, sendText, UIT, langCode, user, call, ID, end, setUserMode } = handlerData;
         const isOwner = config.owners.includes(ID);
         if (user && update.message?.text) {
             switch(update.message.text) {
@@ -94,6 +97,19 @@ export default class AdminHandler implements HandlerBase {
                         chat_id: ID,
                         text: settingText,
                         reply_markup: inlineKeyboards.create(settingKeyboard)
+                    });
+                    return;
+                case UserMode.SetStartText:
+                    new SettingsInputValidation<string>(update, {
+                        title: UIT.startText,
+                        user, UIT,
+                        type: String,
+                        validator: (text) => {
+                            if(text.length < 1000) {
+                                return "tooLarge";
+                            }
+                        },
+                        onValid: (value) => this.UITApplication.set(langCode, "_start", value)
                     });
                     return;
             }

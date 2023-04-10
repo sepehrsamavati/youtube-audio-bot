@@ -54,8 +54,12 @@ export type UITextObj = {
     helpText: string;
     publicMode: string;
     shareAvailable: string;
+    valueTurnedTo: string;
+    valueChangedTo: string;
+    invalidValue: string;
 
     /* Errors */
+    invalidDataFormat: string;
     convertError: string;
     fileSizeOver50: string;
     coverConvertError: string;

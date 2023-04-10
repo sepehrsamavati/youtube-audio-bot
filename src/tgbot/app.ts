@@ -20,7 +20,7 @@ export default class TelegramBot {
 
 	constructor(services: YTAServices) {
 		this.userApplication = services.userApplication;
-		this.adminHandler = new AdminHandler(services.userApplication);
+		this.adminHandler = new AdminHandler(services.userApplication, services.UITApplication);
 		this.homeHandler = new HomeHandler(services.videoApplication, services.userApplication);
 		this.callbackQueryHandler = new CallbackQueryHandler(services.userApplication, services.videoApplication);
 		this.inlineQueryHandler = new InlineQueryHandler(services.userApplication, services.videoApplication);

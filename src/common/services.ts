@@ -1,6 +1,7 @@
 import YTAServices from "./interfaces/yta.interface.js";
 import UserApplication from "../application/user.application.js";
 import VideoApplication from "../application/video.application.js";
+import UITextApplication from "../application/uitext.application.js";
 import LikeRepository from "../infrastructure/mongo/repository/like.repository.js";
 import UserRepository from "../infrastructure/mongo/repository/user.repository.js";
 import ViewRepository from "../infrastructure/mongo/repository/view.repository.js";
@@ -12,26 +13,29 @@ export const Repositories = class {
     viewRepository: ViewRepository;
     userRepository: UserRepository;
     videoRepository: VideoRepository;
-    uitextRepository: UITextRepository;
+    UITRepository: UITextRepository;
 
     constructor(){
         this.likeRepository = new LikeRepository();
         this.viewRepository = new ViewRepository();
         this.userRepository = new UserRepository();
         this.videoRepository = new VideoRepository();
-        this.uitextRepository = new UITextRepository();
+        this.UITRepository = new UITextRepository();
     }
 }
 
 export default class Services implements YTAServices {
     videoApplication: VideoApplication;
     userApplication: UserApplication;
+    UITApplication: UITextApplication;
 
     constructor() {
-        const { userRepository, videoRepository, likeRepository, viewRepository } = new Repositories();
+        const { userRepository, videoRepository, likeRepository, viewRepository, UITRepository } = new Repositories();
 
         this.videoApplication = new VideoApplication(userRepository, videoRepository, likeRepository, viewRepository);
 
         this.userApplication = new UserApplication(userRepository);
+
+        this.UITApplication = new UITextApplication(UITRepository);
     }
 }
