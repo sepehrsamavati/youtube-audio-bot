@@ -44,11 +44,7 @@ class UpdateHandler {
 									text: UIT._start,
 									update
 								}),
-								reply_markup: {
-									one_time_keyboard: false,
-									keyboard: inlineKeyboards.user(helper.user, helper.UIT),
-									resize_keyboard: true
-								}
+								reply_markup: inlineKeyboards.user(helper.user, helper.UIT)
 							});
 							this.end();
 							await this.helper.setUserMode(UserMode.Default);
@@ -77,7 +73,7 @@ class UpdateHandler {
 		private callbackQueryHandler: CallbackQueryHandler,
 		private inlineQueryHandler: InlineQueryHandler
 	) {
-		this.helper = new HandlerHelper(this.userApplication);
+		this.helper = new HandlerHelper(userApplication);
 		this.helper.end = this.end;
 	}
 

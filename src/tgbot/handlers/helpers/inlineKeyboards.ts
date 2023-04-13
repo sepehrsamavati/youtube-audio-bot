@@ -11,15 +11,21 @@ export default {
         if (admin && config.owners.includes(admin.tgId)) {
             keyboard.splice(3, 0, [{ text: UIT.addAdmin }, { text: UIT.remAdmin }]);
         }
-        return keyboard;
+        return {
+            keyboard,
+            resize_keyboard: true
+        };
     },
     user: (user: User, UIT: UITextObj) => {
-        return [
-            [{ text: UIT.random }, { text: UIT.weekTop }],
-            [{ text: UIT.recentDownloads }],
-            [{ text: UIT.top5 }, { text: UIT.mostLikes }],
-            [{ text: UIT.help }]
-        ];
+        return {
+            keyboard: [
+                [{ text: UIT.random }, { text: UIT.weekTop }],
+                [{ text: UIT.recentDownloads }],
+                [{ text: UIT.top5 }, { text: UIT.mostLikes }],
+                [{ text: UIT.help }]
+            ],
+            resize_keyboard: true
+        };
     },
     return: (UIT: UITextObj) => {
         return {
@@ -36,9 +42,13 @@ export default {
         };
     },
     create: (rows: string[][]) => {
-        return rows.map(row => row.map(button => {
-            return { text: button };
-        }));
+        return {
+            keyboard: rows.map(row => row.map(button => {
+                return { text: button };
+            })),
+            resize_keyboard: true,
+            one_time_keyboard: true
+        };
     },
     audio: {
         normal: (audio: AudioViewModel | string, UIT: UITextObj) => {

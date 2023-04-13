@@ -8,11 +8,16 @@ export default class UITextApplication implements IUserInterfaceTextApplication 
     constructor(
         private uitextRepository: IUserInterfaceTextRepository
     ){}
-    async set(lang: string, key: string, value: string): Promise<OperationResult> {
+    async set(lang: string, key: keyof UITextObj, value: string): Promise<OperationResult> {
         const operationResult = new OperationResult();
-        if(await this.uitextRepository.set(lang, key, value)) {
-            UIText.set(lang, key as keyof UITextObj, value);
-            operationResult.succeeded();
+        const currentValue = UIText.get(lang, key);
+        if(currentValue !== null)
+        {
+            if(UIText.set(lang, key, value) && await this.uitextRepository.set(lang, key, value)) {
+                operationResult.succeeded();
+            } else {
+                UIText.set(lang, key, currentValue)
+            }
         }
         return operationResult;
     }

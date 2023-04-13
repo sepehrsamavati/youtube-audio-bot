@@ -59,6 +59,7 @@ export default class SettingsInputValidation<Type> {
         }
 
         this.value = input;
+        this.continue();
     }
 
     isValid(){
@@ -74,7 +75,7 @@ export default class SettingsInputValidation<Type> {
 
         let settingResult = "";
 
-        if(this.value !== undefined && this.value !== null)
+        if(this.value !== undefined && this.value !== null && submitResult?.ok)
         {
             if(this.options.type === Boolean)
                 settingResult = Extensions.StringFormatter(this.options.UIT.valueTurnedTo, [this.options.title, this.value.toString()])
@@ -83,7 +84,7 @@ export default class SettingsInputValidation<Type> {
         } else if(this.errors.length > 0) {
             settingResult = Extensions.StringFormatter(this.options.UIT.invalidValue, [
                 this.options.title,
-                this.errors.join('\n-')
+                this.errors.map(error => `\n- ${error}`).join('')
             ]);
         } else {
             settingResult = this.options.UIT.invalidDataFormat;
@@ -92,10 +93,7 @@ export default class SettingsInputValidation<Type> {
         TelegramCall(TelegramMethodEnum.SendMessage, {
             chat_id: this.options.user.tgId,
             text: settingResult,
-            reply_markup: {
-                keyboard: inlineKeyboards.admin(this.options.user, this.options.UIT),
-                resize_keyboard: true
-            }
+            reply_markup: inlineKeyboards.admin(this.options.user, this.options.UIT)
         });
     }
 }

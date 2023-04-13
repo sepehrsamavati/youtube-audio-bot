@@ -15,12 +15,23 @@ export default class AdminHandler implements HandlerBase {
         private UITApplication: UITextApplication
     ) {}
     public async handler(handlerData: HandlerHelper) {
-        const { update, sendText, UIT, langCode, user, call, ID, end, setUserMode } = handlerData;
+        const { update, sendText, UIT, langCode, user, call, ID, end } = handlerData;
         const isOwner = config.owners.includes(ID);
         if (user && update.message?.text) {
             switch(update.message.text) {
+                case "...":
+                case UIT.return:
+                case UIT.cancel:
+                    handlerData.setUserMode(UserMode.Default);
+                    call(TelegramMethodEnum.SendMessage, {
+                        chat_id: ID,
+                        text: '🤖',
+                        reply_markup: inlineKeyboards.admin(user, UIT)
+                    });
+                    end();
+                    return;
                 case UIT.settings:
-                    setUserMode(UserMode.AdminSettings);
+                    handlerData.setUserMode(UserMode.AdminSettings);
                     call(TelegramMethodEnum.SendMessage, {
                         chat_id: ID,
                         text: '⚙',
@@ -67,7 +78,7 @@ export default class AdminHandler implements HandlerBase {
                 case UserMode.AdminSettings:
                     
                     let settingTypeSelect = false,
-                        settingText = "",
+                        settingText = UIT.invalidCommand,
                         settingKeyboard: string[][] = [],
                         availableDTs: (keyof DynamicTextHelp)[] = [],
                         onOfCurrentStatus = false;
@@ -75,7 +86,7 @@ export default class AdminHandler implements HandlerBase {
                     switch(update.message.text)
                     {
                         case UIT.startText:
-                            setUserMode(UserMode.SetStartText);
+                            handlerData.setUserMode(UserMode.SetStartText);
                             settingText = `Current value:\n\n'${UIT._start}'\n\n\nSend new message`;
                             availableDTs = ["name"];
                             break;
@@ -98,6 +109,7 @@ export default class AdminHandler implements HandlerBase {
                         text: settingText,
                         reply_markup: inlineKeyboards.create(settingKeyboard)
                     });
+                    end();
                     return;
                 case UserMode.SetStartText:
                     new SettingsInputValidation<string>(update, {
@@ -105,12 +117,13 @@ export default class AdminHandler implements HandlerBase {
                         user, UIT,
                         type: String,
                         validator: (text) => {
-                            if(text.length < 1000) {
+                            if(text.length > 1000) {
                                 return "tooLarge";
                             }
                         },
                         onValid: (value) => this.UITApplication.set(langCode, "_start", value)
                     });
+                    end();
                     return;
             }
         }

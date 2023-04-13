@@ -28,6 +28,7 @@ const UITextData: UITextObj[] = [
         musicNotFound: "Couldn't find music",
         liked: "Liked 💚",
         likeRemoved: "Like removed 💔",
+        invalidCommand: "❌ Invalid command!",
 
         botIsBusy: "⚠️ Bot is too busy, wait a minute & try again.",
         isBeingDownloaded: "⚠️ Same video/audio is being downloaded, wait a minute & try again.",

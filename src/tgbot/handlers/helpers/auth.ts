@@ -5,7 +5,7 @@ import UserApplication from "../../../application/user.application.js";
 const cache: any = {};
 
 const findUser = async (userApplication: UserApplication, id: ChatID): Promise<User | undefined> => {
-    let user: User | undefined = cache[id];
+    let user: User | undefined;
     if(!user)
     {
         const dbUser = await userApplication.getByTgId(id);

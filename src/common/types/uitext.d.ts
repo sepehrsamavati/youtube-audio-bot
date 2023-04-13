@@ -22,6 +22,7 @@ export type UITextObj = {
     noAccess: string;
     commandNotFound: string;
     invalidVideo: string;
+    invalidCommand: string;
 
     musicNotFound: string;
     liked: string;

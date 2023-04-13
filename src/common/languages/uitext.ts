@@ -14,6 +14,14 @@ class UIText {
         return true;
     }
 
+    static get(langCode: string, key: keyof UITextObj) {
+        const UIT = UIText.texts.find(uit => uit._lang === langCode);
+        if (UIT) {
+            return UIT[key];
+        }
+        return null;
+    }
+
     static getAll() {
         return [...UIText.texts];
     }
