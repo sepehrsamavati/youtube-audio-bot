@@ -3,7 +3,7 @@ import UITextData from "./UITextData.js";
 import { UITextObj } from "../types/uitext.js";
 
 class UIText {
-    private static texts: UITextObj[] = UITextData;
+    public static texts: UITextObj[] = UITextData;
 
     static set(langCode: string, key: keyof UITextObj, value: string) {
         const UIT = UIText.texts.find(uit => uit._lang === langCode);
