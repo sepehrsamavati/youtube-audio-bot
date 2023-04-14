@@ -1,4 +1,4 @@
-import config from "../../config.js";
+import settings from "../../settings.js";
 import UITextData from "./UITextData.js";
 import { UITextObj } from "../types/uitext.js";
 
@@ -28,7 +28,7 @@ class UIText {
 
     static getObject(lang: string): UITextObj {
         return UIText.texts.find(uit => uit._lang === lang)
-            ?? UIText.texts.find(uit => uit._lang === config.defaultLang) as UITextObj;
+            ?? UIText.texts.find(uit => uit._lang === settings.defaultLang) as UITextObj;
     }
 }
 

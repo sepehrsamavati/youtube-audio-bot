@@ -1,14 +1,12 @@
-// @ts-check
 import dotenv from 'dotenv'
 dotenv.config();
 
 const config = {
 	tgbot: {
-        token: process.env.YTA_TG_TOKEN,
+        token: process.env.YTA_TG_TOKEN ?? "",
         api: "https://api.telegram.org/bot",
         botUrl: ""
     },
-	defaultLang: "en",
 	cacheDirectory: "./.data/YTAudio/files/",
 	ffmpegExe: process.env.YTA_FFMPEG_EXE ?? "",
 	concurrentLimitPerUser: parseInt(process.env.YTA_USER_CONCURRENT_DOWNLOADS ?? "1"),

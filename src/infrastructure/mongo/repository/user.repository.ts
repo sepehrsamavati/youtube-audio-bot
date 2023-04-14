@@ -1,9 +1,10 @@
-import { HydratedDocument, Types } from "mongoose";
 import config from "../../../config.js";
 import UserModel from "../models/user.js";
+import settings from "../../../settings.js";
+import { HydratedDocument, Types } from "mongoose";
+import { User } from "../../../common/types/user.js";
 import { UserMode, UserStatus, UserType } from "../../../common/enums/user.enum.js";
 import IUserRepository from "../../../application/contracts/user/repository.interface.js";
-import { User } from "../../../common/types/user.js";
 
 export default class UserRepository implements IUserRepository {
 	async updateUserMode(tgId: number, userMode: UserMode): Promise<boolean> {
@@ -22,7 +23,7 @@ export default class UserRepository implements IUserRepository {
 				tgId,
 				mode: UserMode.Default,
 				type: config.owners.includes(tgId) ? UserType.Admin : UserType.Default,
-				language: config.defaultLang,
+				language: settings.defaultLang,
 				downloads: 0,
 				lastRequest: 0,
 				status: UserStatus.OK,

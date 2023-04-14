@@ -1,9 +1,9 @@
-import config from "../../../config.js";
-import UIText from "../../../common/languages/UIText.js";
+import settings from "../../../settings.js";
 import { User } from "../../../common/types/user.js";
+import UIText from "../../../common/languages/UIText.js";
 
 export default function getUserUIT(user?: User) {
-    const langCode = config.defaultLang;
+    const langCode = settings.defaultLang;
     return {
         UIT: UIText.getObject(langCode),
         langCode

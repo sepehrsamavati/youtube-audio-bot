@@ -1,11 +1,14 @@
 import uitext from "./uitext.js";
-import { Repositories } from "../common/services.js";
+import Services, { Repositories } from "../common/services.js";
 import { closeConnection, connect } from "../infrastructure/mongo/connection.js";
+import settings from "./settings.js";
 
 await connect();
 
 const repositories = new Repositories();
 
-uitext(repositories.UITRepository);
+await settings(repositories.settingsRepository);
+
+await uitext(repositories.UITRepository);
 
 await closeConnection();

@@ -7,6 +7,7 @@ import UserRepository from "../infrastructure/mongo/repository/user.repository.j
 import ViewRepository from "../infrastructure/mongo/repository/view.repository.js";
 import VideoRepository from "../infrastructure/mongo/repository/video.repository.js";
 import UITextRepository from "../infrastructure/mongo/repository/uitext.repository.js";
+import SettingsRepository from "../infrastructure/mongo/repository/settings.repository.js";
 
 export const Repositories = class {
     likeRepository: LikeRepository;
@@ -14,6 +15,7 @@ export const Repositories = class {
     userRepository: UserRepository;
     videoRepository: VideoRepository;
     UITRepository: UITextRepository;
+    settingsRepository: SettingsRepository;
 
     constructor(){
         this.likeRepository = new LikeRepository();
@@ -21,6 +23,7 @@ export const Repositories = class {
         this.userRepository = new UserRepository();
         this.videoRepository = new VideoRepository();
         this.UITRepository = new UITextRepository();
+        this.settingsRepository = new SettingsRepository();
     }
 }
 

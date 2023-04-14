@@ -12,9 +12,12 @@ export default class SettingsRepository implements ISettingsRepository {
 			return false;
 		}
 	}
-	async update(key: string, value: string): Promise<boolean> {
+	async update(setting: Setting): Promise<boolean> {
 		try {
-			const res = await SettingsModel.findOneAndUpdate({ key }, { value });
+			const res = await SettingsModel.findOneAndUpdate(
+				{ key: setting.key },
+				{ value: setting.value, lastUpdate: setting.lastUpdate }
+			);
 			return Boolean(res);
 		} catch(e) {
 			logError("Settings Repository / update", e);
