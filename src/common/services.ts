@@ -8,6 +8,7 @@ import ViewRepository from "../infrastructure/mongo/repository/view.repository.j
 import VideoRepository from "../infrastructure/mongo/repository/video.repository.js";
 import UITextRepository from "../infrastructure/mongo/repository/uitext.repository.js";
 import SettingsRepository from "../infrastructure/mongo/repository/settings.repository.js";
+import SettingsApplication from "../application/settings.application.js";
 
 export const Repositories = class {
     likeRepository: LikeRepository;
@@ -31,14 +32,17 @@ export default class Services implements YTAServices {
     videoApplication: VideoApplication;
     userApplication: UserApplication;
     UITApplication: UITextApplication;
+    settingsApplication: SettingsApplication;
 
     constructor() {
-        const { userRepository, videoRepository, likeRepository, viewRepository, UITRepository } = new Repositories();
+        const { userRepository, videoRepository, likeRepository, viewRepository, UITRepository, settingsRepository } = new Repositories();
 
         this.videoApplication = new VideoApplication(userRepository, videoRepository, likeRepository, viewRepository);
 
         this.userApplication = new UserApplication(userRepository);
 
         this.UITApplication = new UITextApplication(UITRepository);
+
+        this.settingsApplication = new SettingsApplication(settingsRepository);
     }
 }

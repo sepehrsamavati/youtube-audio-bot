@@ -1,6 +1,6 @@
-import OperationResult from "../../common/models/operationResult";
-import SettingsRepository from "../../infrastructure/mongo/repository/settings.repository";
-import ISettingsApplication from "./settings/application.interface";
+import OperationResult from "../common/models/operationResult.js";
+import ISettingsApplication from "./contracts/settings/application.interface.js";
+import SettingsRepository from "../infrastructure/mongo/repository/settings.repository.js";
 
 export default class SettingsApplication implements ISettingsApplication {
     constructor(
@@ -17,5 +17,8 @@ export default class SettingsApplication implements ISettingsApplication {
     }
     get(key: string): Promise<string | null> {
         return this.settingsRepository.getValue(key);
+    }
+    getAll(): Promise<Setting[] | null> {
+        return this.settingsRepository.getAll();
     }
 }

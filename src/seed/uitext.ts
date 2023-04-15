@@ -10,12 +10,12 @@ export default async (uitextRepository: UITextRepository) => {
     for(const UIT of UITexts) {
         languageNumber++;
         textNumber = 0;
+        log(`Language ${languageNumber}/${UITexts.length}`);
         const lang = UIT._lang;
         const dictionary = Object.entries(UIT);
         for(const [key, value] of dictionary) {
             textNumber++;
             totalCount++;
-            log(`Insert text ${textNumber}/${dictionary.length} | Language ${languageNumber}/${UITexts.length}`);
             if(await uitextRepository.add(lang, key, value))
                 insertOk++;
         }

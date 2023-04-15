@@ -5,7 +5,8 @@ import SettingsRepository from "../infrastructure/mongo/repository/settings.repo
 
 export const settingsKeyList: (keyof AppSettings)[] = [
     "publicMode",
-    "shareAvailable"
+    "shareAvailable",
+    "defaultLang"
 ];
 
 export default async (settingsRepository: SettingsRepository) => {

@@ -28,12 +28,27 @@ export default class SettingsRepository implements ISettingsRepository {
 		try {
 			const setting = await SettingsModel.findOne({ key });
 			return setting ? {
-				key,
+				key: setting.key,
 				value: setting.value,
 				lastUpdate: setting.lastUpdate
 			} : null;
 		} catch(e) {
 			logError("Settings Repository / get", e);
+			return null;
+		}
+	}
+	async getAll(): Promise<Setting[] | null> {
+		try {
+			const settings = await SettingsModel.find();
+			return settings.map(setting => {
+				return {
+					key: setting.key,
+					value: setting.value,
+					lastUpdate: setting.lastUpdate
+				};
+			});
+		} catch(e) {
+			logError("Settings Repository / getAll", e);
 			return null;
 		}
 	}
