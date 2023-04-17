@@ -6,10 +6,10 @@ export default class SettingsApplication implements ISettingsApplication {
     constructor(
         private settingsRepository: SettingsRepository
     ){}
-    async update(key: string, value: string): Promise<OperationResult> {
+    async update(key: string, value: string | number | boolean): Promise<OperationResult> {
         const operationResult = new OperationResult();
 
-        if(await this.settingsRepository.update({ key, value, lastUpdate: new Date() })) {
+        if(await this.settingsRepository.update({ key, value: JSON.stringify(value), lastUpdate: new Date() })) {
             operationResult.succeeded();
         }
 

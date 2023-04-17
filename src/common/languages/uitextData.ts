@@ -30,6 +30,8 @@ const UITextData: UITextObj[] = [
         liked: "Liked 💚",
         likeRemoved: "Like removed 💔",
         invalidCommand: "❌ Invalid command!",
+        setError: "Error in setting value!",
+        currentValueSelectNew: "Current value: %s1\nSelect new value",
 
         botIsBusy: "⚠️ Bot is too busy, wait a minute & try again.",
         isBeingDownloaded: "⚠️ Same video/audio is being downloaded, wait a minute & try again.",

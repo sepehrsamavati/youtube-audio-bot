@@ -10,6 +10,8 @@ export enum UserMode {
     AdminSettings = 30,
     SetStartText = 31,
     SetHelpText = 32,
+    SetShareAvailability = 33,
+    SetPublicMode = 34,
 }
 
 export enum UserStatus {

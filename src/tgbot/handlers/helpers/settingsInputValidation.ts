@@ -4,18 +4,22 @@ import { UITextObj } from "../../../common/types/uitext.js";
 import TelegramCall from "../../../common/helpers/tgCall.js";
 import { TgMsgUpdate } from "../../../common/types/tgBot.js";
 import Extensions from "../../../common/helpers/extensions.js";
+import HandlerHelper from "../../../common/helpers/handlerHelper.js";
 import OperationResult from "../../../common/models/operationResult.js";
 import { TelegramMethodEnum } from "../../../common/enums/tgMethod.enum.js";
+import { UserMode } from "../../../common/enums/user.enum.js";
 
 export default class SettingsInputValidation<Type> {
     private errors: string[] = [];
 
     private value: Type;
+    private handlerHelper: HandlerHelper;
 
     constructor(update: TgMsgUpdate, private options: {
         user: User,
         UIT: UITextObj,
         title: string,
+        handlerData: HandlerHelper,
         onValid: (value: Type) => Promise<OperationResult>,
         type?: StringConstructor | NumberConstructor | BooleanConstructor,
         validator?: (value: Type) => string | void,
@@ -58,6 +62,7 @@ export default class SettingsInputValidation<Type> {
             }
         }
 
+        this.handlerHelper = options.handlerData;
         this.value = input;
         this.continue();
     }
@@ -75,12 +80,17 @@ export default class SettingsInputValidation<Type> {
 
         let settingResult = "";
 
-        if(this.value !== undefined && this.value !== null && submitResult?.ok)
+        if(this.value !== undefined && this.value !== null)
         {
-            if(this.options.type === Boolean)
-                settingResult = Extensions.StringFormatter(this.options.UIT.valueTurnedTo, [this.options.title, this.value.toString()])
+            if(submitResult?.ok)
+            {
+                if(this.options.type === Boolean)
+                settingResult = Extensions.StringFormatter(this.options.UIT.valueTurnedTo, [this.options.title, this.value ? this.options.UIT.on : this.options.UIT.off])
             else
                 settingResult = Extensions.StringFormatter(this.options.UIT.valueChangedTo, [this.options.title, this.value.toString().includes("\n")?`\n\n'${this.value}'\n\n`:` '${this.value}' `]);
+            } else {
+                settingResult = this.options.UIT.invalidDataFormat;
+            }
         } else if(this.errors.length > 0) {
             settingResult = Extensions.StringFormatter(this.options.UIT.invalidValue, [
                 this.options.title,
@@ -89,6 +99,9 @@ export default class SettingsInputValidation<Type> {
         } else {
             settingResult = this.options.UIT.invalidDataFormat;
         }
+
+        
+        this.handlerHelper.setUserMode(UserMode.Default);
 
         TelegramCall(TelegramMethodEnum.SendMessage, {
             chat_id: this.options.user.tgId,

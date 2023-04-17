@@ -24,6 +24,8 @@ export type UITextObj = {
     commandNotFound: string;
     invalidVideo: string;
     invalidCommand: string;
+    setError: string;
+    currentValueSelectNew: string;
 
     musicNotFound: string;
     liked: string;

@@ -1,4 +1,5 @@
 import config from "../../config.js";
+import settings from "../../settings.js";
 import UITextApplication from "../../application/uitext.application.js";
 import UserApplication from "../../application/user.application.js";
 import { TelegramMethodEnum } from "../../common/enums/tgMethod.enum.js";
@@ -8,11 +9,14 @@ import HandlerBase from "../../common/models/handlerBase.js";
 import { DynamicTextHelp, dynamicTextHelp } from "./helpers/dynamicText.js";
 import inlineKeyboards from "./helpers/inlineKeyboards.js";
 import SettingsInputValidation from "./helpers/settingsInputValidation.js";
+import SettingsApplication from "../../application/settings.application.js";
+import Extensions from "../../common/helpers/extensions.js";
 
 export default class AdminHandler implements HandlerBase {
     constructor(
         private userApplication: UserApplication,
-        private UITApplication: UITextApplication
+        private UITApplication: UITextApplication,
+        private settingsApplication: SettingsApplication
     ) {}
     public async handler(handlerData: HandlerHelper) {
         const { update, sendText, UIT, langCode, user, call, ID, end } = handlerData;
@@ -95,12 +99,24 @@ export default class AdminHandler implements HandlerBase {
                             settingText = `Current value:\n\n'${UIT._help}'\n\n\nSend new message`;
                             availableDTs = ["name"];
                             break;
+                        case UIT.shareAvailable:
+                            handlerData.setUserMode(UserMode.SetShareAvailability);
+                            onOfCurrentStatus = settings.shareAvailable;
+                            settingTypeSelect = true;
+                            break;
+                        case UIT.publicMode:
+                            handlerData.setUserMode(UserMode.SetPublicMode);
+                            onOfCurrentStatus = settings.publicMode;
+                            settingTypeSelect = true;
+                            break;
                     }
 
                     if(settingTypeSelect)
                     {
-                        settingKeyboard.push([onOfCurrentStatus ? UIT.off : UIT.on])
+                        settingKeyboard.push([onOfCurrentStatus ? UIT.off : UIT.on]);
+                        settingText = Extensions.StringFormatter(UIT.currentValueSelectNew, [onOfCurrentStatus ? UIT.on : UIT.off]);
                     }
+
                     if(availableDTs.length)
                     {
                         settingText += "\n\nAvailable dynamic words:\n" + availableDTs.map((key)=>{
@@ -108,7 +124,9 @@ export default class AdminHandler implements HandlerBase {
                             return dt ? `${dt.key} ${dt.value}` : ""
                         }).join('\n');
                     }
+
                     settingKeyboard.push([UIT.return]);
+
                     call(TelegramMethodEnum.SendMessage,{
                         chat_id: ID,
                         text: settingText,
@@ -119,7 +137,7 @@ export default class AdminHandler implements HandlerBase {
                 case UserMode.SetStartText:
                     new SettingsInputValidation<string>(update, {
                         title: UIT.startText,
-                        user, UIT,
+                        user, UIT, handlerData,
                         type: String,
                         validator: (text) => {
                             if(text.length > 1000) {
@@ -133,7 +151,7 @@ export default class AdminHandler implements HandlerBase {
                 case UserMode.SetHelpText:
                     new SettingsInputValidation<string>(update, {
                         title: UIT.helpText,
-                        user, UIT,
+                        user, UIT, handlerData,
                         type: String,
                         validator: (text) => {
                             if(text.length > 2000) {
@@ -141,6 +159,34 @@ export default class AdminHandler implements HandlerBase {
                             }
                         },
                         onValid: (value) => this.UITApplication.set(langCode, "_help", value)
+                    });
+                    end();
+                    return;
+                case UserMode.SetShareAvailability:
+                    new SettingsInputValidation<boolean>(update, {
+                        title: UIT.shareAvailable,
+                        user, UIT, handlerData,
+                        type: Boolean,
+                        onValid: async (value) => {
+                            const operationResult = await this.settingsApplication.update("shareAvailable", value);
+                            if(operationResult.ok)
+                                settings.shareAvailable = value;
+                            return operationResult;
+                        }
+                    });
+                    end();
+                    return;
+                case UserMode.SetPublicMode:
+                    new SettingsInputValidation<boolean>(update, {
+                        title: UIT.publicMode,
+                        user, UIT, handlerData,
+                        type: Boolean,
+                        onValid: async (value) => {
+                            const operationResult = await this.settingsApplication.update("publicMode", value);
+                            if(operationResult.ok)
+                                settings.publicMode = value;
+                            return operationResult;
+                        }
                     });
                     end();
                     return;
