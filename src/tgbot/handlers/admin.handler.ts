@@ -90,6 +90,11 @@ export default class AdminHandler implements HandlerBase {
                             settingText = `Current value:\n\n'${UIT._start}'\n\n\nSend new message`;
                             availableDTs = ["name"];
                             break;
+                        case UIT.helpText:
+                            handlerData.setUserMode(UserMode.SetHelpText);
+                            settingText = `Current value:\n\n'${UIT._help}'\n\n\nSend new message`;
+                            availableDTs = ["name"];
+                            break;
                     }
 
                     if(settingTypeSelect)
@@ -122,6 +127,20 @@ export default class AdminHandler implements HandlerBase {
                             }
                         },
                         onValid: (value) => this.UITApplication.set(langCode, "_start", value)
+                    });
+                    end();
+                    return;
+                case UserMode.SetHelpText:
+                    new SettingsInputValidation<string>(update, {
+                        title: UIT.helpText,
+                        user, UIT,
+                        type: String,
+                        validator: (text) => {
+                            if(text.length > 2000) {
+                                return "tooLarge";
+                            }
+                        },
+                        onValid: (value) => this.UITApplication.set(langCode, "_help", value)
                     });
                     end();
                     return;

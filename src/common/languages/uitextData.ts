@@ -4,6 +4,7 @@ const UITextData: UITextObj[] = [
     {
         _lang: "en",
         _start: "🤟 Hi [NAME], welcome to YouTube Audio bot\n⁉ Help: /help",
+        _help: "📌 Just send me a YouTube link or video ID to get MP3 file here",
         stats: "📊 Stats",
         help: "❔ Help",
         random: "🎲 Random song",

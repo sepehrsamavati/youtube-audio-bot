@@ -9,6 +9,7 @@ export enum UserMode {
     /* Settings */
     AdminSettings = 30,
     SetStartText = 31,
+    SetHelpText = 32,
 }
 
 export enum UserStatus {
