@@ -8,4 +8,5 @@ export default interface IUserRepository {
     updateUserMode(tgId: number, mode: UserMode): Promise<boolean>;
     getIdByTgId(id: number): Promise<Types.ObjectId | null>;
     getAdmins(): Promise<number[]>;
+    count(): Promise<number>;
 }

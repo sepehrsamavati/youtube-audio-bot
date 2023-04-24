@@ -3,6 +3,12 @@ import UITextApplication from "../../application/uitext.application";
 import UserApplication from "../../application/user.application";
 import VideoApplication from "../../application/video.application";
 
+export interface AppStatistics {
+	defaultLang: string;
+    publicMode: boolean;
+	shareAvailable: boolean;
+}
+
 export interface AppSettings {
 	defaultLang: string;
     publicMode: boolean;

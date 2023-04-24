@@ -3,10 +3,19 @@ import UserModel from "../models/user.js";
 import settings from "../../../settings.js";
 import { HydratedDocument, Types } from "mongoose";
 import { User } from "../../../common/types/user.js";
+import { logError } from "../../../common/helpers/log.js";
 import { UserMode, UserStatus, UserType } from "../../../common/enums/user.enum.js";
 import IUserRepository from "../../../application/contracts/user/repository.interface.js";
 
 export default class UserRepository implements IUserRepository {
+	async count(): Promise<number> {
+		try {
+			return await UserModel.count();
+		} catch(e) {
+			logError("User repository / Count", e);
+			return 0;
+		}
+	}
 	async updateUserMode(tgId: number, userMode: UserMode): Promise<boolean> {
 		try {
 			await UserModel.findOneAndUpdate({ tgId: tgId }, {
