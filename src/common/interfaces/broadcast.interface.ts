@@ -1,6 +1,6 @@
 interface IBroadcast {
     start: Date;
     end: Date;
-    totalUsers: number;
+    targetUsers: number;
     usersReceived: number;
 }

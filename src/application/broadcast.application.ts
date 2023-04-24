@@ -1,20 +1,16 @@
 import OperationResult from "../common/models/operationResult.js";
 import IBroadcastApplication from "./contracts/broadcast/application.interface.js";
-import UserRepository from "../infrastructure/mongo/repository/user.repository.js";
 import BroadcastRepository from "../infrastructure/mongo/repository/broadcast.repository.js";
 
 export default class BroadcastApplication implements IBroadcastApplication {
     constructor(
-        private broadcastRepository: BroadcastRepository,
-        private userRepository: UserRepository
+        private broadcastRepository: BroadcastRepository
     ){}
-    async createNew(): Promise<IBroadcast> {
-        const usersCount = await this.userRepository.count();
+    createNew(targetUsers: number): IBroadcast {
         const now = new Date();
         return {
             start: now, end: now,
-            totalUsers: usersCount,
-            usersReceived: 0
+            targetUsers, usersReceived: 0
         };
     }
     async finish(broadcast: IBroadcast): Promise<OperationResult> {

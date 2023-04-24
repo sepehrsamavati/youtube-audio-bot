@@ -12,12 +12,14 @@ import SettingsInputValidation from "./helpers/settingsInputValidation.js";
 import SettingsApplication from "../../application/settings.application.js";
 import Extensions from "../../common/helpers/extensions.js";
 import { broadcastHandler } from "./helpers/broadcast.js";
+import BroadcastApplication from "../../application/broadcast.application.js";
 
 export default class AdminHandler implements HandlerBase {
     constructor(
         private userApplication: UserApplication,
         private UITApplication: UITextApplication,
-        private settingsApplication: SettingsApplication
+        private settingsApplication: SettingsApplication,
+        private broadcastApplication: BroadcastApplication
     ) {}
     public async handler(handlerData: HandlerHelper) {
         const { update, sendText, UIT, langCode, user, call, ID, end } = handlerData;
@@ -27,12 +29,16 @@ export default class AdminHandler implements HandlerBase {
                 case "/bc":
                 case "/fbc":
                     if(update.message.reply_to_message) {
+                        sendText("START");
+                        const broadcast = this.broadcastApplication.createNew(0);
                         const broadcastResult = await broadcastHandler({
                             adminTgId: ID,
                             forward: update.message.text === "/fbc",
                             messageId: update.message.message_id,
                             toUsers: [ID]
                         });
+                        this.broadcastApplication.finish(broadcast);
+                        sendText(`END ${JSON.stringify(broadcastResult)}`);
                     }
                     end();
                     return;

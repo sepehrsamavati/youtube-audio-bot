@@ -1,3 +1,4 @@
+import BroadcastApplication from "../../application/broadcast.application";
 import SettingsApplication from "../../application/settings.application";
 import UITextApplication from "../../application/uitext.application";
 import UserApplication from "../../application/user.application";
@@ -20,4 +21,5 @@ export default interface YTAServices {
     userApplication: UserApplication;
     UITApplication: UITextApplication;
     settingsApplication: SettingsApplication;
+    broadcastApplication: BroadcastApplication;
 }

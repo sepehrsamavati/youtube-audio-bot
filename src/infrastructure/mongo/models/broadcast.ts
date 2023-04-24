@@ -10,7 +10,7 @@ const schema = new mongoose.Schema<IBroadcast>({
 		type: Date,
         required: true
     },
-	totalUsers: {
+	targetUsers: {
 		type: Number,
 		required: true
 	},
