@@ -9,5 +9,7 @@ export enum TelegramMethodEnum {
     EditText = "editMessageText",
     AnswerCallbackQuery = "answerCallbackQuery",
     AnswerInlineQuery = "answerInlineQuery",
-    EditMessageReplyMarkup = "editMessageReplyMarkup"
+    EditMessageReplyMarkup = "editMessageReplyMarkup",
+    ForwardMessage = "forwardMessage",
+    CopyMessage = "copyMessage",
 };
