@@ -11,6 +11,7 @@ import inlineKeyboards from "./helpers/inlineKeyboards.js";
 import SettingsInputValidation from "./helpers/settingsInputValidation.js";
 import SettingsApplication from "../../application/settings.application.js";
 import Extensions from "../../common/helpers/extensions.js";
+import { broadcastHandler } from "./helpers/broadcast.js";
 
 export default class AdminHandler implements HandlerBase {
     constructor(
@@ -23,6 +24,18 @@ export default class AdminHandler implements HandlerBase {
         const isOwner = config.owners.includes(ID);
         if (user && update.message?.text) {
             switch(update.message.text) {
+                case "/bc":
+                case "/fbc":
+                    if(update.message.reply_to_message) {
+                        const broadcastResult = await broadcastHandler({
+                            adminTgId: ID,
+                            forward: update.message.text === "/fbc",
+                            messageId: update.message.message_id,
+                            toUsers: [ID]
+                        });
+                    }
+                    end();
+                    return;
                 case "...":
                 case UIT.return:
                 case UIT.cancel:

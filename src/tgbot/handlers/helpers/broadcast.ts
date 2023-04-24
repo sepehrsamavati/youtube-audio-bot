@@ -8,7 +8,7 @@ interface BroadcastHandlerOptions {
     toUsers: number[];
 };
 
-export async function bcHandler(options: BroadcastHandlerOptions) {
+export async function broadcastHandler(options: BroadcastHandlerOptions) {
     const method = options.forward ? TelegramMethodEnum.ForwardMessage : TelegramMethodEnum.CopyMessage;
     let sentCount = 0;
     let sendFailed: number[] = [];
