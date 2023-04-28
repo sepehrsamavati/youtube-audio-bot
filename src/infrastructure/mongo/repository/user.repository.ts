@@ -26,6 +26,16 @@ export default class UserRepository implements IUserRepository {
 			return false;
 		}
 	}
+	async updateUserType(tgId: number, userType: UserType): Promise<boolean> {
+		try {
+			await UserModel.findOneAndUpdate({ tgId: tgId }, {
+				type: userType
+			});
+			return true;
+		} catch {
+			return false;
+		}
+	}
 	async createUser(tgId: number): Promise<User | null> {
 		try {
 			const newUser = await UserModel.create({

@@ -28,6 +28,14 @@ export default class UserApplication implements IUserApplication {
         return operationResult;
     }
 
+    async setUserType(tgId: number, type: UserType): Promise<OperationResult> {
+        const operationResult = new OperationResult();
+        if(await this.userRepository.updateUserType(tgId, type)) {
+            operationResult.succeeded();
+        }
+        return operationResult;
+    }
+
     getListOfAdmins(): Promise<number[]> {
         return this.userRepository.getAdmins();
     }
