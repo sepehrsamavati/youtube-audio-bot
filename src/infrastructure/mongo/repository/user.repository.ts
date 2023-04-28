@@ -65,6 +65,7 @@ export default class UserRepository implements IUserRepository {
 				return null;
 
 			return {
+				id: user._id,
 				tgId: user.tgId,
 				mode: user.mode,
 				type: user.type,

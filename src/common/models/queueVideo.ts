@@ -1,12 +1,12 @@
-import { QueueVideoStep } from "../enums/video.enum.js";
-import { newLocalVideoID } from "../helpers/id.js";
-import { UITextObj } from "../types/uitext.js";
 import { User } from "../types/user.js";
+import { UITextObj } from "../types/uitext.js";
+import { newLocalVideoID } from "../helpers/id.js";
+import { QueueVideoStep } from "../enums/video.enum.js";
 
 export class QueueVideo {
     public id: string;
     public localId: string;
-    public fromUser: User['tgId'] = -1;
+    public fromUser: User;
     public lastUpdate: Date = new Date();
     public step: QueueVideoStep = QueueVideoStep.Validate;
     public fileAddress: string = "";
@@ -21,9 +21,9 @@ export class QueueVideo {
     public thumbnail: string = "";
     public thumbSize: number = 0;
 
-    constructor(id: string, userId: number){
+    constructor(id: string, user: User){
         this.id = id;
-        this.fromUser = userId;
+        this.fromUser = user;
         this.localId = newLocalVideoID(this.id);
         return this;
     }

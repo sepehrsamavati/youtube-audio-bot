@@ -46,7 +46,7 @@ export default class Services implements YTAServices {
             broadcastRepository
         } = new Repositories();
 
-        this.videoApplication = new VideoApplication(userRepository, videoRepository, likeRepository, viewRepository);
+        this.videoApplication = new VideoApplication(videoRepository, likeRepository, viewRepository);
 
         this.userApplication = new UserApplication(userRepository);
 

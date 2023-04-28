@@ -1,10 +1,10 @@
+import inlineKeyboards from "./helpers/inlineKeyboards.js";
+import HandlerBase from "../../common/models/handlerBase.js";
+import HandlerHelper from "../../common/helpers/handlerHelper.js";
 import UserApplication from "../../application/user.application.js";
+import OperationResult from "../../common/models/operationResult.js";
 import VideoApplication from "../../application/video.application.js";
 import { TelegramMethodEnum } from "../../common/enums/tgMethod.enum.js";
-import HandlerHelper from "../../common/helpers/handlerHelper.js";
-import HandlerBase from "../../common/models/handlerBase.js";
-import OperationResult from "../../common/models/operationResult.js";
-import inlineKeyboards from "./helpers/inlineKeyboards.js";
 
 export default class CallbackQueryHandler implements HandlerBase {
     constructor(
@@ -20,11 +20,11 @@ export default class CallbackQueryHandler implements HandlerBase {
             if (addLike || removeLike) {
                 let result = new OperationResult();
                 const videoYtId = query.data.slice(addLike ? 4 : 7);
-                const audio = await this.videoApplication.getAudio(videoYtId, ID);
+                const audio = await this.videoApplication.getAudio(videoYtId, user.id);
 
                 if (audio)
-                    result = addLike ? await this.videoApplication.like(audio.vid, ID)
-                            : await this.videoApplication.removeLike(audio.vid, ID)
+                    result = addLike ? await this.videoApplication.like(audio.vid, user.id)
+                            : await this.videoApplication.removeLike(audio.vid, user.id)
                 else
                     result.failed("musicNotFound");
                     
