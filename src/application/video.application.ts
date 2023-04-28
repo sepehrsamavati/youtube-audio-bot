@@ -1,27 +1,27 @@
 import fs from 'node:fs';
-import path from 'node:path';
-import http from 'node:https';
 import sharp from "sharp";
 import ytdl from "ytdl-core";
+import path from 'node:path';
+import http from 'node:https';
 import NodeID3 from "node-id3";
-import ffmpeg from "fluent-ffmpeg";
+import { Types } from 'mongoose';
 import config from "../config.js";
-import OperationResult from "../common/models/operationResult.js";
-import IVideoApplication from "./contracts/video/application.interface.js";
-import getFileSizeInMegaBytes from "../common/helpers/getFileSize.js";
-import cropThumbnailSides from "../common/helpers/cropThumbnailSides.js";
+import ffmpeg from "fluent-ffmpeg";
+import { User } from '../common/types/user.js';
+import deleteFile from '../common/helpers/deleteFile.js';
 import { QueueVideo } from '../common/models/queueVideo.js';
 import { QueueVideoStep } from '../common/enums/video.enum.js';
-import VideoRepository from '../infrastructure/mongo/repository/video.repository.js';
+import { StepCallback } from '../common/types/stepCallback.js';
+import OperationResult from "../common/models/operationResult.js";
+import getFileSizeInMegaBytes from "../common/helpers/getFileSize.js";
+import cropThumbnailSides from "../common/helpers/cropThumbnailSides.js";
+import IVideoApplication from "./contracts/video/application.interface.js";
 import LikeRepository from '../infrastructure/mongo/repository/like.repository.js';
 import ViewRepository from '../infrastructure/mongo/repository/view.repository.js';
-import deleteFile from '../common/helpers/deleteFile.js';
-import UserRepository from '../infrastructure/mongo/repository/user.repository.js';
-import { StepCallback } from '../common/types/stepCallback.js';
+import VideoRepository from '../infrastructure/mongo/repository/video.repository.js';
 
 export default class VideoApplication implements IVideoApplication {
     constructor(
-        private userRepository: UserRepository,
         private videoRepository: VideoRepository,
         private likeRepository: LikeRepository,
         private viewRepository: ViewRepository,
@@ -38,10 +38,9 @@ export default class VideoApplication implements IVideoApplication {
         lastWeek.setDate(lastWeek.getDate() - 7);
         return await this.videoRepository.getByDateRange(count, lastWeek, now);
     }
-    async getAudio(videoYtId: string, userTgId: number): Promise<AudioViewModel | null> {
+    async getAudio(videoYtId: string, userId: Types.ObjectId): Promise<AudioViewModel | null> {
         const video = await this.videoRepository.findByYtId(videoYtId);
-        const userId = video ? await this.userRepository.getIdByTgId(userTgId) : null;
-        if (video && userId) {
+        if (video) {
             if (!await this.viewRepository.isViewed(video._id, userId))
                 await this.viewRepository.add(video._id, userId);
             return {
@@ -54,11 +53,10 @@ export default class VideoApplication implements IVideoApplication {
         else
             return null;
     }
-    async like(videoYtId: string, userTgId: number): Promise<OperationResult> {
+    async like(videoYtId: string, userId: Types.ObjectId): Promise<OperationResult> {
         let operationResult = new OperationResult();
         const videoId = await this.videoRepository.getIdByYtId(videoYtId);
-        const userId = videoId ? await this.userRepository.getIdByTgId(userTgId) : null;
-        if (videoId && userId) {
+        if (videoId) {
             if (await this.likeRepository.isLiked(videoId, userId)) {
                 operationResult.failed("alreadyLiked");
             } else {
@@ -67,11 +65,10 @@ export default class VideoApplication implements IVideoApplication {
         }
         return operationResult;
     }
-    async removeLike(videoYtId: string, userTgId: number): Promise<OperationResult> {
+    async removeLike(videoYtId: string, userId: Types.ObjectId): Promise<OperationResult> {
         let operationResult = new OperationResult();
         const videoId = await this.videoRepository.getIdByYtId(videoYtId);
-        const userId = videoId ? await this.userRepository.getIdByTgId(userTgId) : null;
-        if (videoId && userId) {
+        if (videoId) {
             if (await this.likeRepository.isLiked(videoId, userId)) {
                 operationResult = await this.likeRepository.removeLike(videoId, userId);
             } else {
@@ -82,22 +79,20 @@ export default class VideoApplication implements IVideoApplication {
     }
     async add(queueVideo: QueueVideo, tgFileId: string): Promise<OperationResult> {
         let operationResult = new OperationResult();
-        const userId = await this.userRepository.getIdByTgId(queueVideo.fromUser);
-        if (userId) {
-            const downloadSize = queueVideo.mp4Size + queueVideo.thumbSize;
-            const uploadSize = queueVideo.mp3Size + queueVideo.thumbSize;
+        const userId = queueVideo.fromUser.id;
+        const downloadSize = queueVideo.mp4Size + queueVideo.thumbSize;
+        const uploadSize = queueVideo.mp3Size + queueVideo.thumbSize;
 
-            const video = {
-                id: queueVideo.id,
-                tgFileId, title: queueVideo.title
-            };
+        const video = {
+            id: queueVideo.id,
+            tgFileId, title: queueVideo.title
+        };
 
-            let dbVideo = await this.videoRepository.create(video, userId, downloadSize, uploadSize);
+        let dbVideo = await this.videoRepository.create(video, userId, downloadSize, uploadSize);
 
-            if (dbVideo) {
-                const videoId = dbVideo._id;
-                operationResult = await this.viewRepository.add(videoId, userId);
-            }
+        if (dbVideo) {
+            const videoId = dbVideo._id;
+            operationResult = await this.viewRepository.add(videoId, userId);
         }
         return operationResult;
     }
@@ -124,16 +119,16 @@ export default class VideoApplication implements IVideoApplication {
         this.queue.splice(index, 1);
         return true;
     }
-    async startDownload(videoId: string, userTgId: number, options: { minDelay: number, stepCallback: StepCallback }) {
+    async startDownload(videoId: string, user: User, options: { minDelay: number, stepCallback: StepCallback }) {
 
         if (this.queue.length >= config.concurrentLimit) {
             options.stepCallback(null, false, "botIsBusy");
             return;
         }
 
-        const queueVideo = new QueueVideo(videoId, userTgId);
+        const queueVideo = new QueueVideo(videoId, user);
 
-        if (this.queue.filter(qv => qv.fromUser === userTgId).length >= config.concurrentLimitPerUser) {
+        if (this.queue.filter(qv => qv.fromUser.tgId === user.tgId).length >= config.concurrentLimitPerUser) {
             options.stepCallback(null, false, "reachedConcurrentDownloads");
             return;
         }

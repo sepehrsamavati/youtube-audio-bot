@@ -2,6 +2,7 @@ import dotenv from 'dotenv'
 dotenv.config();
 
 const config = {
+	isDevelopment: process.env.NODE_ENV === "development",
 	tgbot: {
         token: process.env.YTA_TG_TOKEN ?? "",
         api: "https://api.telegram.org/bot",

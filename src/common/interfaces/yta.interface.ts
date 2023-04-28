@@ -1,7 +1,14 @@
+import BroadcastApplication from "../../application/broadcast.application";
 import SettingsApplication from "../../application/settings.application";
 import UITextApplication from "../../application/uitext.application";
 import UserApplication from "../../application/user.application";
 import VideoApplication from "../../application/video.application";
+
+export interface AppStatistics {
+	defaultLang: string;
+    publicMode: boolean;
+	shareAvailable: boolean;
+}
 
 export interface AppSettings {
 	defaultLang: string;
@@ -14,4 +21,5 @@ export default interface YTAServices {
     userApplication: UserApplication;
     UITApplication: UITextApplication;
     settingsApplication: SettingsApplication;
+    broadcastApplication: BroadcastApplication;
 }

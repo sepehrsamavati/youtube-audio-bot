@@ -9,6 +9,8 @@ import VideoRepository from "../infrastructure/mongo/repository/video.repository
 import UITextRepository from "../infrastructure/mongo/repository/uitext.repository.js";
 import SettingsRepository from "../infrastructure/mongo/repository/settings.repository.js";
 import SettingsApplication from "../application/settings.application.js";
+import BroadcastApplication from "../application/broadcast.application.js";
+import BroadcastRepository from "../infrastructure/mongo/repository/broadcast.repository.js";
 
 export const Repositories = class {
     likeRepository: LikeRepository;
@@ -17,6 +19,7 @@ export const Repositories = class {
     videoRepository: VideoRepository;
     UITRepository: UITextRepository;
     settingsRepository: SettingsRepository;
+    broadcastRepository: BroadcastRepository;
 
     constructor(){
         this.likeRepository = new LikeRepository();
@@ -25,6 +28,7 @@ export const Repositories = class {
         this.videoRepository = new VideoRepository();
         this.UITRepository = new UITextRepository();
         this.settingsRepository = new SettingsRepository();
+        this.broadcastRepository = new BroadcastRepository();
     }
 }
 
@@ -33,16 +37,23 @@ export default class Services implements YTAServices {
     userApplication: UserApplication;
     UITApplication: UITextApplication;
     settingsApplication: SettingsApplication;
+    broadcastApplication: BroadcastApplication;
 
     constructor() {
-        const { userRepository, videoRepository, likeRepository, viewRepository, UITRepository, settingsRepository } = new Repositories();
+        const {
+            userRepository, videoRepository, likeRepository,
+            viewRepository, UITRepository, settingsRepository,
+            broadcastRepository
+        } = new Repositories();
 
-        this.videoApplication = new VideoApplication(userRepository, videoRepository, likeRepository, viewRepository);
+        this.videoApplication = new VideoApplication(videoRepository, likeRepository, viewRepository);
 
         this.userApplication = new UserApplication(userRepository);
 
         this.UITApplication = new UITextApplication(UITRepository);
 
         this.settingsApplication = new SettingsApplication(settingsRepository);
+
+        this.broadcastApplication = new BroadcastApplication(broadcastRepository);
     }
 }

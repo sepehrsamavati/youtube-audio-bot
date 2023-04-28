@@ -55,7 +55,7 @@ export default class HomeHandler implements HandlerBase {
                     return
                 }
 
-                const cacheVideo = await this.videoApplication.getAudio(videoId, ID);
+                const cacheVideo = await this.videoApplication.getAudio(videoId, user.id);
                 if (cacheVideo) {
                     call(TelegramMethodEnum.SendAudio, {
                         chat_id: ID,
@@ -74,7 +74,7 @@ export default class HomeHandler implements HandlerBase {
                 if (sentMessage !== null) {
                     const stepMessageId: MessageID = sentMessage.message_id;
 
-                    this.videoApplication.startDownload(videoId, ID, {
+                    this.videoApplication.startDownload(videoId, user, {
                         minDelay: 500,
                         stepCallback: (queueVideo: QueueVideo | null, success: boolean, error) => {
 

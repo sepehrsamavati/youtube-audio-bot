@@ -22,6 +22,7 @@ export type TelegramMessage = {
     };
     forward_from?: ChatID;
     forward_from_chat?: Chat;
+    reply_to_message?: TelegramMessage;
 };
 
 export type TgMsgUpdate = {
