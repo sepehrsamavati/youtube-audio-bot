@@ -24,7 +24,9 @@ export default class TelegramBot {
 			services.userApplication,
 			services.UITApplication,
 			services.settingsApplication,
-			services.broadcastApplication
+			services.broadcastApplication,
+			services.viewApplication,
+			services.videoApplication
 			);
 		this.homeHandler = new HomeHandler(services.videoApplication, services.userApplication);
 		this.callbackQueryHandler = new CallbackQueryHandler(services.userApplication, services.videoApplication);

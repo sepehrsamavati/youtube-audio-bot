@@ -9,4 +9,6 @@ export default interface IVideoApplication {
     add(queueVideo: QueueVideo, tgFileId: string): Promise<OperationResult>;
     getRecentDownloads(count: number): Promise<Video[]>;
     getLastWeekDownloads(count: number): Promise<Video[]>;
+    getLastWeekDownloadsCount(): Promise<number>;
+    getTotalCount(): Promise<number>;
 }

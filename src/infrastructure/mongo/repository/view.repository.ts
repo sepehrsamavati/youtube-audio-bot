@@ -1,5 +1,6 @@
 import { Types } from "mongoose";
 import ViewModel from "../models/views.js";
+import { logError } from "../../../common/helpers/log.js";
 import OperationResult from "../../../common/models/operationResult.js";
 import IViewRepository from "../../../application/contracts/view/repository.interface.js";
 
@@ -27,5 +28,13 @@ export default class ViewRepository implements IViewRepository {
 			result.failed();
 		}
 		return result;
+	}
+	async getTotalCount(): Promise<number> {
+		try {
+			return ViewModel.count();
+		} catch(e) {
+			logError("Get total view count / View repository", e);
+			return 0;
+		}
 	}
 };

@@ -13,13 +13,17 @@ import SettingsApplication from "../../application/settings.application.js";
 import Extensions from "../../common/helpers/extensions.js";
 import { broadcastHandler } from "./helpers/broadcast.js";
 import BroadcastApplication from "../../application/broadcast.application.js";
+import ViewApplication from "../../application/view.application.js";
+import VideoApplication from "../../application/video.application.js";
 
 export default class AdminHandler implements HandlerBase {
     constructor(
         private userApplication: UserApplication,
         private UITApplication: UITextApplication,
         private settingsApplication: SettingsApplication,
-        private broadcastApplication: BroadcastApplication
+        private broadcastApplication: BroadcastApplication,
+        private viewApplication: ViewApplication,
+        private videoApplication: VideoApplication
     ) { }
     public async handler(handlerData: HandlerHelper) {
         const { update, sendText, UIT, langCode, user, call, ID, end } = handlerData;
@@ -52,6 +56,21 @@ export default class AdminHandler implements HandlerBase {
                         reply_markup: inlineKeyboards.admin(user, UIT)
                     });
                     end();
+                    return;
+                case UIT.stats:
+                    const totalViews = await this.viewApplication.getTotalCount();
+                    const broadcastStats = await this.broadcastApplication.getStatistics();
+                    const lastWeekDownloads = await this.videoApplication.getLastWeekDownloadsCount();
+                    const totalSavedVideos = await this.videoApplication.getTotalCount();
+                    const usersCount = await this.userApplication.getTotalCount();
+                    sendText(Extensions.StringFormatter(UIT._stats, [
+                        broadcastStats.count,
+                        broadcastStats.last.toLocaleString(),
+                        lastWeekDownloads,
+                        totalSavedVideos,
+                        totalViews,
+                        usersCount
+                    ])).end();
                     return;
                 case UIT.settings:
                     handlerData.setUserMode(UserMode.AdminSettings);

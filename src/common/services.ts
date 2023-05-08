@@ -11,6 +11,7 @@ import SettingsRepository from "../infrastructure/mongo/repository/settings.repo
 import SettingsApplication from "../application/settings.application.js";
 import BroadcastApplication from "../application/broadcast.application.js";
 import BroadcastRepository from "../infrastructure/mongo/repository/broadcast.repository.js";
+import ViewApplication from "../application/view.application.js";
 
 export const Repositories = class {
     likeRepository: LikeRepository;
@@ -36,6 +37,7 @@ export default class Services implements YTAServices {
     videoApplication: VideoApplication;
     userApplication: UserApplication;
     UITApplication: UITextApplication;
+    viewApplication: ViewApplication;
     settingsApplication: SettingsApplication;
     broadcastApplication: BroadcastApplication;
 
@@ -51,6 +53,8 @@ export default class Services implements YTAServices {
         this.userApplication = new UserApplication(userRepository);
 
         this.UITApplication = new UITextApplication(UITRepository);
+
+        this.viewApplication = new ViewApplication(viewRepository);
 
         this.settingsApplication = new SettingsApplication(settingsRepository);
 

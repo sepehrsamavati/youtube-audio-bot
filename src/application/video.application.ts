@@ -38,6 +38,15 @@ export default class VideoApplication implements IVideoApplication {
         lastWeek.setDate(lastWeek.getDate() - 7);
         return await this.videoRepository.getByDateRange(count, lastWeek, now);
     }
+    async getLastWeekDownloadsCount(): Promise<number> {
+        const now = new Date();
+        const lastWeek = new Date();
+        lastWeek.setDate(lastWeek.getDate() - 7);
+        return this.videoRepository.getCountByDateRange(lastWeek, now);
+    }
+    getTotalCount(): Promise<number> {
+        return this.videoRepository.getTotalCount();
+    }
     async getAudio(videoYtId: string, userId: Types.ObjectId): Promise<AudioViewModel | null> {
         const video = await this.videoRepository.findByYtId(videoYtId);
         if (video) {

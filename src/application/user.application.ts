@@ -44,4 +44,7 @@ export default class UserApplication implements IUserApplication {
         let user = await this.userRepository.findByTgId(id) ?? await this.userRepository.createUser(id);
         return user;
     }
+    getTotalCount(): Promise<number> {
+        return this.userRepository.count();
+    }
 };

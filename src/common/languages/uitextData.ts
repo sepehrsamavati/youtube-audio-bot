@@ -6,6 +6,13 @@ const UITextData: UITextObj[] = [
         _start: "🤟 Hi [NAME], welcome to YouTube Audio bot\n⁉ Help: /help",
         _help: "📌 Just send me a YouTube link or video ID to get MP3 file here",
         stats: "📊 Stats",
+        _stats: "Bot statistics"
+            + "\n\n📉 Total BCs: %s1"
+            + "\n⏱ Last BC: %s2"
+            + "\n\n📊 Last week downloads: %s3"
+            + "\n🗃 Saved: %s4"
+            + "\n👁 Views: %s5"
+            + "\n\n👥 Users: %s6",
         help: "❔ Help",
         random: "🎲 Random song",
         top5: "🎖 Top 5",
@@ -18,7 +25,6 @@ const UITextData: UITextObj[] = [
         edtSup: "⚠️ Edited messages aren't supported.",
         submit: "✅ Submit",
         cancel: "❌ Cancel",
-        vidStats: "📈 Week Downloads",
         on: "⚪ On",
         off: "⚫ Off",
         ok: "✅",

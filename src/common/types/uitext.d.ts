@@ -3,6 +3,7 @@ export type UITextObj = {
     _start: string;
     _help: string;
     stats: string;
+    _stats: string;
     help: string;
     random: string;
     top5: string;
@@ -15,7 +16,6 @@ export type UITextObj = {
     edtSup: string;
     submit: string;
     cancel: string;
-    vidStats: string;
     on: string;
     off: string;
     ok: string;
