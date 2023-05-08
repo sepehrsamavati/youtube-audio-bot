@@ -130,10 +130,7 @@ export default class AdminHandler implements HandlerBase {
                             call(TelegramMethodEnum.SendMessage, {
                                 chat_id: ID,
                                 text: text,
-                                reply_markup: {
-                                    keyboard: inlineKeyboards.admin(user, UIT),
-                                    resize_keyboard: true
-                                }
+                                reply_markup: inlineKeyboards.admin(user, UIT)
                             });
                         };
                         if (user.mode === UserMode.AddAdmin) {
@@ -144,7 +141,7 @@ export default class AdminHandler implements HandlerBase {
                             else
                                 sendText("❌ Already admin")
                         } else {
-                            if(config.owners.includes(ID))
+                            if(config.owners.includes(targetAdminTgId))
                                 sendText("❌ Cannot remove owner");
                             else if (targetAdmin.type === UserType.Admin) {
                                 this.userApplication.setUserType(targetAdmin.tgId, UserType.Default);
