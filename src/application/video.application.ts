@@ -44,11 +44,29 @@ export default class VideoApplication implements IVideoApplication {
         lastWeek.setDate(lastWeek.getDate() - 7);
         return this.videoRepository.getCountByDateRange(lastWeek, now);
     }
+    async getTop(count: number): Promise<Video[]> {
+        return this.videoRepository.getMostViewed(count);
+    }
     getTotalCount(): Promise<number> {
         return this.videoRepository.getTotalCount();
     }
     async getAudio(videoYtId: string, userId: Types.ObjectId): Promise<AudioViewModel | null> {
         const video = await this.videoRepository.findByYtId(videoYtId);
+        if (video) {
+            if (!await this.viewRepository.isViewed(video._id, userId))
+                await this.viewRepository.add(video._id, userId);
+            return {
+                vid: video.id,
+                title: video.title,
+                tgFileId: video.tgFileId,
+                isLiked: await this.likeRepository.isLiked(video._id, userId)
+            };
+        }
+        else
+            return null;
+    }
+    async getRandomAudio(userId: Types.ObjectId): Promise<AudioViewModel | null> {
+        const video = await this.videoRepository.getRandom();
         if (video) {
             if (!await this.viewRepository.isViewed(video._id, userId))
                 await this.viewRepository.add(video._id, userId);

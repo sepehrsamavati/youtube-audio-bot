@@ -18,6 +18,16 @@ export default class HomeHandler implements HandlerBase {
         const { update, sendText, UIT, user, call, ID, end } = handlerData;
         if (user && update.message?.text) {
             switch(update.message.text) {
+                case UIT.random:
+                    const randomAudio = await this.videoApplication.getRandomAudio(user.id);
+                    if(randomAudio)
+                        call(TelegramMethodEnum.SendAudio, {
+                            chat_id: ID,
+                            audio: randomAudio.tgFileId,
+                            reply_markup: inlineKeyboards.audio.normal(randomAudio, UIT)
+                        });
+                    else sendText(UIT.musicNotFound);
+                    return;
                 case UIT.recentDownloads:
                     const getRecentCount = 15;
                     const recentDownloads = await this.videoApplication.getRecentDownloads(getRecentCount);
@@ -35,6 +45,15 @@ export default class HomeHandler implements HandlerBase {
                             ? `🔥 Top ${lastWeekDownloads.length} last week downloads`
                             +`\n\n\n${lastWeekDownloads.map( (video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}` ).join("\n\n")}`
                             : "No downloads!"
+                            );
+                    end();
+                    return;
+                case UIT.top5:
+                    const getTopNCount = 5;
+                    const topAudios = await this.videoApplication.getTop(getTopNCount);
+                    sendText(
+                            `🔥 Top ${topAudios.length} download(s)`
+                            +`\n\n\n${topAudios.map( (video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}` ).join("\n\n")}`
                             );
                     end();
                     return;

@@ -177,4 +177,24 @@ export default class VideoRepository implements IVideoRepository {
 			return 0;
 		}
 	}
+	async getRandom(): Promise<IVideo | null> {
+		try {
+			const count = await this.getTotalCount();
+			if(count > 0)
+			{
+				const randomIndex = Math.floor(Math.random() * count);
+				const video = await VideoModel.findOne().skip(randomIndex);
+				return video ? {
+					_id: video._id,
+					title: video.title,
+					id: video.id,
+					tgFileId: video.tgFileId
+				} : null;
+			}
+			return null
+		} catch(e) {
+			logError("Get random / Video repository", e);
+			return null;
+		}
+	}
 };
