@@ -136,23 +136,23 @@ export default class AdminHandler implements HandlerBase {
                         if (user.mode === UserMode.AddAdmin) {
                             if (targetAdmin.type !== UserType.Admin) {
                                 this.userApplication.setUserType(targetAdmin.tgId, UserType.Admin);
-                                success(`✅ Admin ${targetAdminTgId} added`);
+                                success(Extensions.StringFormatter(UIT.adminAdded, targetAdminTgId.toString()));
                             }
                             else
-                                sendText("❌ Already admin")
+                                sendText(UIT.alreadyAdmin)
                         } else {
                             if(config.owners.includes(targetAdminTgId))
-                                sendText("❌ Cannot remove owner");
+                                sendText(UIT.cantRemoveOwner);
                             else if (targetAdmin.type === UserType.Admin) {
                                 this.userApplication.setUserType(targetAdmin.tgId, UserType.Default);
-                                success(`✅ Admin ${targetAdminTgId} removed`);
+                                success(Extensions.StringFormatter(UIT.adminRemoved, targetAdminTgId.toString()));
                             }
                             else
-                                sendText("❌ Not admin")
+                                sendText(UIT.userIsNotAdmin)
                         }
                     }
                     else
-                        sendText("❌ User not found");
+                        sendText(UIT.userNotFound);
                     end();
                     return;
                 case UserMode.AdminSettings:
@@ -165,12 +165,18 @@ export default class AdminHandler implements HandlerBase {
                     switch (update.message.text) {
                         case UIT.startText:
                             handlerData.setUserMode(UserMode.SetStartText);
-                            settingText = `Current value:\n\n'${UIT._start}'\n\n\nSend new message`;
+                            settingText = Extensions.StringFormatter(
+                                UIT.currentValueSendNewMessage,
+                                UIT._start
+                            );
                             availableDTs = ["name"];
                             break;
                         case UIT.helpText:
                             handlerData.setUserMode(UserMode.SetHelpText);
-                            settingText = `Current value:\n\n'${UIT._help}'\n\n\nSend new message`;
+                            settingText = Extensions.StringFormatter(
+                                UIT.currentValueSendNewMessage,
+                                UIT._help
+                            );
                             availableDTs = ["name"];
                             break;
                         case UIT.shareAvailable:
@@ -191,9 +197,9 @@ export default class AdminHandler implements HandlerBase {
                     }
 
                     if (availableDTs.length) {
-                        settingText += "\n\nAvailable dynamic words:\n" + availableDTs.map((key) => {
+                        settingText += `\n\n${UIT.availableDynamicWords}\n` + availableDTs.map((key) => {
                             const dt = dynamicTextHelp[key];
-                            return dt ? `${dt.key} ${dt.value}` : ""
+                            return dt ? `${dt.key} ${UIT[dt.value] ?? dt.value}` : ""
                         }).join('\n');
                     }
 
@@ -212,8 +218,9 @@ export default class AdminHandler implements HandlerBase {
                         user, UIT, handlerData,
                         type: String,
                         validator: (text) => {
-                            if (text.length > 1000) {
-                                return "tooLarge";
+                            const maxLen = 1000;
+                            if (text.length > maxLen) {
+                                return Extensions.StringFormatter(UIT.textLengthLimitError, [maxLen]);
                             }
                         },
                         onValid: (value) => this.UITApplication.set(langCode, "_start", value)
@@ -226,8 +233,9 @@ export default class AdminHandler implements HandlerBase {
                         user, UIT, handlerData,
                         type: String,
                         validator: (text) => {
-                            if (text.length > 2000) {
-                                return "tooLarge";
+                            const maxLen = 2000;
+                            if (text.length > maxLen) {
+                                return Extensions.StringFormatter(UIT.textLengthLimitError, [maxLen]);
                             }
                         },
                         onValid: (value) => this.UITApplication.set(langCode, "_help", value)

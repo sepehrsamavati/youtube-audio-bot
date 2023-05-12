@@ -7,9 +7,13 @@ export type UITextObj = {
     help: string;
     random: string;
     top5: string;
+    _top5: string;
     weekTop: string;
+    _weekTop: string;
     mostLikes: string;
     recentDownloads: string;
+    _recentDownloads: string;
+    noDownloads: string;
     addAdmin: string;
     remAdmin: string;
     return: string,
@@ -26,6 +30,15 @@ export type UITextObj = {
     invalidCommand: string;
     setError: string;
     currentValueSelectNew: string;
+    currentValueSendNewMessage: string;
+
+    userAccountName: string;
+    userNotFound: string;
+    userIsNotAdmin: string;
+    adminAdded: string;
+    adminRemoved: string;
+    cantRemoveOwner: string;
+    alreadyAdmin: string;
 
     musicNotFound: string;
     liked: string;
@@ -61,6 +74,8 @@ export type UITextObj = {
     valueTurnedTo: string;
     valueChangedTo: string;
     invalidValue: string;
+    textLengthLimitError: string;
+    availableDynamicWords: string;
 
     /* Errors */
     invalidDataFormat: string;

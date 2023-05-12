@@ -8,6 +8,7 @@ import { QueueVideo } from "../../common/models/queueVideo.js";
 import { ChatID, MessageID } from "../../common/types/tgBot.js";
 import inlineKeyboards from "./helpers/inlineKeyboards.js";
 import { getUICode } from "./helpers/videoIdBase64.js";
+import Extensions from "../../common/helpers/extensions.js";
 
 export default class HomeHandler implements HandlerBase {
     constructor(
@@ -32,29 +33,36 @@ export default class HomeHandler implements HandlerBase {
                     const getRecentCount = 15;
                     const recentDownloads = await this.videoApplication.getRecentDownloads(getRecentCount);
                     sendText(
-                            `📆 Recent ${recentDownloads.length} downloads`
-                            + `\n\n\n${recentDownloads.map((video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}`).join("\n\n")}`
-                            );
+                            recentDownloads.length ?
+                            Extensions.StringFormatter(UIT._top5, [
+                                recentDownloads.length,
+                                recentDownloads.map((video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}`).join("\n\n")
+                            ]) : UIT.noDownloads
+                        );
                     end();
                     return;
                 case UIT.weekTop:
                     const getWeekCount = 5;
                     const lastWeekDownloads = await this.videoApplication.getLastWeekDownloads(getWeekCount);
                     sendText(
-                            lastWeekDownloads.length
-                            ? `🔥 Top ${lastWeekDownloads.length} last week downloads`
-                            +`\n\n\n${lastWeekDownloads.map( (video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}` ).join("\n\n")}`
-                            : "No downloads!"
-                            );
+                            lastWeekDownloads.length ?
+                            Extensions.StringFormatter(UIT._top5, [
+                                lastWeekDownloads.length,
+                                lastWeekDownloads.map( (video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}` ).join("\n\n")
+                            ]) : UIT.noDownloads
+                        );
                     end();
                     return;
                 case UIT.top5:
                     const getTopNCount = 5;
                     const topAudios = await this.videoApplication.getTop(getTopNCount);
                     sendText(
-                            `🔥 Top ${topAudios.length} download(s)`
-                            +`\n\n\n${topAudios.map( (video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}` ).join("\n\n")}`
-                            );
+                            topAudios.length ?
+                            Extensions.StringFormatter(UIT._top5, [
+                                topAudios.length,
+                                topAudios.map( (video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}` ).join("\n\n")
+                            ]) : UIT.noDownloads
+                        );
                     end();
                     return;
             }
