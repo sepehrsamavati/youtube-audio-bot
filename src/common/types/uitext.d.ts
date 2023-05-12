@@ -11,6 +11,7 @@ export type UITextObj = {
     weekTop: string;
     _weekTop: string;
     mostLikes: string;
+    _mostLikes: string;
     recentDownloads: string;
     _recentDownloads: string;
     noDownloads: string;

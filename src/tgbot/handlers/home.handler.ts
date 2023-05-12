@@ -65,6 +65,18 @@ export default class HomeHandler implements HandlerBase {
                         );
                     end();
                     return;
+                case UIT.mostLikes:
+                    const getMostLikedCount = 5;
+                    const mostLiked = await this.videoApplication.getMostLiked(getMostLikedCount);
+                    sendText(
+                        mostLiked.length ?
+                            Extensions.StringFormatter(UIT._mostLikes, [
+                                mostLiked.length,
+                                mostLiked.map( (video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}` ).join("\n\n")
+                            ]) : UIT.noDownloads
+                        );
+                    end();
+                    return;
             }
 
             const canSubmit = this.userApplication.canSubmitRequest(user);

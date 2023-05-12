@@ -13,4 +13,5 @@ export default interface IVideoApplication {
     getLastWeekDownloadsCount(): Promise<number>;
     getTotalCount(): Promise<number>;
     getTop(count: number): Promise<Video[]>;
+    getMostLiked(count: number): Promise<Video[]>;
 }

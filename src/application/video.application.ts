@@ -50,6 +50,9 @@ export default class VideoApplication implements IVideoApplication {
     getTotalCount(): Promise<number> {
         return this.videoRepository.getTotalCount();
     }
+    getMostLiked(count: number): Promise<Video[]> {
+        return this.videoRepository.getMostLiked(count);
+    }
     async getAudio(videoYtId: string, userId: Types.ObjectId): Promise<AudioViewModel | null> {
         const video = await this.videoRepository.findByYtId(videoYtId);
         if (video) {
