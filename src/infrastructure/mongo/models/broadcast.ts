@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { BroadcastType, IBroadcast } from "../../../common/interfaces/broadcast.interface.js";
 
 const schema = new mongoose.Schema<IBroadcast>({
 	start: {
@@ -12,6 +13,11 @@ const schema = new mongoose.Schema<IBroadcast>({
     },
 	targetUsers: {
 		type: Number,
+		required: true
+	},
+	type: {
+		type: String,
+		enum: Object.values(BroadcastType),
 		required: true
 	},
 	usersReceived: {

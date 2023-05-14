@@ -1,7 +1,5 @@
-import config from "../../../config.js";
 import UserModel from "../models/user.js";
-import settings from "../../../settings.js";
-import { HydratedDocument, Types } from "mongoose";
+import { Types } from "mongoose";
 import { User } from "../../../common/types/user.js";
 import { logError } from "../../../common/helpers/log.js";
 import { UserMode, UserStatus, UserType } from "../../../common/enums/user.enum.js";
@@ -36,30 +34,35 @@ export default class UserRepository implements IUserRepository {
 			return false;
 		}
 	}
-	async createUser(tgId: number): Promise<User | null> {
+	async updateUsersStatus(tgIds: number[], userStatus: UserStatus): Promise<boolean> {
 		try {
-			const newUser = await UserModel.create({
-				tgId,
-				mode: UserMode.Default,
-				type: config.owners.includes(tgId) ? UserType.Admin : UserType.Default,
-				language: settings.defaultLang,
-				downloads: 0,
-				lastRequest: 0,
-				status: UserStatus.OK,
-				usage: {
-					down: 0,
-					up: 0
+			await UserModel.updateMany({
+				tgId: {
+					$in: tgIds
 				}
+			}, {
+				status: userStatus
 			});
+			return true;
+		} catch(e) {
+			logError("User repository / updateUsersStatus", e);
+			return false;
+		}
+	}
+	async createUser(user: Omit<User, 'id'>): Promise<User | null> {
+		try {
+			const newUser = await UserModel.create(user);
 			return newUser;
 		} catch (e) {
 			debugger
 			return null;
 		}
 	}
-	async findByTgId(id: number): Promise<User | null> {
+	async findByTgId(id: number, updateLastRequest: boolean = false): Promise<User | null> {
 		try {
-			const user: HydratedDocument<User> | null = await UserModel.findOne({ tgId: id });
+			const user = updateLastRequest ? await UserModel.findOneAndUpdate({ tgId: id }, {
+				lastRequest: new Date()
+			}) : await UserModel.findOne({ tgId: id });
 
 			if (!user)
 				return null;
@@ -70,10 +73,12 @@ export default class UserRepository implements IUserRepository {
 				mode: user.mode,
 				type: user.type,
 				lastRequest: user.lastRequest,
+				language: user.language,
 				status: user.status,
 				promotedBy: user.promotedBy
 			};
 		} catch (e) {
+			logError("User repository / findByTgId", e);
 			return null;
 		}
 	}

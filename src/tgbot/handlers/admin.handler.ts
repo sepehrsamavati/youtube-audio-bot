@@ -3,7 +3,7 @@ import settings from "../../settings.js";
 import UITextApplication from "../../application/uitext.application.js";
 import UserApplication from "../../application/user.application.js";
 import { TelegramMethodEnum } from "../../common/enums/tgMethod.enum.js";
-import { UserMode, UserType } from "../../common/enums/user.enum.js";
+import { UserMode, UserStatus, UserType } from "../../common/enums/user.enum.js";
 import HandlerHelper from "../../common/helpers/handlerHelper.js";
 import HandlerBase from "../../common/models/handlerBase.js";
 import { DynamicTextHelp, dynamicTextHelp } from "./helpers/dynamicText.js";
@@ -15,6 +15,7 @@ import { broadcastHandler } from "./helpers/broadcast.js";
 import BroadcastApplication from "../../application/broadcast.application.js";
 import ViewApplication from "../../application/view.application.js";
 import VideoApplication from "../../application/video.application.js";
+import { BroadcastType } from "../../common/interfaces/broadcast.interface.js";
 
 export default class AdminHandler implements HandlerBase {
     constructor(
@@ -34,15 +35,23 @@ export default class AdminHandler implements HandlerBase {
                 case "/fbc":
                     if (update.message.reply_to_message) {
                         sendText("START");
+                        const isForward = update.message.text === "/fbc";
                         const usersId = await this.userApplication.getBroadcastIdList();
-                        const broadcast = this.broadcastApplication.createNew(0);
+                        const broadcast = this.broadcastApplication.createNew(
+                            usersId.length,
+                            isForward ? BroadcastType.Forward : BroadcastType.Copy
+                        );
                         const broadcastResult = await broadcastHandler({
                             adminTgId: ID,
-                            forward: update.message.text === "/fbc",
+                            forward: isForward,
                             messageId: update.message.reply_to_message.message_id,
                             toUsers: usersId
                         });
+                        broadcast.usersReceived = broadcastResult.sentCount;
                         this.broadcastApplication.finish(broadcast);
+                        if (broadcastResult.sendFailed.length) {
+                            this.userApplication.setUsersStatus(broadcastResult.sendFailed, UserStatus.Blocked);
+                        }
                         sendText(`END ${JSON.stringify(broadcastResult)}`);
                     }
                     end();
@@ -124,7 +133,7 @@ export default class AdminHandler implements HandlerBase {
                 case UserMode.AddAdmin:
                 case UserMode.RemoveAdmin:
                     let targetAdminTgId = parseInt(update.message.text);
-                    const targetAdmin = await this.userApplication.getByTgId(targetAdminTgId);
+                    const targetAdmin = await this.userApplication.getByTgId(targetAdminTgId, false, false);
                     if (targetAdmin) {
                         const success = (text: string) => {
                             handlerData.setUserMode(UserMode.Default);
@@ -142,7 +151,7 @@ export default class AdminHandler implements HandlerBase {
                             else
                                 sendText(UIT.alreadyAdmin)
                         } else {
-                            if(config.owners.includes(targetAdminTgId))
+                            if (config.owners.includes(targetAdminTgId))
                                 sendText(UIT.cantRemoveOwner);
                             else if (targetAdmin.type === UserType.Admin) {
                                 this.userApplication.setUserType(targetAdmin.tgId, UserType.Default);

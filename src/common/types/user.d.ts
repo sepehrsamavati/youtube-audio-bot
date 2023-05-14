@@ -8,5 +8,6 @@ export type User = {
     status: UserStatus;
     type: UserType;
     lastRequest: Date;
+    language: string;
     promotedBy?: number;
 }

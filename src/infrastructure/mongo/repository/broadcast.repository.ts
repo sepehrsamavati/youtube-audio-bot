@@ -1,6 +1,7 @@
 import BroadcastModel from "../models/broadcast.js";
 import { logError } from "../../../common/helpers/log.js";
 import IBroadcastRepository from "../../../application/contracts/broadcast/repository.interface.js";
+import { IBroadcast } from "../../../common/interfaces/broadcast.interface.js";
 
 export default class BroadcastRepository implements IBroadcastRepository {
 	async add(broadcast: IBroadcast): Promise<boolean> {
