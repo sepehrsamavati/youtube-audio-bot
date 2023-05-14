@@ -48,4 +48,8 @@ export default class UserApplication implements IUserApplication {
     getTotalCount(): Promise<number> {
         return this.userRepository.count();
     }
+
+    getBroadcastIdList(): Promise<number[]> {
+        return this.userRepository.getBroadcastValidUserIds();
+    }
 };

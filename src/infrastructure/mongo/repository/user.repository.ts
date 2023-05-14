@@ -11,7 +11,7 @@ export default class UserRepository implements IUserRepository {
 	async count(): Promise<number> {
 		try {
 			return await UserModel.count();
-		} catch(e) {
+		} catch (e) {
 			logError("User repository / Count", e);
 			return 0;
 		}
@@ -52,7 +52,7 @@ export default class UserRepository implements IUserRepository {
 				}
 			});
 			return newUser;
-		} catch(e) {
+		} catch (e) {
 			debugger
 			return null;
 		}
@@ -61,7 +61,7 @@ export default class UserRepository implements IUserRepository {
 		try {
 			const user: HydratedDocument<User> | null = await UserModel.findOne({ tgId: id });
 
-			if(!user)
+			if (!user)
 				return null;
 
 			return {
@@ -69,11 +69,11 @@ export default class UserRepository implements IUserRepository {
 				tgId: user.tgId,
 				mode: user.mode,
 				type: user.type,
-                lastRequest: user.lastRequest,
-                status: user.status,
+				lastRequest: user.lastRequest,
+				status: user.status,
 				promotedBy: user.promotedBy
 			};
-		} catch(e) {
+		} catch (e) {
 			return null;
 		}
 	}
@@ -82,7 +82,7 @@ export default class UserRepository implements IUserRepository {
 			const user = await UserModel.findOne({ tgId: id });
 
 			return user?._id ?? null;
-		} catch(e) {
+		} catch (e) {
 			return null;
 		}
 	}
@@ -90,6 +90,18 @@ export default class UserRepository implements IUserRepository {
 		try {
 			const admins = await UserModel.find({ type: UserType.Admin });
 			return admins.map(admin => admin.tgId);
+		} catch {
+			return [];
+		}
+	}
+	async getBroadcastValidUserIds(): Promise<number[]> {
+		try {
+			const users = await UserModel.find({
+				status: {
+					$nin: [UserStatus.Banned, UserStatus.Blocked]
+				}
+			});
+			return users.map(user => user.tgId);
 		} catch {
 			return [];
 		}

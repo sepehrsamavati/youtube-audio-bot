@@ -10,4 +10,5 @@ export default interface IUserRepository {
     getIdByTgId(id: number): Promise<Types.ObjectId | null>;
     getAdmins(): Promise<number[]>;
     count(): Promise<number>;
+    getBroadcastValidUserIds(): Promise<number[]>;
 }

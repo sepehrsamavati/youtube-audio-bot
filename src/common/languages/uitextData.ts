@@ -34,6 +34,7 @@ const UITextData: UITextObj[] = [
         off: "⚫ Off",
         ok: "✅",
         failed: "❌",
+        never: "Never",
         noAccess: "❌ You have no access!",
         commandNotFound: "❌ Command not found!",
         invalidVideo: "❌ Video is not valid!",

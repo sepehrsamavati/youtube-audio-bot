@@ -9,4 +9,5 @@ export default interface IUserApplication {
     setUserType(tgId: number, type: UserType): Promise<OperationResult>;
     canSubmitRequest(user: User): OperationResult;
     getTotalCount(): Promise<number>;
+    getBroadcastIdList(): Promise<number[]>;
 }

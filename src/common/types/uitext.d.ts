@@ -25,6 +25,7 @@ export type UITextObj = {
     off: string;
     ok: string;
     failed: string;
+    never: string;
     noAccess: string;
     commandNotFound: string;
     invalidVideo: string;

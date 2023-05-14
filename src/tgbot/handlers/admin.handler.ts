@@ -34,12 +34,13 @@ export default class AdminHandler implements HandlerBase {
                 case "/fbc":
                     if (update.message.reply_to_message) {
                         sendText("START");
+                        const usersId = await this.userApplication.getBroadcastIdList();
                         const broadcast = this.broadcastApplication.createNew(0);
                         const broadcastResult = await broadcastHandler({
                             adminTgId: ID,
                             forward: update.message.text === "/fbc",
-                            messageId: update.message.message_id,
-                            toUsers: [ID]
+                            messageId: update.message.reply_to_message.message_id,
+                            toUsers: usersId
                         });
                         this.broadcastApplication.finish(broadcast);
                         sendText(`END ${JSON.stringify(broadcastResult)}`);
@@ -65,7 +66,7 @@ export default class AdminHandler implements HandlerBase {
                     const usersCount = await this.userApplication.getTotalCount();
                     sendText(Extensions.StringFormatter(UIT._stats, [
                         broadcastStats.count,
-                        broadcastStats.last.toLocaleString(),
+                        broadcastStats.last.getTime() === 0 ? UIT.never : broadcastStats.last.toLocaleString(),
                         lastWeekDownloads,
                         totalSavedVideos,
                         totalViews,

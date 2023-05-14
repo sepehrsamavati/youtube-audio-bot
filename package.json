@@ -1,6 +1,6 @@
 {
   "name": "ytabot",
-  "version": "2.0.0-alpha.19",
+  "version": "2.0.0-alpha.20",
   "description": "Download MP3 from YouTube in Telegram messenger.",
   "main": "index.js",
   "scripts": {
