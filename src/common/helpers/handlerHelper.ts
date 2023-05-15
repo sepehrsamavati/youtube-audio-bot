@@ -15,7 +15,7 @@ export default class HandlerHelper implements Handler {
 
 	ID!: number;
 	update!: TgMsgUpdate;
-	user?: User;
+	user!: User;
 	UIT!: UITextObj;
 	langCode!: string;
 	call = TelegramCall;

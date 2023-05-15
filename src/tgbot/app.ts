@@ -8,9 +8,11 @@ import CallbackQueryHandler from "./handlers/callbackQuery.handler.js";
 import HomeHandler from "./handlers/home.handler.js";
 import InlineQueryHandler from "./handlers/inlineQuery.handler.js";
 import UpdateHandler from "./handlers/main.js";
+import ReturnHandler from "./handlers/return.handler.js";
 
 export default class TelegramBot {
 	userApplication: UserApplication;
+	returnHandler: ReturnHandler;
 	adminHandler: AdminHandler;
 	homeHandler: HomeHandler;
 	callbackQueryHandler: CallbackQueryHandler;
@@ -20,6 +22,7 @@ export default class TelegramBot {
 
 	constructor(services: YTAServices) {
 		this.userApplication = services.userApplication;
+		this.returnHandler = new ReturnHandler();
 		this.adminHandler = new AdminHandler(
 			services.userApplication,
 			services.UITApplication,
@@ -62,6 +65,7 @@ export default class TelegramBot {
 						for (var i=0; i<updates.length; ++i) {
 							const updateHandler = new UpdateHandler(
 								this.userApplication,
+								this.returnHandler,
 								this.adminHandler,
 								this.homeHandler,
 								this.callbackQueryHandler,

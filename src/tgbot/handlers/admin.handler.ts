@@ -29,7 +29,7 @@ export default class AdminHandler implements HandlerBase {
     public async handler(handlerData: HandlerHelper) {
         const { update, sendText, UIT, langCode, user, call, ID, end } = handlerData;
         const isOwner = config.owners.includes(ID);
-        if (user && update.message?.text) {
+        if (update.message?.text) {
             switch (update.message.text) {
                 case "/bc":
                 case "/fbc":
@@ -90,7 +90,7 @@ export default class AdminHandler implements HandlerBase {
                         reply_markup: inlineKeyboards.create([
                             [UIT.startText, UIT.helpText],
                             [UIT.shareAvailable, UIT.publicMode],
-                            [UIT.cancel]
+                            [UIT.return]
                         ])
                     });
                     end();
@@ -105,7 +105,7 @@ export default class AdminHandler implements HandlerBase {
                     call(TelegramMethodEnum.SendMessage, {
                         chat_id: ID,
                         text: UIT.sendUserIdToAddAdmin,
-                        reply_markup: inlineKeyboards.cancel(UIT)
+                        reply_markup: inlineKeyboards.return(UIT)
                     });
                     end();
                     return;
@@ -117,7 +117,7 @@ export default class AdminHandler implements HandlerBase {
 
                     const adminsKeyboard = (await this.userApplication.getListOfAdmins())
                         .map(adminId => [adminId.toString()]);
-                    adminsKeyboard.push([UIT.cancel]);
+                    adminsKeyboard.push([UIT.return]);
 
                     handlerData.setUserMode(UserMode.RemoveAdmin);
                     call(TelegramMethodEnum.SendMessage, {

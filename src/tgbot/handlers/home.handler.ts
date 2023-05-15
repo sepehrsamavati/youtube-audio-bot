@@ -17,7 +17,7 @@ export default class HomeHandler implements HandlerBase {
     ) { }
     public async handler(handlerData: HandlerHelper) {
         const { update, sendText, UIT, user, call, ID, end } = handlerData;
-        if (user && update.message?.text) {
+        if (update.message?.text) {
             switch(update.message.text) {
                 case UIT.random:
                     const randomAudio = await this.videoApplication.getRandomAudio(user.id);
