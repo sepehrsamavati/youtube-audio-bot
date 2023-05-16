@@ -34,6 +34,10 @@ export type UITextObj = {
     currentValueSelectNew: string;
     currentValueSendNewMessage: string;
 
+    sendingToUsers: string;
+    sentToUsers: string;
+    replyToMessageToBroadcast: string;
+
     userAccountName: string;
     userNotFound: string;
     userIsNotAdmin: string;

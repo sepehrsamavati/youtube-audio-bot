@@ -34,13 +34,13 @@ export default class AdminHandler implements HandlerBase {
                 case "/bc":
                 case "/fbc":
                     if (update.message.reply_to_message) {
-                        sendText("START");
                         const isForward = update.message.text === "/fbc";
                         const usersId = await this.userApplication.getBroadcastIdList();
                         const broadcast = this.broadcastApplication.createNew(
                             usersId.length,
                             isForward ? BroadcastType.Forward : BroadcastType.Copy
                         );
+                        sendText(Extensions.StringFormatter(UIT.sendingToUsers, [usersId.length]));
                         const broadcastResult = await broadcastHandler({
                             adminTgId: ID,
                             forward: isForward,
@@ -52,7 +52,9 @@ export default class AdminHandler implements HandlerBase {
                         if (broadcastResult.sendFailed.length) {
                             this.userApplication.setUsersStatus(broadcastResult.sendFailed, UserStatus.Blocked);
                         }
-                        sendText(`END ${JSON.stringify(broadcastResult)}`);
+                        sendText(Extensions.StringFormatter(UIT.sentToUsers, [broadcastResult.sentCount]));
+                    } else {
+                        sendText(UIT.replyToMessageToBroadcast);
                     }
                     end();
                     return;

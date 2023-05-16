@@ -46,6 +46,10 @@ const UITextData: UITextObj[] = [
         currentValueSelectNew: "Current value: %s1\nSelect new value",
         currentValueSendNewMessage: "Current value:\n\n%s1\n\n\nSend new message",
 
+        sendingToUsers: "🔁 Sending to %s1 user(s)...",
+        sentToUsers: "✅ Sent to %s1 user(s).",
+        replyToMessageToBroadcast: "⚠️ Reply to a message to broadcast!",
+
         userAccountName: "User account name",
         userNotFound: "❌ User not found",
         userIsNotAdmin: "❌ Not admin",
