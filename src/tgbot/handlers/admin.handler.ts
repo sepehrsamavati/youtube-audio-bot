@@ -3,7 +3,7 @@ import settings from "../../settings.js";
 import UITextApplication from "../../application/uitext.application.js";
 import UserApplication from "../../application/user.application.js";
 import { TelegramMethodEnum } from "../../common/enums/tgMethod.enum.js";
-import { UserMode, UserType } from "../../common/enums/user.enum.js";
+import { UserMode, UserStatus, UserType } from "../../common/enums/user.enum.js";
 import HandlerHelper from "../../common/helpers/handlerHelper.js";
 import HandlerBase from "../../common/models/handlerBase.js";
 import { DynamicTextHelp, dynamicTextHelp } from "./helpers/dynamicText.js";
@@ -13,32 +13,48 @@ import SettingsApplication from "../../application/settings.application.js";
 import Extensions from "../../common/helpers/extensions.js";
 import { broadcastHandler } from "./helpers/broadcast.js";
 import BroadcastApplication from "../../application/broadcast.application.js";
+import ViewApplication from "../../application/view.application.js";
+import VideoApplication from "../../application/video.application.js";
+import { BroadcastType } from "../../common/interfaces/broadcast.interface.js";
 
 export default class AdminHandler implements HandlerBase {
     constructor(
         private userApplication: UserApplication,
         private UITApplication: UITextApplication,
         private settingsApplication: SettingsApplication,
-        private broadcastApplication: BroadcastApplication
+        private broadcastApplication: BroadcastApplication,
+        private viewApplication: ViewApplication,
+        private videoApplication: VideoApplication
     ) { }
     public async handler(handlerData: HandlerHelper) {
         const { update, sendText, UIT, langCode, user, call, ID, end } = handlerData;
         const isOwner = config.owners.includes(ID);
-        if (user && update.message?.text) {
+        if (update.message?.text) {
             switch (update.message.text) {
                 case "/bc":
                 case "/fbc":
                     if (update.message.reply_to_message) {
-                        sendText("START");
-                        const broadcast = this.broadcastApplication.createNew(0);
+                        const isForward = update.message.text === "/fbc";
+                        const usersId = await this.userApplication.getBroadcastIdList();
+                        const broadcast = this.broadcastApplication.createNew(
+                            usersId.length,
+                            isForward ? BroadcastType.Forward : BroadcastType.Copy
+                        );
+                        sendText(Extensions.StringFormatter(UIT.sendingToUsers, [usersId.length]));
                         const broadcastResult = await broadcastHandler({
                             adminTgId: ID,
-                            forward: update.message.text === "/fbc",
-                            messageId: update.message.message_id,
-                            toUsers: [ID]
+                            forward: isForward,
+                            messageId: update.message.reply_to_message.message_id,
+                            toUsers: usersId
                         });
+                        broadcast.usersReceived = broadcastResult.sentCount;
                         this.broadcastApplication.finish(broadcast);
-                        sendText(`END ${JSON.stringify(broadcastResult)}`);
+                        if (broadcastResult.sendFailed.length) {
+                            this.userApplication.setUsersStatus(broadcastResult.sendFailed, UserStatus.Blocked);
+                        }
+                        sendText(Extensions.StringFormatter(UIT.sentToUsers, [broadcastResult.sentCount]));
+                    } else {
+                        sendText(UIT.replyToMessageToBroadcast);
                     }
                     end();
                     return;
@@ -53,6 +69,21 @@ export default class AdminHandler implements HandlerBase {
                     });
                     end();
                     return;
+                case UIT.stats:
+                    const totalViews = await this.viewApplication.getTotalCount();
+                    const broadcastStats = await this.broadcastApplication.getStatistics();
+                    const lastWeekDownloads = await this.videoApplication.getLastWeekDownloadsCount();
+                    const totalSavedVideos = await this.videoApplication.getTotalCount();
+                    const usersCount = await this.userApplication.getTotalCount();
+                    sendText(Extensions.StringFormatter(UIT._stats, [
+                        broadcastStats.count,
+                        broadcastStats.last.getTime() === 0 ? UIT.never : broadcastStats.last.toLocaleString(),
+                        lastWeekDownloads,
+                        totalSavedVideos,
+                        totalViews,
+                        usersCount
+                    ])).end();
+                    return;
                 case UIT.settings:
                     handlerData.setUserMode(UserMode.AdminSettings);
                     call(TelegramMethodEnum.SendMessage, {
@@ -61,7 +92,7 @@ export default class AdminHandler implements HandlerBase {
                         reply_markup: inlineKeyboards.create([
                             [UIT.startText, UIT.helpText],
                             [UIT.shareAvailable, UIT.publicMode],
-                            [UIT.cancel]
+                            [UIT.return]
                         ])
                     });
                     end();
@@ -76,7 +107,7 @@ export default class AdminHandler implements HandlerBase {
                     call(TelegramMethodEnum.SendMessage, {
                         chat_id: ID,
                         text: UIT.sendUserIdToAddAdmin,
-                        reply_markup: inlineKeyboards.cancel(UIT)
+                        reply_markup: inlineKeyboards.return(UIT)
                     });
                     end();
                     return;
@@ -88,7 +119,7 @@ export default class AdminHandler implements HandlerBase {
 
                     const adminsKeyboard = (await this.userApplication.getListOfAdmins())
                         .map(adminId => [adminId.toString()]);
-                    adminsKeyboard.push([UIT.cancel]);
+                    adminsKeyboard.push([UIT.return]);
 
                     handlerData.setUserMode(UserMode.RemoveAdmin);
                     call(TelegramMethodEnum.SendMessage, {
@@ -104,39 +135,36 @@ export default class AdminHandler implements HandlerBase {
                 case UserMode.AddAdmin:
                 case UserMode.RemoveAdmin:
                     let targetAdminTgId = parseInt(update.message.text);
-                    const targetAdmin = await this.userApplication.getByTgId(targetAdminTgId);
+                    const targetAdmin = await this.userApplication.getByTgId(targetAdminTgId, false, false);
                     if (targetAdmin) {
                         const success = (text: string) => {
                             handlerData.setUserMode(UserMode.Default);
                             call(TelegramMethodEnum.SendMessage, {
                                 chat_id: ID,
                                 text: text,
-                                reply_markup: {
-                                    keyboard: inlineKeyboards.admin(user, UIT),
-                                    resize_keyboard: true
-                                }
+                                reply_markup: inlineKeyboards.admin(user, UIT)
                             });
                         };
                         if (user.mode === UserMode.AddAdmin) {
                             if (targetAdmin.type !== UserType.Admin) {
                                 this.userApplication.setUserType(targetAdmin.tgId, UserType.Admin);
-                                success(`✅ Admin ${targetAdminTgId} added`);
+                                success(Extensions.StringFormatter(UIT.adminAdded, targetAdminTgId.toString()));
                             }
                             else
-                                sendText("❌ Already admin")
+                                sendText(UIT.alreadyAdmin)
                         } else {
-                            if(config.owners.includes(ID))
-                                sendText("❌ Cannot remove owner");
+                            if (config.owners.includes(targetAdminTgId))
+                                sendText(UIT.cantRemoveOwner);
                             else if (targetAdmin.type === UserType.Admin) {
                                 this.userApplication.setUserType(targetAdmin.tgId, UserType.Default);
-                                success(`✅ Admin ${targetAdminTgId} removed`);
+                                success(Extensions.StringFormatter(UIT.adminRemoved, targetAdminTgId.toString()));
                             }
                             else
-                                sendText("❌ Not admin")
+                                sendText(UIT.userIsNotAdmin)
                         }
                     }
                     else
-                        sendText("❌ User not found");
+                        sendText(UIT.userNotFound);
                     end();
                     return;
                 case UserMode.AdminSettings:
@@ -149,12 +177,18 @@ export default class AdminHandler implements HandlerBase {
                     switch (update.message.text) {
                         case UIT.startText:
                             handlerData.setUserMode(UserMode.SetStartText);
-                            settingText = `Current value:\n\n'${UIT._start}'\n\n\nSend new message`;
+                            settingText = Extensions.StringFormatter(
+                                UIT.currentValueSendNewMessage,
+                                UIT._start
+                            );
                             availableDTs = ["name"];
                             break;
                         case UIT.helpText:
                             handlerData.setUserMode(UserMode.SetHelpText);
-                            settingText = `Current value:\n\n'${UIT._help}'\n\n\nSend new message`;
+                            settingText = Extensions.StringFormatter(
+                                UIT.currentValueSendNewMessage,
+                                UIT._help
+                            );
                             availableDTs = ["name"];
                             break;
                         case UIT.shareAvailable:
@@ -175,9 +209,9 @@ export default class AdminHandler implements HandlerBase {
                     }
 
                     if (availableDTs.length) {
-                        settingText += "\n\nAvailable dynamic words:\n" + availableDTs.map((key) => {
+                        settingText += `\n\n${UIT.availableDynamicWords}\n` + availableDTs.map((key) => {
                             const dt = dynamicTextHelp[key];
-                            return dt ? `${dt.key} ${dt.value}` : ""
+                            return dt ? `${dt.key} ${UIT[dt.value] ?? dt.value}` : ""
                         }).join('\n');
                     }
 
@@ -196,8 +230,9 @@ export default class AdminHandler implements HandlerBase {
                         user, UIT, handlerData,
                         type: String,
                         validator: (text) => {
-                            if (text.length > 1000) {
-                                return "tooLarge";
+                            const maxLen = 1000;
+                            if (text.length > maxLen) {
+                                return Extensions.StringFormatter(UIT.textLengthLimitError, [maxLen]);
                             }
                         },
                         onValid: (value) => this.UITApplication.set(langCode, "_start", value)
@@ -210,8 +245,9 @@ export default class AdminHandler implements HandlerBase {
                         user, UIT, handlerData,
                         type: String,
                         validator: (text) => {
-                            if (text.length > 2000) {
-                                return "tooLarge";
+                            const maxLen = 2000;
+                            if (text.length > maxLen) {
+                                return Extensions.StringFormatter(UIT.textLengthLimitError, [maxLen]);
                             }
                         },
                         onValid: (value) => this.UITApplication.set(langCode, "_help", value)

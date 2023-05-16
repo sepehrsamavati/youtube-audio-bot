@@ -1,3 +1,4 @@
+import { UITextObj } from "../../../common/types/uitext.js";
 import { DynamicTextRender } from "../../../common/types/dynamicText";
 
 type DynamicTextHelpDetail = {
@@ -8,8 +9,13 @@ export interface DynamicTextHelp {
     name: DynamicTextHelpDetail
 };
 
-export const dynamicTextHelp = {
-    name: { key: "[NAME]", value: "User account name" }
+export const dynamicTextHelp: {
+    [key: string]: {
+        key: string;
+        value: keyof UITextObj;
+    }
+} = {
+    name: { key: "[NAME]", value: "userAccountName" }
 };
 
 export default function dynamicText(input: DynamicTextRender){

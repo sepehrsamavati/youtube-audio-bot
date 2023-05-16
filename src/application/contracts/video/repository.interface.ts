@@ -9,4 +9,7 @@ export default interface IVideoRepository {
     getMostLiked(count: number): Promise<Video[]>;
     getRecentAdded(count: number): Promise<Video[]>;
     getByDateRange(limit: number, from: Date, to: Date): Promise<Video[]>;
+    getCountByDateRange(from: Date, to: Date): Promise<number>;
+    getTotalCount(): Promise<number>;
+    getRandom(): Promise<IVideo | null>;
 }

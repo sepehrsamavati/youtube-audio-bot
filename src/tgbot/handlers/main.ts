@@ -11,6 +11,9 @@ import InlineQueryHandler from "./inlineQuery.handler.js";
 import AdminHandler from "./admin.handler.js";
 import dynamicText from "./helpers/dynamicText.js";
 import UserApplication from "../../application/user.application.js";
+import { logError } from "../../common/helpers/log.js";
+import { User } from "../../common/types/user.js";
+import ReturnHandler from "./return.handler.js";
 
 class UpdateHandler {
 	async handleUpdate(update: TgMsgUpdate) {
@@ -23,7 +26,14 @@ class UpdateHandler {
 			?? update.callback_query?.message.chat.id
 			?? update.inline_query?.from.id
 			?? 0;
-		helper.user = await auth(this.userApplication, helper.ID);
+
+		if(helper.ID === 0) {
+			logError("Main TG update handler / 0 chat ID", {
+				update
+			});
+		}
+
+		helper.user = await auth(this.userApplication, helper.ID) as User;
 
 		const { UIT, langCode } = i18n(helper.user);
 		helper.UIT = UIT;
@@ -31,6 +41,8 @@ class UpdateHandler {
 
 		if (helper.user && this.#continue) {
 			if (message) {
+				await this.returnHandler.handler(helper);
+
 				if (helper.user.type === UserType.Admin) {
 					await this.adminHandler.handler(helper);
 				}
@@ -68,6 +80,7 @@ class UpdateHandler {
 
 	constructor(
 		private userApplication: UserApplication,
+		private returnHandler: ReturnHandler,
 		private adminHandler: AdminHandler,
 		private homeHandler: HomeHandler,
 		private callbackQueryHandler: CallbackQueryHandler,

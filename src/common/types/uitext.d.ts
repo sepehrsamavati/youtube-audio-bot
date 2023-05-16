@@ -3,29 +3,48 @@ export type UITextObj = {
     _start: string;
     _help: string;
     stats: string;
+    _stats: string;
     help: string;
     random: string;
     top5: string;
+    _top5: string;
     weekTop: string;
+    _weekTop: string;
     mostLikes: string;
+    _mostLikes: string;
     recentDownloads: string;
+    _recentDownloads: string;
+    noDownloads: string;
     addAdmin: string;
     remAdmin: string;
     return: string,
     edtSup: string;
     submit: string;
     cancel: string;
-    vidStats: string;
     on: string;
     off: string;
     ok: string;
     failed: string;
+    never: string;
     noAccess: string;
     commandNotFound: string;
     invalidVideo: string;
     invalidCommand: string;
     setError: string;
     currentValueSelectNew: string;
+    currentValueSendNewMessage: string;
+
+    sendingToUsers: string;
+    sentToUsers: string;
+    replyToMessageToBroadcast: string;
+
+    userAccountName: string;
+    userNotFound: string;
+    userIsNotAdmin: string;
+    adminAdded: string;
+    adminRemoved: string;
+    cantRemoveOwner: string;
+    alreadyAdmin: string;
 
     musicNotFound: string;
     liked: string;
@@ -61,6 +80,8 @@ export type UITextObj = {
     valueTurnedTo: string;
     valueChangedTo: string;
     invalidValue: string;
+    textLengthLimitError: string;
+    availableDynamicWords: string;
 
     /* Errors */
     invalidDataFormat: string;

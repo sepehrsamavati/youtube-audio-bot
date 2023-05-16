@@ -5,11 +5,10 @@ import config from "../../../config.js";
 export default {
     admin: (admin: User, UIT: UITextObj) => {
         let keyboard = [
-            [{ text: UIT.stats }, { text: UIT.settings }],
-            [{ text: UIT.vidStats }]
+            [{ text: UIT.stats }, { text: UIT.settings }]
         ];
         if (admin && config.owners.includes(admin.tgId)) {
-            keyboard.splice(3, 0, [{ text: UIT.addAdmin }, { text: UIT.remAdmin }]);
+            keyboard.push([{ text: UIT.addAdmin }, { text: UIT.remAdmin }]);
         }
         return {
             keyboard,

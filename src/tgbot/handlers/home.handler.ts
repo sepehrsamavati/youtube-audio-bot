@@ -8,6 +8,7 @@ import { QueueVideo } from "../../common/models/queueVideo.js";
 import { ChatID, MessageID } from "../../common/types/tgBot.js";
 import inlineKeyboards from "./helpers/inlineKeyboards.js";
 import { getUICode } from "./helpers/videoIdBase64.js";
+import Extensions from "../../common/helpers/extensions.js";
 
 export default class HomeHandler implements HandlerBase {
     constructor(
@@ -16,26 +17,64 @@ export default class HomeHandler implements HandlerBase {
     ) { }
     public async handler(handlerData: HandlerHelper) {
         const { update, sendText, UIT, user, call, ID, end } = handlerData;
-        if (user && update.message?.text) {
+        if (update.message?.text) {
             switch(update.message.text) {
+                case UIT.random:
+                    const randomAudio = await this.videoApplication.getRandomAudio(user.id);
+                    if(randomAudio)
+                        call(TelegramMethodEnum.SendAudio, {
+                            chat_id: ID,
+                            audio: randomAudio.tgFileId,
+                            reply_markup: inlineKeyboards.audio.normal(randomAudio, UIT)
+                        });
+                    else sendText(UIT.musicNotFound);
+                    return;
                 case UIT.recentDownloads:
                     const getRecentCount = 15;
                     const recentDownloads = await this.videoApplication.getRecentDownloads(getRecentCount);
                     sendText(
-                            `📆 Recent ${recentDownloads.length} downloads`
-                            + `\n\n\n${recentDownloads.map((video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}`).join("\n\n")}`
-                            );
+                            recentDownloads.length ?
+                            Extensions.StringFormatter(UIT._top5, [
+                                recentDownloads.length,
+                                recentDownloads.map((video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}`).join("\n\n")
+                            ]) : UIT.noDownloads
+                        );
                     end();
                     return;
                 case UIT.weekTop:
                     const getWeekCount = 5;
                     const lastWeekDownloads = await this.videoApplication.getLastWeekDownloads(getWeekCount);
                     sendText(
-                            lastWeekDownloads.length
-                            ? `🔥 Top ${lastWeekDownloads.length} last week downloads`
-                            +`\n\n\n${lastWeekDownloads.map( (video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}` ).join("\n\n")}`
-                            : "No downloads!"
-                            );
+                            lastWeekDownloads.length ?
+                            Extensions.StringFormatter(UIT._top5, [
+                                lastWeekDownloads.length,
+                                lastWeekDownloads.map( (video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}` ).join("\n\n")
+                            ]) : UIT.noDownloads
+                        );
+                    end();
+                    return;
+                case UIT.top5:
+                    const getTopNCount = 5;
+                    const topAudios = await this.videoApplication.getTop(getTopNCount);
+                    sendText(
+                            topAudios.length ?
+                            Extensions.StringFormatter(UIT._top5, [
+                                topAudios.length,
+                                topAudios.map( (video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}` ).join("\n\n")
+                            ]) : UIT.noDownloads
+                        );
+                    end();
+                    return;
+                case UIT.mostLikes:
+                    const getMostLikedCount = 5;
+                    const mostLiked = await this.videoApplication.getMostLiked(getMostLikedCount);
+                    sendText(
+                        mostLiked.length ?
+                            Extensions.StringFormatter(UIT._mostLikes, [
+                                mostLiked.length,
+                                mostLiked.map( (video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}` ).join("\n\n")
+                            ]) : UIT.noDownloads
+                        );
                     end();
                     return;
             }

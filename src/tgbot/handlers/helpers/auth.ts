@@ -8,7 +8,7 @@ const findUser = async (userApplication: UserApplication, id: ChatID): Promise<U
     let user: User | undefined;
     if(!user)
     {
-        const dbUser = await userApplication.getByTgId(id);
+        const dbUser = await userApplication.getByTgId(id, true, true);
         if(dbUser)
         {
             user = cache[id] = dbUser;

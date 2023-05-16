@@ -4,6 +4,7 @@ import LikeModel from "../models/like.js";
 import ViewModel from "../models/views.js";
 import IVideo from "../../../common/interfaces/video.interface.js";
 import IVideoRepository from "../../../application/contracts/video/repository.interface.js";
+import { logError } from "../../../common/helpers/log.js";
 
 export default class VideoRepository implements IVideoRepository {
 	async create(video: Video, uid: Types.ObjectId, download: number, upload: number): Promise<IVideo | null> {
@@ -152,6 +153,48 @@ export default class VideoRepository implements IVideoRepository {
 			});
 		} catch(e) {
 			return [];
+		}
+	}
+	async getCountByDateRange(from: Date, to: Date): Promise<number> {
+		try {
+			return await VideoModel
+			.count({
+				date: {
+					$gte: from,
+					$lte: to
+				}
+			});
+		} catch(e) {
+			logError("Get count by date range / Video repository", e);
+			return 0;
+		}
+	}
+	async getTotalCount(): Promise<number> {
+		try {
+			return await VideoModel.count();
+		} catch(e) {
+			logError("Get total count / Video repository", e);
+			return 0;
+		}
+	}
+	async getRandom(): Promise<IVideo | null> {
+		try {
+			const count = await this.getTotalCount();
+			if(count > 0)
+			{
+				const randomIndex = Math.floor(Math.random() * count);
+				const video = await VideoModel.findOne().skip(randomIndex);
+				return video ? {
+					_id: video._id,
+					title: video.title,
+					id: video.id,
+					tgFileId: video.tgFileId
+				} : null;
+			}
+			return null
+		} catch(e) {
+			logError("Get random / Video repository", e);
+			return null;
 		}
 	}
 };
