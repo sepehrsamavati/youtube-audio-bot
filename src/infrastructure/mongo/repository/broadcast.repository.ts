@@ -14,6 +14,19 @@ export default class BroadcastRepository implements IBroadcastRepository {
 		}
 	}
 	async getStatistics(): Promise<{ count: number; last: Date; } | null> {
-		return null;
+		try {
+			const count = await BroadcastModel.count();
+			if(typeof count !== "number") return null;
+
+			const lastBroadcast = await BroadcastModel.find().sort({ start: -1 }).limit(1);
+
+			return lastBroadcast?.length ? {
+				count,
+				last: lastBroadcast[0].start
+			} : null;
+		} catch(e) {
+			logError("Broadcast repository / Get statistics", e);
+			return null;
+		}
 	}
 };
