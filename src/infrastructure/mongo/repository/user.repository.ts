@@ -1,5 +1,5 @@
-import UserModel from "../models/user.js";
 import { Types } from "mongoose";
+import UserModel from "../models/user.js";
 import { User } from "../../../common/types/user.js";
 import { logError } from "../../../common/helpers/log.js";
 import { UserMode, UserStatus, UserType } from "../../../common/enums/user.enum.js";
@@ -12,6 +12,15 @@ export default class UserRepository implements IUserRepository {
 		} catch (e) {
 			logError("User repository / Count", e);
 			return 0;
+		}
+	}
+	async updateUsername(tgId: number, username: string): Promise<boolean> {
+		try {
+			const res = await UserModel.findOneAndUpdate({ tgId }, { username });
+			return Boolean(res);
+		} catch(e) {
+			logError("User repository / Update username");
+			return false;
 		}
 	}
 	async updateUserMode(tgId: number, userMode: UserMode): Promise<boolean> {
@@ -52,9 +61,19 @@ export default class UserRepository implements IUserRepository {
 	async createUser(user: Omit<User, 'id'>): Promise<User | null> {
 		try {
 			const newUser = await UserModel.create(user);
-			return newUser;
+			return newUser ? {
+				id: newUser.id,
+				tgId: newUser.tgId,
+				mode: newUser.mode,
+				status: newUser.status,
+				type: newUser.type,
+				language: newUser.language,
+				lastRequest: newUser.lastRequest,
+				username: newUser.username,
+				promotedBy: newUser.promotedBy
+			} : null;
 		} catch (e) {
-			debugger
+			logError("User repository / Create user", e);
 			return null;
 		}
 	}
@@ -75,6 +94,7 @@ export default class UserRepository implements IUserRepository {
 				lastRequest: user.lastRequest,
 				language: user.language,
 				status: user.status,
+				username: user.username,
 				promotedBy: user.promotedBy
 			};
 		} catch (e) {

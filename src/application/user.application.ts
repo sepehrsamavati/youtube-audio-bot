@@ -22,6 +22,14 @@ export default class UserApplication implements IUserApplication {
         return operationResult.succeeded();
     }
 
+    async setUsername(tgId: number, username: string): Promise<OperationResult> {
+        const operationResult = new OperationResult();
+        if(await this.userRepository.updateUsername(tgId, username)) {
+            operationResult.succeeded();
+        }
+        return operationResult;
+    }
+
     async setUserMode(tgId: number, mode: UserMode): Promise<OperationResult> {
         const operationResult = new OperationResult();
         if(await this.userRepository.updateUserMode(tgId, mode)) {
@@ -60,7 +68,7 @@ export default class UserApplication implements IUserApplication {
 				type: config.owners.includes(id) ? UserType.Admin : UserType.Default,
 				language: settings.defaultLang,
 				lastRequest: new Date(),
-				status: UserStatus.OK
+				status: UserStatus.Temp
 			}) : null);
         return user;
     }

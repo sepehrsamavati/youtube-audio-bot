@@ -9,5 +9,6 @@ export type User = {
     type: UserType;
     lastRequest: Date;
     language: string;
+    username?: string;
     promotedBy?: number;
 }

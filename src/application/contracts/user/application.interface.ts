@@ -5,6 +5,7 @@ import { UserMode, UserStatus, UserType } from "../../../common/enums/user.enum.
 export default interface IUserApplication {
     getByTgId(id: number, createIfNotFound?: boolean, updateLastRequest?: boolean): Promise<User | null>;
     getListOfAdmins(): Promise<number[]>;
+    setUsername(tgId: number, username: string): Promise<OperationResult>;
     setUserMode(tgId: number, mode: UserMode): Promise<OperationResult>;
     setUserType(tgId: number, type: UserType): Promise<OperationResult>;
     setUsersStatus(tgIds: number[], status: UserStatus): Promise<OperationResult>;

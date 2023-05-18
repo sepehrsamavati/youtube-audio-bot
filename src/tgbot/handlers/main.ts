@@ -35,46 +35,62 @@ class UpdateHandler {
 
 		helper.user = await auth(this.userApplication, helper.ID) as User;
 
+		if(!(helper.user && this.#continue)) return;
+
+		if(message?.from.username && message.from.username !== helper.user.username) {
+			this.userApplication.setUsername(helper.user.tgId, message.from.username);
+		}
+
 		const { UIT, langCode } = i18n(helper.user);
 		helper.UIT = UIT;
 		helper.langCode = langCode;
 
-		if (helper.user && this.#continue) {
-			if (message) {
-				await this.returnHandler.handler(helper);
+		if (message) {
+			await this.returnHandler.handler(helper);
 
-				if (helper.user.type === UserType.Admin) {
-					await this.adminHandler.handler(helper);
+			if (helper.user.type === UserType.Admin) {
+				await this.adminHandler.handler(helper);
+			}
+
+			if (this.#continue) {
+				switch (message.text?.toLowerCase()) {
+					case "/start":
+						helper.call(TelegramMethodEnum.SendText, {
+							chat_id: helper.ID,
+							text: dynamicText({
+								text: UIT._start,
+								update
+							}),
+							reply_markup: inlineKeyboards.user(helper.user, helper.UIT)
+						});
+						this.end();
+						await this.helper.setUserMode(UserMode.Default);
+						break;
+					case "/help":
+						helper.call(TelegramMethodEnum.SendText, {
+							chat_id: helper.ID,
+							text: dynamicText({
+								text: UIT._help,
+								update
+							}),
+							reply_markup: inlineKeyboards.user(helper.user, helper.UIT)
+						});
+						this.end();
+						await this.helper.setUserMode(UserMode.Default);
+						break;
 				}
-
 				if (this.#continue) {
-					switch (message.text?.toLowerCase()) {
-						case "/start":
-							helper.call(TelegramMethodEnum.SendText, {
-								chat_id: helper.ID,
-								text: dynamicText({
-									text: UIT._start,
-									update
-								}),
-								reply_markup: inlineKeyboards.user(helper.user, helper.UIT)
-							});
-							this.end();
-							await this.helper.setUserMode(UserMode.Default);
+					switch (helper.user.mode) {
+						case UserMode.Default:
+							await this.homeHandler.handler(helper);
 							break;
 					}
-					if (this.#continue) {
-						switch (helper.user.mode) {
-							case UserMode.Default:
-								await this.homeHandler.handler(helper);
-								break;
-						}
-					}
 				}
-			} else if (update.callback_query) {
-				this.callbackQueryHandler.handler(helper);
-			} else if (update.inline_query) {
-				this.inlineQueryHandler.handler(helper);
 			}
+		} else if (update.callback_query) {
+			this.callbackQueryHandler.handler(helper);
+		} else if (update.inline_query) {
+			this.inlineQueryHandler.handler(helper);
 		}
 	}
 
