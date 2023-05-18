@@ -14,7 +14,7 @@ export const logError = (title = '', error: any = {}, data = '') => {
 		`\nERROR START ${new Date().toLocaleString()}`,
 		`\n${title}\n`
 	);
-	console.error(error.message ?? error);
+	console.error(error instanceof Error ? error.message ?? error : error);
 	console.error(
 		data ? `\n${data}` : '',
 		"\nERROR END\n\n\n"
