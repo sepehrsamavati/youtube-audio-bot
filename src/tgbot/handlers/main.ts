@@ -3,7 +3,7 @@ import { findUser as auth } from "./helpers/auth.js";
 import HandlerHelper from "../../common/helpers/handlerHelper.js";
 import { TgMsgUpdate } from "../../common/types/tgBot.js";
 import { TelegramMethodEnum } from "../../common/enums/tgMethod.enum.js";
-import { UserMode, UserType } from "../../common/enums/user.enum.js";
+import { UserMode, UserStatus, UserType } from "../../common/enums/user.enum.js";
 import HomeHandler from "./home.handler.js";
 import inlineKeyboards from "./helpers/inlineKeyboards.js";
 import CallbackQueryHandler from "./callbackQuery.handler.js";
@@ -33,15 +33,21 @@ class UpdateHandler {
 			});
 		}
 
-		helper.user = await auth(this.userApplication, helper.ID) as User;
+		const user = await auth(this.userApplication, helper.ID);
 
-		if(!(helper.user && this.#continue)) return;
+		if(!(user && this.#continue)) return;
 
 		if(message?.from.username && message.from.username !== helper.user.username) {
-			this.userApplication.setUsername(helper.user.tgId, message.from.username);
+			await this.userApplication.setUsername(helper.user.tgId, message.from.username);
 		}
 
-		const { UIT, langCode } = i18n(helper.user);
+		if(user.status === UserStatus.Temp) {
+			// EULA / TOS / Phone register
+			await this.userApplication.setUsersStatus([user.tgId], UserStatus.OK);
+		}
+
+		const { UIT, langCode } = i18n(user);
+		helper.user = user;
 		helper.UIT = UIT;
 		helper.langCode = langCode;
 
@@ -66,6 +72,7 @@ class UpdateHandler {
 						this.end();
 						await this.helper.setUserMode(UserMode.Default);
 						break;
+					case UIT.help:
 					case "/help":
 						helper.call(TelegramMethodEnum.SendText, {
 							chat_id: helper.ID,
