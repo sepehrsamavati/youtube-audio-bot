@@ -37,8 +37,8 @@ class UpdateHandler {
 
 		if(!(user && this.#continue)) return;
 
-		if(message?.from.username && message.from.username !== helper.user.username) {
-			await this.userApplication.setUsername(helper.user.tgId, message.from.username);
+		if(message?.from.username && message.from.username !== user.username) {
+			await this.userApplication.setUsername(user.tgId, message.from.username);
 		}
 
 		if(user.status === UserStatus.Temp) {
