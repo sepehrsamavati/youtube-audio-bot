@@ -8,7 +8,7 @@ const config = {
         api: "https://api.telegram.org/bot",
         botUrl: ""
     },
-	cacheDirectory: "./.data/YTAudio/files/",
+	cacheDirectory: process.env.YTA_CACHE_DIR ?? "./.data/YTAudio/files/",
 	ffmpegExe: process.env.YTA_FFMPEG_EXE ?? "",
 	concurrentLimitPerUser: parseInt(process.env.YTA_USER_CONCURRENT_DOWNLOADS ?? "1"),
 	concurrentLimit: parseInt(process.env.YTA_TOTAL_CONCURRENT_DOWNLOADS ?? "2"),
