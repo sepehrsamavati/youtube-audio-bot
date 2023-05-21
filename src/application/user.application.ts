@@ -1,10 +1,10 @@
-import { User } from "../common/types/user.js";
-import { UserMode, UserStatus, UserType } from "../common/enums/user.enum.js";
-import OperationResult from "../common/models/operationResult.js";
-import IUserApplication from "./contracts/user/application.interface.js";
-import UserRepository from "../infrastructure/mongo/repository/user.repository.js";
 import config from "../config.js";
 import settings from "../settings.js";
+import { User } from "../common/types/user.js";
+import OperationResult from "../common/models/operationResult.js";
+import IUserApplication from "./contracts/user/application.interface.js";
+import { UserMode, UserStatus, UserType } from "../common/enums/user.enum.js";
+import UserRepository from "../infrastructure/mongo/repository/user.repository.js";
 
 export default class UserApplication implements IUserApplication {
     constructor(
@@ -17,7 +17,7 @@ export default class UserApplication implements IUserApplication {
             return operationResult.succeeded();
 
         if(!user.promotedBy)
-            return operationResult.failed();
+            return operationResult.failed("_notPromoted");
 
         return operationResult.succeeded();
     }

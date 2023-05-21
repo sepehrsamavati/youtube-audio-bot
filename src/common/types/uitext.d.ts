@@ -2,6 +2,7 @@ export type UITextObj = {
     _lang: string;
     _start: string;
     _help: string;
+    _notPromoted: string;
     stats: string;
     _stats: string;
     help: string;
