@@ -13,6 +13,7 @@ import dynamicText from "./helpers/dynamicText.js";
 import UserApplication from "../../application/user.application.js";
 import { logError } from "../../common/helpers/log.js";
 import ReturnHandler from "./return.handler.js";
+import AdminCommandHandler from "./adminCommand.handler.js";
 
 class UpdateHandler {
 	async handleUpdate(update: TgMsgUpdate) {
@@ -54,7 +55,10 @@ class UpdateHandler {
 			await this.returnHandler.handler(helper);
 
 			if (helper.user.type === UserType.Admin) {
-				await this.adminHandler.handler(helper);
+				if(update.message?.text?.startsWith('/'))
+					await this.adminCommandHandler.handler(helper);
+				if(this.#continue)
+					await this.adminHandler.handler(helper);
 			}
 
 			if (this.#continue) {
@@ -104,6 +108,7 @@ class UpdateHandler {
 		private userApplication: UserApplication,
 		private returnHandler: ReturnHandler,
 		private adminHandler: AdminHandler,
+		private adminCommandHandler: AdminCommandHandler,
 		private homeHandler: HomeHandler,
 		private callbackQueryHandler: CallbackQueryHandler,
 		private inlineQueryHandler: InlineQueryHandler

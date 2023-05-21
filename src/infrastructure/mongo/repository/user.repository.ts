@@ -14,11 +14,32 @@ export default class UserRepository implements IUserRepository {
 			return 0;
 		}
 	}
+
+	async findByUsername(username: string): Promise<User | null> {
+		try {
+			const user = await UserModel.findOne({ username: { '$regex': username, $options: 'i' } });
+			return user ? {
+				id: user._id,
+				tgId: user.tgId,
+				mode: user.mode,
+				status: user.status,
+				type: user.type,
+				language: user.language,
+				lastRequest: user.lastRequest,
+				username: user.username,
+				promotedBy: user.promotedBy
+			} : null;
+		} catch (e) {
+			logError("User repository / Find by username");
+			return null;
+		}
+	}
+
 	async updateUsername(tgId: number, username: string): Promise<boolean> {
 		try {
 			const res = await UserModel.findOneAndUpdate({ tgId }, { username });
 			return Boolean(res);
-		} catch(e) {
+		} catch (e) {
 			logError("User repository / Update username");
 			return false;
 		}
@@ -53,7 +74,7 @@ export default class UserRepository implements IUserRepository {
 				status: userStatus
 			});
 			return true;
-		} catch(e) {
+		} catch (e) {
 			logError("User repository / updateUsersStatus", e);
 			return false;
 		}

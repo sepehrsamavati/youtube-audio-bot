@@ -4,6 +4,7 @@ import { log } from "../common/helpers/log.js";
 import call from "../common/helpers/tgCall.js";
 import YTAServices from "../common/interfaces/yta.interface.js";
 import AdminHandler from "./handlers/admin.handler.js";
+import AdminCommandHandler from "./handlers/adminCommand.handler.js";
 import CallbackQueryHandler from "./handlers/callbackQuery.handler.js";
 import HomeHandler from "./handlers/home.handler.js";
 import InlineQueryHandler from "./handlers/inlineQuery.handler.js";
@@ -14,6 +15,7 @@ export default class TelegramBot {
 	userApplication: UserApplication;
 	returnHandler: ReturnHandler;
 	adminHandler: AdminHandler;
+	adminCommandHandler: AdminCommandHandler;
 	homeHandler: HomeHandler;
 	callbackQueryHandler: CallbackQueryHandler;
 	inlineQueryHandler: InlineQueryHandler;
@@ -31,6 +33,7 @@ export default class TelegramBot {
 			services.viewApplication,
 			services.videoApplication
 			);
+		this.adminCommandHandler = new AdminCommandHandler(services.userApplication);
 		this.homeHandler = new HomeHandler(services.videoApplication, services.userApplication);
 		this.callbackQueryHandler = new CallbackQueryHandler(services.userApplication, services.videoApplication);
 		this.inlineQueryHandler = new InlineQueryHandler(services.videoApplication);
@@ -67,6 +70,7 @@ export default class TelegramBot {
 								this.userApplication,
 								this.returnHandler,
 								this.adminHandler,
+								this.adminCommandHandler,
 								this.homeHandler,
 								this.callbackQueryHandler,
 								this.inlineQueryHandler

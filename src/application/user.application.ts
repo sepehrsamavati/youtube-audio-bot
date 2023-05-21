@@ -22,6 +22,11 @@ export default class UserApplication implements IUserApplication {
         return operationResult.succeeded();
     }
 
+    async getByUsername(username: string): Promise<User | null> {
+        if(username.startsWith('@')) username = username.slice(1);
+        return username ? this.userRepository.findByUsername(username.toLowerCase()) : null;
+    }
+
     async setUsername(tgId: number, username: string): Promise<OperationResult> {
         const operationResult = new OperationResult();
         if(await this.userRepository.updateUsername(tgId, username)) {
