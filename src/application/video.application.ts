@@ -8,6 +8,7 @@ import { Types } from 'mongoose';
 import config from "../config.js";
 import ffmpeg from "fluent-ffmpeg";
 import { User } from '../common/types/user.js';
+import { logError } from '../common/helpers/log.js';
 import deleteFile from '../common/helpers/deleteFile.js';
 import { QueueVideo } from '../common/models/queueVideo.js';
 import { QueueVideoStep } from '../common/enums/video.enum.js';
@@ -337,7 +338,8 @@ export default class VideoApplication implements IVideoApplication {
                             }
                         });
                     mp3File.saveToFile(audioFileAddress);
-                } catch {
+                } catch (e) {
+                    logError("Video application / FFMPEG convert to MP3", e);
                     resolve(res.failed(video.error));
                 }
             });
@@ -365,10 +367,12 @@ export default class VideoApplication implements IVideoApplication {
                         biggerSide = newFileInfo.height > newFileInfo.width ? "height" : "width";
                         cropSides();
                     }).catch((err) => {
+                        logError("Video application / Convert WEBP cover to JPG", err);
                         video.error = "coverConvertError";
                         resolve(res.failed(video.error));
                     });
-                } catch {
+                } catch(e) {
+                    logError("Video application / Generate cover", e);
                     resolve(res.failed(video.error));
                 }
             });
@@ -390,13 +394,15 @@ export default class VideoApplication implements IVideoApplication {
                     }
                     NodeID3.write(options, baseFileAddress + ".mp3", function (err) {
                         if (err) {
+                            logError("Video application / Write metadata", err);
                             video.error = "setCoverError";
                             resolve(res.failed(video.error));
                         }
                         else
                             resolve(res.succeeded());
                     });
-                } catch {
+                } catch(e) {
+                    logError("Video application / Set metadata", e);
                     resolve(res.failed(video.error));
                 }
             });

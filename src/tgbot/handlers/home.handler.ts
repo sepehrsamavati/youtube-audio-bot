@@ -7,7 +7,7 @@ import { TelegramMethodEnum } from "../../common/enums/tgMethod.enum.js";
 import { QueueVideo } from "../../common/models/queueVideo.js";
 import { ChatID, MessageID } from "../../common/types/tgBot.js";
 import inlineKeyboards from "./helpers/inlineKeyboards.js";
-import { getUICode } from "./helpers/videoIdBase64.js";
+import { getUICode, getVideoId } from "./helpers/videoIdBase64.js";
 import Extensions from "../../common/helpers/extensions.js";
 
 export default class HomeHandler implements HandlerBase {
@@ -17,170 +17,186 @@ export default class HomeHandler implements HandlerBase {
     ) { }
     public async handler(handlerData: HandlerHelper) {
         const { update, sendText, UIT, user, call, ID, end } = handlerData;
-        if (update.message?.text) {
-            switch(update.message.text) {
-                case UIT.random:
-                    const randomAudio = await this.videoApplication.getRandomAudio(user.id);
-                    if(randomAudio)
-                        call(TelegramMethodEnum.SendAudio, {
-                            chat_id: ID,
-                            audio: randomAudio.tgFileId,
-                            reply_markup: inlineKeyboards.audio.normal(randomAudio, UIT)
-                        });
-                    else sendText(UIT.musicNotFound);
-                    return;
-                case UIT.recentDownloads:
-                    const getRecentCount = 15;
-                    const recentDownloads = await this.videoApplication.getRecentDownloads(getRecentCount);
-                    sendText(
-                            recentDownloads.length ?
-                            Extensions.StringFormatter(UIT._top5, [
-                                recentDownloads.length,
-                                recentDownloads.map((video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}`).join("\n\n")
-                            ]) : UIT.noDownloads
-                        );
-                    end();
-                    return;
-                case UIT.weekTop:
-                    const getWeekCount = 5;
-                    const lastWeekDownloads = await this.videoApplication.getLastWeekDownloads(getWeekCount);
-                    sendText(
-                            lastWeekDownloads.length ?
-                            Extensions.StringFormatter(UIT._top5, [
-                                lastWeekDownloads.length,
-                                lastWeekDownloads.map( (video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}` ).join("\n\n")
-                            ]) : UIT.noDownloads
-                        );
-                    end();
-                    return;
-                case UIT.top5:
-                    const getTopNCount = 5;
-                    const topAudios = await this.videoApplication.getTop(getTopNCount);
-                    sendText(
-                            topAudios.length ?
-                            Extensions.StringFormatter(UIT._top5, [
-                                topAudios.length,
-                                topAudios.map( (video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}` ).join("\n\n")
-                            ]) : UIT.noDownloads
-                        );
-                    end();
-                    return;
-                case UIT.mostLikes:
-                    const getMostLikedCount = 5;
-                    const mostLiked = await this.videoApplication.getMostLiked(getMostLikedCount);
-                    sendText(
-                        mostLiked.length ?
-                            Extensions.StringFormatter(UIT._mostLikes, [
-                                mostLiked.length,
-                                mostLiked.map( (video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}` ).join("\n\n")
-                            ]) : UIT.noDownloads
-                        );
-                    end();
-                    return;
-            }
+        if (!update.message?.text) return;
 
-            const canSubmit = this.userApplication.canSubmitRequest(user);
-            if (canSubmit.ok) {
-                const videoId = VideoApplication.Downloader.validateVideoId(update.message.text);
-                const userMessageId: ChatID = update.message.message_id;
-
-                if (!videoId) {
-                    call(TelegramMethodEnum.SendMessage, {
-                        chat_id: ID,
-                        reply_to_message_id: userMessageId,
-                        text: UIT.invalidVideo
-                    });
-                    end();
-                    return
-                }
-
-                const cacheVideo = await this.videoApplication.getAudio(videoId, user.id);
-                if (cacheVideo) {
+        switch(update.message.text) {
+            case UIT.random:
+                const randomAudio = await this.videoApplication.getRandomAudio(user.id);
+                if(randomAudio)
                     call(TelegramMethodEnum.SendAudio, {
                         chat_id: ID,
-                        audio: cacheVideo.tgFileId,
-                        reply_markup: inlineKeyboards.audio.normal(cacheVideo, UIT)
+                        audio: randomAudio.tgFileId,
+                        reply_markup: inlineKeyboards.audio.normal(randomAudio, UIT)
                     });
-                    end();
-                    return;
+                else sendText(UIT.musicNotFound);
+                return;
+            case UIT.recentDownloads:
+                const getRecentCount = 15;
+                const recentDownloads = await this.videoApplication.getRecentDownloads(getRecentCount);
+                sendText(
+                        recentDownloads.length ?
+                        Extensions.StringFormatter(UIT._top5, [
+                            recentDownloads.length,
+                            recentDownloads.map((video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}`).join("\n\n")
+                        ]) : UIT.noDownloads
+                    );
+                end();
+                return;
+            case UIT.weekTop:
+                const getWeekCount = 5;
+                const lastWeekDownloads = await this.videoApplication.getLastWeekDownloads(getWeekCount);
+                sendText(
+                        lastWeekDownloads.length ?
+                        Extensions.StringFormatter(UIT._top5, [
+                            lastWeekDownloads.length,
+                            lastWeekDownloads.map( (video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}` ).join("\n\n")
+                        ]) : UIT.noDownloads
+                    );
+                end();
+                return;
+            case UIT.top5:
+                const getTopNCount = 5;
+                const topAudios = await this.videoApplication.getTop(getTopNCount);
+                sendText(
+                        topAudios.length ?
+                        Extensions.StringFormatter(UIT._top5, [
+                            topAudios.length,
+                            topAudios.map( (video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}` ).join("\n\n")
+                        ]) : UIT.noDownloads
+                    );
+                end();
+                return;
+            case UIT.mostLikes:
+                const getMostLikedCount = 5;
+                const mostLiked = await this.videoApplication.getMostLiked(getMostLikedCount);
+                sendText(
+                    mostLiked.length ?
+                        Extensions.StringFormatter(UIT._mostLikes, [
+                            mostLiked.length,
+                            mostLiked.map( (video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}` ).join("\n\n")
+                        ]) : UIT.noDownloads
+                    );
+                end();
+                return;
+        }
+
+        const canSubmit = this.userApplication.canSubmitRequest(user);
+        if (canSubmit.ok) {
+            if(update.message.text.startsWith('/v')) {
+                const videoId = getVideoId(update.message.text.slice(2));
+                if(VideoApplication.Downloader.validateVideoId(videoId)) {
+                    const video = await this.videoApplication.getAudio(videoId, user.id);
+                    if(video)
+                        call(TelegramMethodEnum.SendAudio, {
+                            chat_id: ID,
+                            audio: video.tgFileId,
+                            reply_markup: inlineKeyboards.audio.normal(video, UIT)
+                        });
+                    else
+                        sendText(UIT.musicNotFound);
+                    return end();
                 }
-                const sentMessage = await call(TelegramMethodEnum.SendMessage, {
+            }
+
+            const videoId = VideoApplication.Downloader.validateVideoId(update.message.text);
+            const userMessageId: ChatID = update.message.message_id;
+
+            if (!videoId) {
+                call(TelegramMethodEnum.SendMessage, {
                     chat_id: ID,
                     reply_to_message_id: userMessageId,
-                    text: UIT.validating
+                    text: UIT.invalidVideo
                 });
+                end();
+                return
+            }
 
-                if (sentMessage !== null) {
-                    const stepMessageId: MessageID = sentMessage.message_id;
+            const cacheVideo = await this.videoApplication.getAudio(videoId, user.id);
+            if (cacheVideo) {
+                call(TelegramMethodEnum.SendAudio, {
+                    chat_id: ID,
+                    audio: cacheVideo.tgFileId,
+                    reply_markup: inlineKeyboards.audio.normal(cacheVideo, UIT)
+                });
+                end();
+                return;
+            }
+            const sentMessage = await call(TelegramMethodEnum.SendMessage, {
+                chat_id: ID,
+                reply_to_message_id: userMessageId,
+                text: UIT.validating
+            });
 
-                    this.videoApplication.startDownload(videoId, user, {
-                        minDelay: 500,
-                        stepCallback: (queueVideo: QueueVideo | null, success: boolean, error) => {
+            if (sentMessage !== null) {
+                const stepMessageId: MessageID = sentMessage.message_id;
 
-                            let text = (error ? UIT[error] : "ERROR") ?? "ERROR";
+                this.videoApplication.startDownload(videoId, user, {
+                    minDelay: 500,
+                    stepCallback: (queueVideo: QueueVideo | null, success: boolean, error) => {
 
-                            if (queueVideo && success) {
-                                switch (queueVideo.step) {
-                                    case QueueVideoStep.Validate:
-                                        text = UIT.getInfo;
-                                        break;
-                                    case QueueVideoStep.GetInfo:
-                                        text = UIT.downloadVideo;
-                                        break;
-                                    case QueueVideoStep.DownloadVideo:
-                                        text = UIT.convertToAudio;
-                                        break;
-                                    case QueueVideoStep.ConvertToAudio:
-                                        text = UIT.generateCover;
-                                        break;
-                                    case QueueVideoStep.GenerateCover:
-                                        text = UIT.setMeta;
-                                        break;
-                                    case QueueVideoStep.SetMeta:
-                                        text = UIT.upload;
-                                        break;
-                                }
-                            }
+                        let text = (error ? UIT[error] : "ERROR") ?? "ERROR";
 
-                            /* Update steps status message */
-                            call(TelegramMethodEnum.EditMessageText, {
-                                chat_id: ID,
-                                message_id: stepMessageId,
-                                text
-                            });
-
-                            /* Successful end */
-                            if (queueVideo?.step === QueueVideoStep.SetMeta) {
-                                call(TelegramMethodEnum.SendAudio, {
-                                    chat_id: ID,
-                                    file: queueVideo.fileAddress + ".mp3",
-                                    reply_to_message_id: userMessageId,
-                                    reply_markup: inlineKeyboards.audio.normal(queueVideo.id, UIT)
-                                }, (data) => {
-                                    if (data !== null) {
-                                        this.videoApplication.add(queueVideo, data.audio.file_id);
-                                        call(TelegramMethodEnum.DeleteMessage, {
-                                            chat_id: ID,
-                                            message_id: stepMessageId
-                                        });
-                                    } else {
-                                        call(TelegramMethodEnum.EditMessageText, {
-                                            chat_id: ID,
-                                            message_id: stepMessageId,
-                                            text: UIT.uploadError
-                                        });
-                                    }
-                                    this.videoApplication.flush(queueVideo);
-                                });
+                        if (queueVideo && success) {
+                            switch (queueVideo.step) {
+                                case QueueVideoStep.Validate:
+                                    text = UIT.getInfo;
+                                    break;
+                                case QueueVideoStep.GetInfo:
+                                    text = UIT.downloadVideo;
+                                    break;
+                                case QueueVideoStep.DownloadVideo:
+                                    text = UIT.convertToAudio;
+                                    break;
+                                case QueueVideoStep.ConvertToAudio:
+                                    text = UIT.generateCover;
+                                    break;
+                                case QueueVideoStep.GenerateCover:
+                                    text = UIT.setMeta;
+                                    break;
+                                case QueueVideoStep.SetMeta:
+                                    text = UIT.upload;
+                                    break;
                             }
                         }
-                    });
-                }
 
-                end();
-            } else {
-                sendText(UIT[canSubmit.message]).end();
+                        /* Update steps status message */
+                        call(TelegramMethodEnum.EditMessageText, {
+                            chat_id: ID,
+                            message_id: stepMessageId,
+                            text
+                        });
+
+                        /* Successful end */
+                        if (queueVideo?.step === QueueVideoStep.SetMeta) {
+                            call(TelegramMethodEnum.SendAudio, {
+                                chat_id: ID,
+                                file: queueVideo.fileAddress + ".mp3",
+                                reply_to_message_id: userMessageId,
+                                reply_markup: inlineKeyboards.audio.normal(queueVideo.id, UIT)
+                            }, (data) => {
+                                if (data !== null) {
+                                    this.videoApplication.add(queueVideo, data.audio.file_id);
+                                    call(TelegramMethodEnum.DeleteMessage, {
+                                        chat_id: ID,
+                                        message_id: stepMessageId
+                                    });
+                                } else {
+                                    call(TelegramMethodEnum.EditMessageText, {
+                                        chat_id: ID,
+                                        message_id: stepMessageId,
+                                        text: UIT.uploadError
+                                    });
+                                }
+                                this.videoApplication.flush(queueVideo);
+                            });
+                        }
+                    }
+                });
             }
+
+            end();
         }
+        else
+            sendText(UIT[canSubmit.message]).end();
     };
 }

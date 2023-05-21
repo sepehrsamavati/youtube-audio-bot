@@ -12,7 +12,6 @@ import AdminHandler from "./admin.handler.js";
 import dynamicText from "./helpers/dynamicText.js";
 import UserApplication from "../../application/user.application.js";
 import { logError } from "../../common/helpers/log.js";
-import { User } from "../../common/types/user.js";
 import ReturnHandler from "./return.handler.js";
 
 class UpdateHandler {
@@ -72,7 +71,7 @@ class UpdateHandler {
 						this.end();
 						await this.helper.setUserMode(UserMode.Default);
 						break;
-					case UIT.help:
+					case UIT.help.toLocaleLowerCase():
 					case "/help":
 						helper.call(TelegramMethodEnum.SendText, {
 							chat_id: helper.ID,
