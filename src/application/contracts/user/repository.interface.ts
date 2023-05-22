@@ -9,6 +9,7 @@ export default interface IUserRepository {
     updateUsername(tgId: number, username: string): Promise<boolean>;
     updateUserMode(tgId: number, mode: UserMode): Promise<boolean>;
     updateUserType(tgId: number, type: UserType): Promise<boolean>;
+    updateUserStatus(tgId: number, userStatus: UserStatus): Promise<boolean>;
     updateUsersStatus(tgIds: number[], userStatus: UserStatus): Promise<boolean>;
     getIdByTgId(id: number): Promise<Types.ObjectId | null>;
     getAdmins(): Promise<number[]>;

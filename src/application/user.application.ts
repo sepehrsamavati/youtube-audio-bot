@@ -51,6 +51,16 @@ export default class UserApplication implements IUserApplication {
         return operationResult;
     }
 
+    async setUserStatus(tgId: number, status: UserStatus): Promise<OperationResult> {
+        const operationResult = new OperationResult();
+
+        if(await this.userRepository.updateUserStatus(tgId, status)) {
+            operationResult.succeeded();
+        }
+
+        return operationResult;
+    }
+
     async setUsersStatus(tgIds: number[], status: UserStatus): Promise<OperationResult> {
         const operationResult = new OperationResult();
 

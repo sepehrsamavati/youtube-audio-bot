@@ -60,7 +60,21 @@ export default class UserRepository implements IUserRepository {
 				type: userType
 			});
 			return true;
-		} catch {
+		} catch (e) {
+			logError("User repository / updateUserType", e);
+			return false;
+		}
+	}
+	async updateUserStatus(tgId: number, userStatus: UserStatus): Promise<boolean> {
+		try {
+			await UserModel.findOneAndUpdate({
+				tgId
+			}, {
+				status: userStatus
+			});
+			return true;
+		} catch (e) {
+			logError("User repository / updateUserStatus", e);
 			return false;
 		}
 	}

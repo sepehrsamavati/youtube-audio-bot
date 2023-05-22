@@ -9,6 +9,7 @@ export default interface IUserApplication {
     setUsername(tgId: number, username: string): Promise<OperationResult>;
     setUserMode(tgId: number, mode: UserMode): Promise<OperationResult>;
     setUserType(tgId: number, type: UserType): Promise<OperationResult>;
+    setUserStatus(tgId: number, status: UserStatus): Promise<OperationResult>;
     setUsersStatus(tgIds: number[], status: UserStatus): Promise<OperationResult>;
     canSubmitRequest(user: User): OperationResult;
     getTotalCount(): Promise<number>;
