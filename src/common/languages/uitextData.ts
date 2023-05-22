@@ -46,6 +46,11 @@ const UITextData: UITextObj[] = [
         setError: "Error in setting value!",
         currentValueSelectNew: "Current value: %s1\nSelect new value",
         currentValueSendNewMessage: "Current value:\n\n%s1\n\n\nSend new message",
+        alreadyBlocked: "Already blocked",
+        notBlocked: "User isn't blocked",
+        cantBlockYourself: "Can't block yourself",
+        userBlocked: "User blocked",
+        userUnblocked: "User unblocked",
 
         sendingToUsers: "🔁 Sending to %s1 user(s)...",
         sentToUsers: "✅ Sent to %s1 user(s).",
