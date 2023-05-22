@@ -35,7 +35,7 @@ class UpdateHandler {
 
 		const user = await auth(this.userApplication, helper.ID);
 
-		if(!(user && this.#continue)) return;
+		if(!(user && this.#continue && user.status !== UserStatus.Banned)) return;
 
 		if(message?.from.username && message.from.username !== user.username) {
 			await this.userApplication.setUsername(user.tgId, message.from.username);

@@ -34,11 +34,11 @@ export type UITextObj = {
     setError: string;
     currentValueSelectNew: string;
     currentValueSendNewMessage: string;
-    alreadyBlocked: string;
-    notBlocked: string;
-    cantBlockYourself: string;
-    userBlocked: string;
-    userUnblocked: string;
+    alreadyBanned: string;
+    notBanned: string;
+    cantBanYourself: string;
+    userBanned: string;
+    userUnbanned: string;
 
     sendingToUsers: string;
     sentToUsers: string;

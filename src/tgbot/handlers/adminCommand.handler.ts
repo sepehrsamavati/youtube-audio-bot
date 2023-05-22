@@ -21,7 +21,7 @@ export default class AdminCommandHandler implements HandlerBase {
                     user.tgId, `${user.username ? `\n@${user.username}` : ''}`,
                     UserStatus[user.status], UserMode[user.mode], user.language, user.lastRequest.toLocaleString(),
                     user.promotedBy ? Extensions.StringFormatter(UIT.promotedBy, [user.promotedBy]) : `/promote${user.tgId}`,
-                    user.status === UserStatus.Blocked ? `/unblock${user.tgId}` : `/block${user.tgId}`
+                    user.status === UserStatus.Banned ? `/unban${user.tgId}` : `/ban${user.tgId}`
                 ]) : UIT.userNotFound
             ).end();
         } else if (command.startsWith("get")) {
@@ -32,31 +32,31 @@ export default class AdminCommandHandler implements HandlerBase {
                     user.tgId, `${user.username ? `\n@${user.username}` : ''}`,
                     UserStatus[user.status], UserMode[user.mode], user.language, user.lastRequest.toLocaleString(),
                     user.promotedBy ? Extensions.StringFormatter(UIT.promotedBy, [user.promotedBy]) : `/promote${user.tgId}`,
-                    user.status === UserStatus.Blocked ? `/unblock${user.tgId}` : `/block${user.tgId}`
+                    user.status === UserStatus.Banned ? `/unban${user.tgId}` : `/ban${user.tgId}`
                 ]) : UIT.userNotFound
             ).end();
-        } else if (command.startsWith("block")) {
-            const tgId = parseInt(command.slice(5));
+        } else if (command.startsWith("ban")) {
+            const tgId = parseInt(command.slice(3));
             const user = await this.userApplication.getByTgId(tgId, false, false);
             let response = UIT.userNotFound;
             if(tgId !== ID) {
                 if(user)
                 {
-                    if(user.status === UserStatus.Blocked) response = UIT.alreadyBlocked;
-                    else response = (await this.userApplication.setUserStatus(user.tgId, UserStatus.Blocked)).ok ? UIT.userBlocked : UIT.failed;
+                    if(user.status === UserStatus.Banned) response = UIT.alreadyBanned;
+                    else response = (await this.userApplication.setUserStatus(user.tgId, UserStatus.Banned)).ok ? UIT.userBanned : UIT.failed;
                 }
             } else {
-                response = UIT.cantBlockYourself;
+                response = UIT.cantBanYourself;
             }
             sendText(response).end();
-        } else if (command.startsWith("unblock")) {
-            const tgId = parseInt(command.slice(7));
+        } else if (command.startsWith("unban")) {
+            const tgId = parseInt(command.slice(5));
             let response = UIT.userNotFound;
             const user = await this.userApplication.getByTgId(tgId, false, false);
             if(user)
             {
-                if(user.status !== UserStatus.Blocked) response = UIT.notBlocked;
-                else response = (await this.userApplication.setUserStatus(user.tgId, UserStatus.Temp)).ok ? UIT.userBlocked : UIT.failed;
+                if(user.status !== UserStatus.Banned) response = UIT.notBanned;
+                else response = (await this.userApplication.setUserStatus(user.tgId, UserStatus.Temp)).ok ? UIT.userBanned : UIT.failed;
             }
             sendText(response).end();
         } else if (command.startsWith("promote")) {
