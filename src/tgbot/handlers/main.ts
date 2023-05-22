@@ -43,7 +43,7 @@ class UpdateHandler {
 
 		if(user.status === UserStatus.Temp) {
 			// EULA / TOS / Phone register
-			await this.userApplication.setUsersStatus([user.tgId], UserStatus.OK);
+			await this.userApplication.setUserStatus(user.tgId, UserStatus.OK);
 		}
 
 		const { UIT, langCode } = i18n(user);
