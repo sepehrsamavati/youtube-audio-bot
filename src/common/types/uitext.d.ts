@@ -40,6 +40,8 @@ export type UITextObj = {
     replyToMessageToBroadcast: string;
 
     userAccountName: string;
+    userAccountInfo: string;
+    promotedBy: string;
     userNotFound: string;
     userIsNotAdmin: string;
     adminAdded: string;

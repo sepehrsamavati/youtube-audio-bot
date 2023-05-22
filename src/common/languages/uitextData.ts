@@ -52,6 +52,8 @@ const UITextData: UITextObj[] = [
         replyToMessageToBroadcast: "⚠️ Reply to a message to broadcast!",
 
         userAccountName: "User account name",
+        userAccountInfo: "🆔 User %s1%s2\n\nStatus: %s3\nMode: %s4\nLanguage: %s5\nLast request: %s6\n%s7\n%s8",
+        promotedBy: "Promoted by %s1",
         userNotFound: "❌ User not found",
         userIsNotAdmin: "❌ Not admin",
         adminAdded: "✅ Admin %s1 added",
