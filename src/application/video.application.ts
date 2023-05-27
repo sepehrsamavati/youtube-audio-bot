@@ -361,17 +361,18 @@ export default class VideoApplication implements IVideoApplication {
                     if (video.thumbnail.endsWith(".jpg")) {
                         cropSides();
                     }
-
-                    /* convert webp to jpg */
-                    sharp(baseFileAddress + ".webp").toFile(jpgFilePath).then(async (newFileInfo) => {
-                        biggerSide = newFileInfo.height > newFileInfo.width ? "height" : "width";
-                        cropSides();
-                    }).catch((err) => {
-                        logError("Video application / Convert WEBP cover to JPG", err);
-                        video.error = "coverConvertError";
-                        resolve(res.failed(video.error));
-                    });
-                } catch(e) {
+                    else {
+                        /* convert webp to jpg */
+                        sharp(baseFileAddress + ".webp").toFile(jpgFilePath).then(async (newFileInfo) => {
+                            biggerSide = newFileInfo.height > newFileInfo.width ? "height" : "width";
+                            cropSides();
+                        }).catch((err) => {
+                            logError("Video application / Convert WEBP cover to JPG", err);
+                            video.error = "coverConvertError";
+                            resolve(res.failed(video.error));
+                        });
+                    }
+                } catch (e) {
                     logError("Video application / Generate cover", e);
                     resolve(res.failed(video.error));
                 }
@@ -401,7 +402,7 @@ export default class VideoApplication implements IVideoApplication {
                         else
                             resolve(res.succeeded());
                     });
-                } catch(e) {
+                } catch (e) {
                     logError("Video application / Set metadata", e);
                     resolve(res.failed(video.error));
                 }
