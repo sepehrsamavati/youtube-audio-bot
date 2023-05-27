@@ -161,9 +161,9 @@ export default class VideoApplication implements IVideoApplication {
 
         const taskEnd = () => {
             this.#removeFromQueue(queueVideo.id);
-        }, stepFinish = (success: boolean) => {
+        }, stepFinish = (result: OperationResult) => {
             queueVideo.lastUpdate = new Date();
-            options.stepCallback({ ...queueVideo }, success);
+            options.stepCallback({ ...queueVideo }, result.ok, result.ok ? undefined : result.message);
         }, stepSleep = () => new Promise<void>(resolve => {
             const delay = options.minDelay - (new Date().getTime() - queueVideo.lastUpdate.getTime());
 
@@ -177,31 +177,31 @@ export default class VideoApplication implements IVideoApplication {
         });
 
         /* Validation OK */
-        stepFinish(true);
+        stepFinish(new OperationResult().succeeded());
 
         const info = await VideoApplication.Downloader.getInfo(queueVideo);
         await stepSleep();
-        stepFinish(info.ok);
+        stepFinish(info);
         if (!info.ok) return taskEnd();
 
         const download = await VideoApplication.Downloader.download(queueVideo);
         await stepSleep();
-        stepFinish(download.ok);
+        stepFinish(download);
         if (!download.ok) return taskEnd();
 
         const convert = await VideoApplication.Downloader.convert(queueVideo);
         await stepSleep();
-        stepFinish(convert.ok);
+        stepFinish(convert);
         if (!convert.ok) return taskEnd();
 
         const genCover = await VideoApplication.Downloader.generateCover(queueVideo);
         await stepSleep();
-        stepFinish(genCover.ok);
+        stepFinish(genCover);
         if (!genCover.ok) return taskEnd();
 
         const setMeta = await VideoApplication.Downloader.setMeta(queueVideo);
         await stepSleep();
-        stepFinish(setMeta.ok);
+        stepFinish(setMeta);
 
         taskEnd();
     }
