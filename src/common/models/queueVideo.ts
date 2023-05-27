@@ -11,6 +11,7 @@ export class QueueVideo {
     public step: QueueVideoStep = QueueVideoStep.Validate;
     public fileAddress: string = "";
     public error?: keyof UITextObj;
+    public canceled = false;
 
     public mp4Size: number = 0;
     public mp3Size: number = 0;

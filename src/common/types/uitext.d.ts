@@ -39,6 +39,9 @@ export type UITextObj = {
     cantBanYourself: string;
     userBanned: string;
     userUnbanned: string;
+    nothingToCancel: string;
+    downloadsCanceled: string;
+    canceledByUser: string;
 
     sendingToUsers: string;
     sentToUsers: string;

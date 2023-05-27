@@ -1,18 +1,20 @@
-import UserApplication from "../application/user.application.js";
-import { TelegramMethodEnum } from "../common/enums/tgMethod.enum.js";
 import { log } from "../common/helpers/log.js";
 import call from "../common/helpers/tgCall.js";
-import YTAServices from "../common/interfaces/yta.interface.js";
-import AdminHandler from "./handlers/admin.handler.js";
-import AdminCommandHandler from "./handlers/adminCommand.handler.js";
-import CallbackQueryHandler from "./handlers/callbackQuery.handler.js";
-import HomeHandler from "./handlers/home.handler.js";
-import InlineQueryHandler from "./handlers/inlineQuery.handler.js";
 import UpdateHandler from "./handlers/main.js";
+import HomeHandler from "./handlers/home.handler.js";
+import AdminHandler from "./handlers/admin.handler.js";
 import ReturnHandler from "./handlers/return.handler.js";
+import YTAServices from "../common/interfaces/yta.interface.js";
+import UserApplication from "../application/user.application.js";
+import InlineQueryHandler from "./handlers/inlineQuery.handler.js";
+import VideoApplication from "../application/video.application.js";
+import AdminCommandHandler from "./handlers/adminCommand.handler.js";
+import { TelegramMethodEnum } from "../common/enums/tgMethod.enum.js";
+import CallbackQueryHandler from "./handlers/callbackQuery.handler.js";
 
 export default class TelegramBot {
 	userApplication: UserApplication;
+	videoApplication: VideoApplication;
 	returnHandler: ReturnHandler;
 	adminHandler: AdminHandler;
 	adminCommandHandler: AdminCommandHandler;
@@ -24,6 +26,7 @@ export default class TelegramBot {
 
 	constructor(services: YTAServices) {
 		this.userApplication = services.userApplication;
+		this.videoApplication = services.videoApplication;
 		this.returnHandler = new ReturnHandler();
 		this.adminHandler = new AdminHandler(
 			services.userApplication,
@@ -68,6 +71,7 @@ export default class TelegramBot {
 						for (var i=0; i<updates.length; ++i) {
 							const updateHandler = new UpdateHandler(
 								this.userApplication,
+								this.videoApplication,
 								this.returnHandler,
 								this.adminHandler,
 								this.adminCommandHandler,

@@ -1,19 +1,20 @@
 import i18n from "./helpers/i18n.js";
+import HomeHandler from "./home.handler.js";
+import AdminHandler from "./admin.handler.js";
+import ReturnHandler from "./return.handler.js";
+import dynamicText from "./helpers/dynamicText.js";
 import { findUser as auth } from "./helpers/auth.js";
-import HandlerHelper from "../../common/helpers/handlerHelper.js";
+import { logError } from "../../common/helpers/log.js";
 import { TgMsgUpdate } from "../../common/types/tgBot.js";
+import InlineQueryHandler from "./inlineQuery.handler.js";
+import inlineKeyboards from "./helpers/inlineKeyboards.js";
+import AdminCommandHandler from "./adminCommand.handler.js";
+import CallbackQueryHandler from "./callbackQuery.handler.js";
+import HandlerHelper from "../../common/helpers/handlerHelper.js";
+import UserApplication from "../../application/user.application.js";
+import VideoApplication from "../../application/video.application.js";
 import { TelegramMethodEnum } from "../../common/enums/tgMethod.enum.js";
 import { UserMode, UserStatus, UserType } from "../../common/enums/user.enum.js";
-import HomeHandler from "./home.handler.js";
-import inlineKeyboards from "./helpers/inlineKeyboards.js";
-import CallbackQueryHandler from "./callbackQuery.handler.js";
-import InlineQueryHandler from "./inlineQuery.handler.js";
-import AdminHandler from "./admin.handler.js";
-import dynamicText from "./helpers/dynamicText.js";
-import UserApplication from "../../application/user.application.js";
-import { logError } from "../../common/helpers/log.js";
-import ReturnHandler from "./return.handler.js";
-import AdminCommandHandler from "./adminCommand.handler.js";
 
 class UpdateHandler {
 	async handleUpdate(update: TgMsgUpdate) {
@@ -75,6 +76,10 @@ class UpdateHandler {
 						this.end();
 						await this.helper.setUserMode(UserMode.Default);
 						break;
+					case "/cancel":
+						const cancelResult = this.videoApplication.cancelDownload(helper.ID);
+						helper.sendText(UIT[cancelResult] ?? cancelResult).end();
+						break;
 					case UIT.help.toLocaleLowerCase():
 					case "/help":
 						helper.call(TelegramMethodEnum.SendText, {
@@ -106,6 +111,7 @@ class UpdateHandler {
 
 	constructor(
 		private userApplication: UserApplication,
+		private videoApplication: VideoApplication,
 		private returnHandler: ReturnHandler,
 		private adminHandler: AdminHandler,
 		private adminCommandHandler: AdminCommandHandler,

@@ -1,6 +1,7 @@
 import { Types } from 'mongoose';
 import config from "../config.js";
 import { User } from '../common/types/user.js';
+import { Downloader } from './downloader.application.js';
 import deleteFile from '../common/helpers/deleteFile.js';
 import { QueueVideo } from '../common/models/queueVideo.js';
 import { StepCallback } from '../common/types/stepCallback.js';
@@ -9,7 +10,7 @@ import IVideoApplication from "./contracts/video/application.interface.js";
 import LikeRepository from '../infrastructure/mongo/repository/like.repository.js';
 import ViewRepository from '../infrastructure/mongo/repository/view.repository.js';
 import VideoRepository from '../infrastructure/mongo/repository/video.repository.js';
-import { Downloader } from './downloader.application.js';
+import { UITextObj } from '../common/types/uitext.js';
 
 export default class VideoApplication implements IVideoApplication {
     constructor(
@@ -163,6 +164,9 @@ export default class VideoApplication implements IVideoApplication {
             this.#removeFromQueue(queueVideo.id);
         }, stepFinish = (result: OperationResult) => {
             queueVideo.lastUpdate = new Date();
+            if(queueVideo.canceled) {
+                result.failed("canceledByUser");
+            }
             options.stepCallback({ ...queueVideo }, result.ok, result.ok ? undefined : result.message);
         }, stepSleep = () => new Promise<void>(resolve => {
             const delay = options.minDelay - (new Date().getTime() - queueVideo.lastUpdate.getTime());
@@ -209,6 +213,15 @@ export default class VideoApplication implements IVideoApplication {
         ["webp", "jpg", "mp4", "mp3"]
             .forEach(ext => deleteFile(`${video.fileAddress}.${ext}`));
         this.#removeFromQueue(video.id);
+    }
+
+    cancelDownload(reqByTgId: number): keyof UITextObj {
+        const downloads = this.queue.filter(qv => qv.canceled === false && qv.fromUser.tgId === reqByTgId);
+        if(!downloads.length) return "nothingToCancel";
+
+        downloads.forEach(d => d.canceled = true);
+
+        return "downloadsCanceled";
     }
 
     static Downloader = Downloader;
