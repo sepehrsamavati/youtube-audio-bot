@@ -9,6 +9,7 @@ import { ChatID, MessageID } from "../../common/types/tgBot.js";
 import inlineKeyboards from "./helpers/inlineKeyboards.js";
 import { getUICode, getVideoId } from "./helpers/videoIdBase64.js";
 import Extensions from "../../common/helpers/extensions.js";
+import sendAudio from "../../common/helpers/sendAudio.js";
 
 export default class HomeHandler implements HandlerBase {
     constructor(
@@ -23,10 +24,9 @@ export default class HomeHandler implements HandlerBase {
             case UIT.random:
                 const randomAudio = await this.videoApplication.getRandomAudio(user.id);
                 if(randomAudio)
-                    call(TelegramMethodEnum.SendAudio, {
-                        chat_id: ID,
-                        audio: randomAudio.tgFileId,
-                        reply_markup: inlineKeyboards.audio.normal(randomAudio, UIT)
+                    sendAudio({
+                        ID, UIT, replyToMessage: update.message.message_id,
+                        audio: randomAudio, 
                     });
                 else sendText(UIT.musicNotFound);
                 return;
@@ -87,10 +87,9 @@ export default class HomeHandler implements HandlerBase {
                 if(VideoApplication.Downloader.validateVideoId(videoId)) {
                     const video = await this.videoApplication.getAudio(videoId, user.id);
                     if(video)
-                        call(TelegramMethodEnum.SendAudio, {
-                            chat_id: ID,
-                            audio: video.tgFileId,
-                            reply_markup: inlineKeyboards.audio.normal(video, UIT)
+                        sendAudio({
+                            ID, UIT, replyToMessage: update.message.message_id,
+                            audio: video
                         });
                     else
                         sendText(UIT.musicNotFound);
@@ -113,10 +112,8 @@ export default class HomeHandler implements HandlerBase {
 
             const cacheVideo = await this.videoApplication.getAudio(videoId, user.id);
             if (cacheVideo) {
-                call(TelegramMethodEnum.SendAudio, {
-                    chat_id: ID,
-                    audio: cacheVideo.tgFileId,
-                    reply_markup: inlineKeyboards.audio.normal(cacheVideo, UIT)
+                sendAudio({
+                    ID, UIT, replyToMessage: userMessageId, audio: cacheVideo
                 });
                 end();
                 return;
@@ -168,12 +165,12 @@ export default class HomeHandler implements HandlerBase {
 
                         /* Successful end */
                         if (queueVideo?.step === QueueVideoStep.SetMeta) {
-                            call(TelegramMethodEnum.SendAudio, {
-                                chat_id: ID,
-                                file: queueVideo.fileAddress + ".mp3",
-                                reply_to_message_id: userMessageId,
-                                reply_markup: inlineKeyboards.audio.normal(queueVideo.id, UIT)
-                            }, (data) => {
+                            sendAudio({
+                                ID, UIT,
+                                replyToMessage: userMessageId,
+                                filePath: queueVideo.fileAddress + ".mp3",
+                                audio: queueVideo.id
+                            }).then(data => {
                                 if (data !== null) {
                                     this.videoApplication.add(queueVideo, data.audio.file_id);
                                     call(TelegramMethodEnum.DeleteMessage, {
