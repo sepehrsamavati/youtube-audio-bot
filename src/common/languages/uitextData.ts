@@ -101,14 +101,16 @@ const UITextData: UITextObj[] = [
         textLengthLimitError: "Text too large, max valid length is %s1",
         availableDynamicWords: "Available dynamic words:",
 
-        invalidDataFormat: "Invalid Format",
-        convertError: "Error in converting",
-        fileSizeOver50: "File size is over 50 MB",
-        coverConvertError: "Couldn't convert cover",
-        coverCropError: "Couldn't crop cover",
-        croppedCoverSaveError: "Error while saving cropped cover",
-        setCoverError: "Couldn't set cover",
-        uploadError: "Couldn't upload audio!"
+        getInfoError: "❌ Get info error",
+        downloadError: "❌ Download error",
+        invalidDataFormat: "❌ Invalid Format",
+        convertError: "❌ Error in converting",
+        fileSizeOver50: "❌ File size is over 50 MB",
+        coverConvertError: "❌ Couldn't convert cover",
+        coverCropError: "❌ Couldn't crop cover",
+        croppedCoverSaveError: "❌ Error while saving cropped cover",
+        setMetaError: "❌ Couldn't set meta data",
+        uploadError: "❌ Couldn't upload audio!"
     }
 ];
 

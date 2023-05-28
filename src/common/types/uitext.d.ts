@@ -96,11 +96,13 @@ export type UITextObj = {
 
     /* Errors */
     invalidDataFormat: string;
+    getInfoError: string;
+    downloadError: string;
     convertError: string;
     fileSizeOver50: string;
     coverConvertError: string;
     coverCropError: string;
     croppedCoverSaveError: string;
-    setCoverError: string;
+    setMetaError: string;
     uploadError: string;
 };

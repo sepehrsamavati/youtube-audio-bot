@@ -164,7 +164,7 @@ export default class HomeHandler implements HandlerBase {
                         });
 
                         /* Successful end */
-                        if (queueVideo?.step === QueueVideoStep.SetMeta) {
+                        if (success && queueVideo?.step === QueueVideoStep.SetMeta) {
                             sendAudio({
                                 ID, UIT,
                                 replyToMessage: userMessageId,
