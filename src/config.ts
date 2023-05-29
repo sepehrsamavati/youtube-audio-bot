@@ -1,4 +1,4 @@
-import dotenv from 'dotenv'
+import dotenv from 'dotenv';
 dotenv.config();
 
 const config = {
@@ -15,11 +15,12 @@ const config = {
 	timeout: parseInt(process.env.YTA_STEP_TIMEOUT ?? "20"),
 	owners: (process.env.YTA_TG_OWNERS ?? "").split(',').map(id => parseInt(id)),
 	connectionString: process.env.YTA_MONGODB ?? "",
-	version: "-"
+	version: process.env.npm_package_version ?? "-"
 };
 
 config.tgbot.botUrl = `${config.tgbot.api}${config.tgbot.token}/`;
 
+Object.freeze(config.tgbot);
 Object.freeze(config);
 
 export default config;
