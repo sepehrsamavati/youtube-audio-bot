@@ -93,6 +93,7 @@ export type UITextObj = {
     invalidValue: string;
     textLengthLimitError: string;
     availableDynamicWords: string;
+    protectAudios: string;
 
     /* Errors */
     invalidDataFormat: string;

@@ -1,6 +1,7 @@
 import { Types } from 'mongoose';
 import config from "../config.js";
 import { User } from '../common/types/user.js';
+import { UITextObj } from '../common/types/uitext.js';
 import { Downloader } from './downloader.application.js';
 import deleteFile from '../common/helpers/deleteFile.js';
 import { QueueVideo } from '../common/models/queueVideo.js';
@@ -10,7 +11,6 @@ import IVideoApplication from "./contracts/video/application.interface.js";
 import LikeRepository from '../infrastructure/mongo/repository/like.repository.js';
 import ViewRepository from '../infrastructure/mongo/repository/view.repository.js';
 import VideoRepository from '../infrastructure/mongo/repository/video.repository.js';
-import { UITextObj } from '../common/types/uitext.js';
 
 export default class VideoApplication implements IVideoApplication {
     constructor(

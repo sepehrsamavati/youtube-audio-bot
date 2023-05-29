@@ -1,7 +1,8 @@
-import TelegramCall from "./tgCall.js";
-import { SendAudioOptions } from "../types/sendAudio";
-import { TelegramMethodEnum } from "../enums/tgMethod.enum.js";
-import inlineKeyboards from "../../tgbot/handlers/helpers/inlineKeyboards.js";
+import settings from "../../../settings.js";
+import inlineKeyboards from "./inlineKeyboards.js";
+import TelegramCall from "../../../common/helpers/tgCall.js";
+import { SendAudioOptions } from "../../../common/types/sendAudio.js";
+import { TelegramMethodEnum } from "../../../common/enums/tgMethod.enum.js";
 
 
 export default (opt: SendAudioOptions) => {
@@ -17,6 +18,9 @@ export default (opt: SendAudioOptions) => {
         options.reply_to_message_id = replyToMessage;
         options.allow_sending_without_reply = true;
     }
+
+    if(settings.protectAudios)
+        options.protect_content = true;
 
     if(filePath)
         options.file = filePath;

@@ -12,6 +12,7 @@ export enum UserMode {
     SetHelpText = 32,
     SetShareAvailability = 33,
     SetPublicMode = 34,
+    SetProtectAudios = 35
 }
 
 export enum UserStatus {

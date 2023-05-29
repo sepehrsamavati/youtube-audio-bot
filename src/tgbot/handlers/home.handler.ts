@@ -9,7 +9,7 @@ import { ChatID, MessageID } from "../../common/types/tgBot.js";
 import inlineKeyboards from "./helpers/inlineKeyboards.js";
 import { getUICode, getVideoId } from "./helpers/videoIdBase64.js";
 import Extensions from "../../common/helpers/extensions.js";
-import sendAudio from "../../common/helpers/sendAudio.js";
+import sendAudio from "./helpers/sendAudio.js";
 
 export default class HomeHandler implements HandlerBase {
     constructor(

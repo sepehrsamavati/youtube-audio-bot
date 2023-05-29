@@ -100,6 +100,7 @@ const UITextData: UITextObj[] = [
         invalidValue: "%s1\n\n❌ Invalid value%s2",
         textLengthLimitError: "Text too large, max valid length is %s1",
         availableDynamicWords: "Available dynamic words:",
+        protectAudios: "Protect audios",
 
         getInfoError: "❌ Get info error",
         downloadError: "❌ Download error",

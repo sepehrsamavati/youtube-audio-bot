@@ -1,11 +1,12 @@
+import { logError } from "./common/helpers/log.js";
 import { AppSettings } from "./common/interfaces/yta.interface.js";
 import SettingsApplication from "./application/settings.application.js";
-import { logError } from "./common/helpers/log.js";
 
 const settings: AppSettings = {
 	defaultLang: "en",
 	publicMode: false,
-	shareAvailable: false
+	shareAvailable: false,
+	protectAudios: true
 };
 
 export const readFromDatabase = async (settingsApplication: SettingsApplication) => {
