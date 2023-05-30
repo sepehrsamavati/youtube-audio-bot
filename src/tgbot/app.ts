@@ -11,6 +11,8 @@ import VideoApplication from "../application/video.application.js";
 import AdminCommandHandler from "./handlers/adminCommand.handler.js";
 import { TelegramMethodEnum } from "../common/enums/tgMethod.enum.js";
 import CallbackQueryHandler from "./handlers/callbackQuery.handler.js";
+import config from "../config.js";
+import TelegramCall from "../common/helpers/tgCall.js";
 
 export default class TelegramBot {
 	userApplication: UserApplication;
@@ -44,7 +46,7 @@ export default class TelegramBot {
 	}
 
 	#startBot() {
-		call(TelegramMethodEnum.GetMe, null, (bot) => {
+		call(TelegramMethodEnum.GetMe, null, async (bot) => {
 			if(!bot)
 			{
 				console.log("Telegram connection issue!");
@@ -54,6 +56,15 @@ export default class TelegramBot {
 			const botUsername = bot.username;
 	
 			log(`Bot started @${botUsername}`);
+
+			const usersCount = await this.userApplication.getTotalCount();
+
+			config.owners.forEach(ownerId => {
+				TelegramCall(TelegramMethodEnum.SendMessage, {
+					chat_id: ownerId,
+					text: `Bot started v${config.version}\n${new Date().toLocaleString("en-GB")}\n\nUsers: ${usersCount}`
+				});
+			});
 	
 			this.#getUpdates();
 		});
