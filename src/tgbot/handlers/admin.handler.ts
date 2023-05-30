@@ -59,6 +59,7 @@ export default class AdminHandler implements HandlerBase {
                     end();
                     return;
                 case "...":
+                case UIT.adminPanel:
                 case UIT.return:
                 case UIT.cancel:
                     handlerData.setUserMode(UserMode.Default);

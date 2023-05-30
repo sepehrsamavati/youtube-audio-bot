@@ -54,6 +54,7 @@ const UITextData: UITextObj[] = [
         nothingToCancel: "⚠️ Nothing to cancel!",
         downloadsCanceled: "✅ Cancel submitted.",
         canceledByUser: "🚮 Canceled by user.",
+        adminPanel: "Admin panel",
 
         sendingToUsers: "🔁 Sending to %s1 user(s)...",
         sentToUsers: "✅ Sent to %s1 user(s).",
