@@ -1,4 +1,6 @@
 import dotenv from 'dotenv';
+import fs from "node:fs/promises";
+import { logError } from './common/helpers/log.js';
 dotenv.config();
 
 const config = {
@@ -19,6 +21,15 @@ const config = {
 };
 
 config.tgbot.botUrl = `${config.tgbot.api}${config.tgbot.token}/`;
+
+if(config.version === "-") {
+	try {
+		const packageJsonBuffer = await fs.readFile("./package.json");
+		config.version = JSON.parse(packageJsonBuffer.toString()).version;
+	} catch(e) {
+		logError("Config / Reading package.json", e);
+	}
+}
 
 Object.freeze(config.tgbot);
 Object.freeze(config);
