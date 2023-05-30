@@ -14,7 +14,7 @@
 1. Clone/Download repository
 2. Open CMD/terminal and navigate to project folder
 3. Run `npm i --omit=dev` to install dependencies (or just `npm i` for development)
-4. Create environment file `.env` using `.env.example`
+4. Create environment file `.env` using `.env.example` & configure
 5. Run `npm run start` to start the bot
 
 ### Requirements
@@ -31,4 +31,3 @@ Key | Value
 `YTA_MONGODB` | MongoDB connection string
 `YTA_USER_CONCURRENT_DOWNLOADS` | Maximum number of concurrent downloads per user
 `YTA_TOTAL_CONCURRENT_DOWNLOADS` | Maximum number of concurrent downloads (queue limit)
-`YTA_STEP_TIMEOUT` | Timeout for each step of the progress in seconds (end-user steps, 6 steps)
