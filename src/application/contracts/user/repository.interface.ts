@@ -15,4 +15,6 @@ export default interface IUserRepository {
     getAdmins(): Promise<number[]>;
     count(): Promise<number>;
     getBroadcastValidUserIds(): Promise<number[]>;
+    promote(tgId: number, promoter: number): Promise<boolean>;
+    demote(tgId: number): Promise<boolean>;
 }

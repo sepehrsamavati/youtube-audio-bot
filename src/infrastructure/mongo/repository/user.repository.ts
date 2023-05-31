@@ -6,6 +6,22 @@ import { UserMode, UserStatus, UserType } from "../../../common/enums/user.enum.
 import IUserRepository from "../../../application/contracts/user/repository.interface.js";
 
 export default class UserRepository implements IUserRepository {
+	async promote(tgId: number, promoter: number): Promise<boolean> {
+		try {
+			return Boolean(await UserModel.findOneAndUpdate({ tgId }, { promotedBy: promoter }));
+		} catch (e) {
+			logError("User repository / Promote", e);
+			return false;
+		}
+	}
+	async demote(tgId: number): Promise<boolean> {
+		try {
+			return Boolean(await UserModel.findOneAndUpdate({ tgId }, { $unset: { promotedBy: "" } }));
+		} catch (e) {
+			logError("User repository / Demote", e);
+			return false;
+		}
+	}
 	async count(): Promise<number> {
 		try {
 			return await UserModel.count();

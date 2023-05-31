@@ -14,4 +14,6 @@ export default interface IUserApplication {
     canSubmitRequest(user: User): OperationResult;
     getTotalCount(): Promise<number>;
     getBroadcastIdList(): Promise<number[]>;
+    promote(tgId: number, promoter: number): Promise<OperationResult>;
+    demote(tgId: number): Promise<OperationResult>;
 }

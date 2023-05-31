@@ -10,6 +10,22 @@ export default class UserApplication implements IUserApplication {
     constructor(
         private userRepository: UserRepository
     ){}
+    async promote(tgId: number, promoter: number): Promise<OperationResult> {
+        const operationResult = new OperationResult();
+
+        if(await this.userRepository.promote(tgId, promoter))
+            operationResult.succeeded();
+
+        return operationResult;
+    }
+    async demote(tgId: number): Promise<OperationResult> {
+        const operationResult = new OperationResult();
+
+        if(await this.userRepository.demote(tgId))
+            operationResult.succeeded();
+
+        return operationResult;
+    }
     canSubmitRequest(user: User): OperationResult {
         const operationResult = new OperationResult();
 
