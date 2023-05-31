@@ -35,7 +35,7 @@ export default class HomeHandler implements HandlerBase {
                 const recentDownloads = await this.videoApplication.getRecentDownloads(getRecentCount);
                 sendText(
                         recentDownloads.length ?
-                        Extensions.StringFormatter(UIT._top5, [
+                        Extensions.StringFormatter(UIT._recentDownloads, [
                             recentDownloads.length,
                             recentDownloads.map((video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}`).join("\n\n")
                         ]) : UIT.noDownloads
@@ -47,7 +47,7 @@ export default class HomeHandler implements HandlerBase {
                 const lastWeekDownloads = await this.videoApplication.getLastWeekDownloads(getWeekCount);
                 sendText(
                         lastWeekDownloads.length ?
-                        Extensions.StringFormatter(UIT._top5, [
+                        Extensions.StringFormatter(UIT._weekTop, [
                             lastWeekDownloads.length,
                             lastWeekDownloads.map( (video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}` ).join("\n\n")
                         ]) : UIT.noDownloads

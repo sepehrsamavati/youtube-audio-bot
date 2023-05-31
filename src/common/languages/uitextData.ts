@@ -21,7 +21,7 @@ const UITextData: UITextObj[] = [
         weekTop: "🥇 Last Week Top",
         _weekTop: "🔥 Top %s1 last week download(s)\n\n\n%s2",
         mostLikes: "♥ Most Likes",
-        _mostLikes: "♥ Top %s1 likes\n\n\n%s2",
+        _mostLikes: "♥ Top %s1 like(s)\n\n\n%s2",
         recentDownloads: "🗂 Recent Downloads",
         _recentDownloads: "📆 Recent %s1 Downloads\n\n\n%s2",
         noDownloads: "No downloads!",
