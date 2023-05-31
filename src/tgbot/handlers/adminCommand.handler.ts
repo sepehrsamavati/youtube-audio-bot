@@ -60,7 +60,26 @@ export default class AdminCommandHandler implements HandlerBase {
             }
             sendText(response).end();
         } else if (command.startsWith("promote")) {
-        } else if (command.startsWith("demote")) {}
+            const tgId = parseInt(command.slice(7));
+            let response = UIT.userNotFound;
+            const user = await this.userApplication.getByTgId(tgId, false, false);
+            if(user)
+            {
+                if(user.promotedBy) response = Extensions.StringFormatter(UIT.alreadyPromotedBy, [user.promotedBy]);
+                else response = (await this.userApplication.promote(user.tgId, ID)).ok ? UIT.promoted : UIT.failed;
+            }
+            sendText(response).end();
+        } else if (command.startsWith("demote")) {
+            const tgId = parseInt(command.slice(6));
+            let response = UIT.userNotFound;
+            const user = await this.userApplication.getByTgId(tgId, false, false);
+            if(user)
+            {
+                if(!user.promotedBy) response = UIT.notPromoted;
+                else response = (await this.userApplication.demote(user.tgId)).ok ? UIT.demoted : UIT.failed;
+            }
+            sendText(response).end();
+        }
 
     }
 }

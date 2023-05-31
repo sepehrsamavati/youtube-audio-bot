@@ -50,6 +50,10 @@ export type UITextObj = {
     userAccountName: string;
     userAccountInfo: string;
     promotedBy: string;
+    promoted: string;
+    demoted: string;
+    notPromoted: string;
+    alreadyPromotedBy: string;
     userNotFound: string;
     userIsNotAdmin: string;
     adminAdded: string;
