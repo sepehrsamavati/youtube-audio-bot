@@ -125,6 +125,11 @@ export default class HomeHandler implements HandlerBase {
             });
 
             if (sentMessage !== null) {
+                call(TelegramMethodEnum.SendChatAction, {
+                    chat_id: ID,
+                    action: "record_voice"
+                });
+
                 const stepMessageId: MessageID = sentMessage.message_id;
 
                 this.videoApplication.startDownload(videoId, user, {
