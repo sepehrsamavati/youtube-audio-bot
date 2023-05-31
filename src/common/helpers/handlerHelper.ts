@@ -11,7 +11,7 @@ export default class HandlerHelper implements Handler {
 
 	constructor(
 		private userApplication: UserApplication
-		){}
+	) { }
 
 	ID!: number;
 	update!: TgMsgUpdate;
@@ -21,15 +21,23 @@ export default class HandlerHelper implements Handler {
 	call = TelegramCall;
 	end!: () => void;
 
-	setUserMode(mode: UserMode){
+	setUserMode(mode: UserMode) {
 		return this.userApplication.setUserMode(this.ID, mode);
 	}
 
-	sendText = (message: string) => {
-		this.call(TelegramMethodEnum.SendText, {
+	sendText = (text: string, reply = true) => {
+		const sendOptions: any = {
 			chat_id: this.ID,
-			text: message
-		});
+			text
+		};
+		if (reply) {
+			const messageId = this.update?.message?.message_id;
+			if (messageId) {
+				sendOptions.reply_to_message_id = messageId;
+				sendOptions.allow_sending_without_reply = true;
+			}
+		}
+		this.call(TelegramMethodEnum.SendText, sendOptions);
 		return this;
 	}
 };
