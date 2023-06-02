@@ -67,6 +67,7 @@ class UpdateHandler {
 			if (this.#continue) {
 				switch (message.text?.toLowerCase()) {
 					case "/start":
+					case UIT.userPanel.toLowerCase():
 						helper.call(TelegramMethodEnum.SendText, {
 							chat_id: helper.ID,
 							text: dynamicText({
@@ -82,7 +83,7 @@ class UpdateHandler {
 						const cancelResult = this.videoApplication.cancelDownload(helper.ID);
 						helper.sendText(UIT[cancelResult] ?? cancelResult).end();
 						break;
-					case UIT.help.toLocaleLowerCase():
+					case UIT.help.toLowerCase():
 					case "/help":
 						helper.call(TelegramMethodEnum.SendText, {
 							chat_id: helper.ID,

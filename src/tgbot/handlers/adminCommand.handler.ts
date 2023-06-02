@@ -20,7 +20,7 @@ export default class AdminCommandHandler implements HandlerBase {
                 user ? Extensions.StringFormatter(UIT.userAccountInfo, [
                     user.tgId, `${user.username ? `\n@${user.username}` : ''}`,
                     UserStatus[user.status], UserMode[user.mode], user.language, user.lastRequest.toLocaleString(),
-                    user.promotedBy ? Extensions.StringFormatter(UIT.promotedBy, [user.promotedBy]) : `/promote${user.tgId}`,
+                    user.promotedBy ? Extensions.StringFormatter(UIT.promotedBy, [user.promotedBy, `/demote${user.tgId}`]) : `/promote${user.tgId}`,
                     user.status === UserStatus.Banned ? `/unban${user.tgId}` : `/ban${user.tgId}`
                 ]) : UIT.userNotFound
             ).end();
@@ -31,7 +31,7 @@ export default class AdminCommandHandler implements HandlerBase {
                 user ? Extensions.StringFormatter(UIT.userAccountInfo, [
                     user.tgId, `${user.username ? `\n@${user.username}` : ''}`,
                     UserStatus[user.status], UserMode[user.mode], user.language, user.lastRequest.toLocaleString(),
-                    user.promotedBy ? Extensions.StringFormatter(UIT.promotedBy, [user.promotedBy]) : `/promote${user.tgId}`,
+                    user.promotedBy ? Extensions.StringFormatter(UIT.promotedBy, [user.promotedBy, `/demote${user.tgId}`]) : `/promote${user.tgId}`,
                     user.status === UserStatus.Banned ? `/unban${user.tgId}` : `/ban${user.tgId}`
                 ]) : UIT.userNotFound
             ).end();

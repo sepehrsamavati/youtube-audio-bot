@@ -61,6 +61,7 @@ export type UITextObj = {
     cantRemoveOwner: string;
     alreadyAdmin: string;
     adminPanel: string;
+    userPanel: string;
 
     musicNotFound: string;
     liked: string;

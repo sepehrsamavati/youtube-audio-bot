@@ -11,6 +11,7 @@ export default {
         if (admin && config.owners.includes(admin.tgId)) {
             keyboard.push([{ text: UIT.addAdmin }, { text: UIT.remAdmin }]);
         }
+        keyboard.push([{ text: UIT.userPanel }]);
         return {
             keyboard,
             resize_keyboard: true

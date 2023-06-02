@@ -77,6 +77,7 @@ export default class AdminHandler implements HandlerBase {
                     const totalSavedVideos = await this.videoApplication.getTotalCount();
                     const usersCount = await this.userApplication.getTotalCount();
                     sendText(Extensions.StringFormatter(UIT._stats, [
+                        config.version,
                         broadcastStats.count,
                         broadcastStats.last.getTime() === 0 ? UIT.never : broadcastStats.last.toLocaleString(),
                         lastWeekDownloads,

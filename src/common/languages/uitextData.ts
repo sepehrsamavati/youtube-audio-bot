@@ -7,13 +7,13 @@ const UITextData: UITextObj[] = [
         _help: "📌 Just send me a YouTube link or video ID to get MP3 file here",
         _notPromoted: "❌ You're not promoted and don't have access to use the bot",
         stats: "📊 Stats",
-        _stats: "Bot statistics"
-            + "\n\n📉 Total BCs: %s1"
-            + "\n⏱ Last BC: %s2"
-            + "\n\n📊 Last week downloads: %s3"
-            + "\n🗃 Saved: %s4"
-            + "\n👁 Views: %s5"
-            + "\n\n👥 Users: %s6",
+        _stats: "Bot statistics (v%s1)"
+            + "\n\n📉 Total BCs: %s2"
+            + "\n⏱ Last BC: %s3"
+            + "\n\n📊 Last week downloads: %s4"
+            + "\n🗃 Saved: %s5"
+            + "\n👁 Views: %s6"
+            + "\n\n👥 Users: %s7",
         help: "❔ Help",
         random: "🎲 Random song",
         top5: "🎖 Top 5",
@@ -55,6 +55,7 @@ const UITextData: UITextObj[] = [
         downloadsCanceled: "✅ Cancel submitted.",
         canceledByUser: "🚮 Canceled by user.",
         adminPanel: "Admin panel",
+        userPanel: "User panel",
 
         sendingToUsers: "🔁 Sending to %s1 user(s)...",
         sentToUsers: "✅ Sent to %s1 user(s).",
@@ -62,7 +63,7 @@ const UITextData: UITextObj[] = [
 
         userAccountName: "User account name",
         userAccountInfo: "🆔 User %s1%s2\n\nStatus: %s3\nMode: %s4\nLanguage: %s5\nLast request: %s6\n%s7\n%s8",
-        promotedBy: "Promoted by %s1",
+        promotedBy: "Promoted by %s1 %s2",
         alreadyPromotedBy: "⚠️ Already promoted by %s1",
         promoted: "✅ Promoted",
         demoted: "✅ Demoted",
