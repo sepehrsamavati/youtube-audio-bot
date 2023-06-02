@@ -26,7 +26,7 @@ class UpdateHandler {
 			message?.chat.id
 			?? update.callback_query?.message.chat.id
 			?? update.inline_query?.from.id
-			?? update.my_chat_member?.user.id
+			?? update.my_chat_member?.from.id
 			?? 0;
 
 		if(helper.ID === 0) {

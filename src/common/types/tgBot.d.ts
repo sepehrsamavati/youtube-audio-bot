@@ -80,7 +80,7 @@ type ChatMember = ChatMemberOwner | ChatMemberAdministrator | ChatMemberMember |
 
 type ChatMemberUpdated = {
     chat: Chat;
-    user: User;
+    from: User;
     date: number;
     old_chat_member: ChatMember;
     new_chat_member: ChatMember;
