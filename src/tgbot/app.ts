@@ -1,19 +1,25 @@
-import UserApplication from "../application/user.application.js";
-import { TelegramMethodEnum } from "../common/enums/tgMethod.enum.js";
 import { log } from "../common/helpers/log.js";
 import call from "../common/helpers/tgCall.js";
-import YTAServices from "../common/interfaces/yta.interface.js";
-import AdminHandler from "./handlers/admin.handler.js";
-import CallbackQueryHandler from "./handlers/callbackQuery.handler.js";
-import HomeHandler from "./handlers/home.handler.js";
-import InlineQueryHandler from "./handlers/inlineQuery.handler.js";
 import UpdateHandler from "./handlers/main.js";
+import HomeHandler from "./handlers/home.handler.js";
+import AdminHandler from "./handlers/admin.handler.js";
 import ReturnHandler from "./handlers/return.handler.js";
+import YTAServices from "../common/interfaces/yta.interface.js";
+import UserApplication from "../application/user.application.js";
+import InlineQueryHandler from "./handlers/inlineQuery.handler.js";
+import VideoApplication from "../application/video.application.js";
+import AdminCommandHandler from "./handlers/adminCommand.handler.js";
+import { TelegramMethodEnum } from "../common/enums/tgMethod.enum.js";
+import CallbackQueryHandler from "./handlers/callbackQuery.handler.js";
+import config from "../config.js";
+import TelegramCall from "../common/helpers/tgCall.js";
 
 export default class TelegramBot {
 	userApplication: UserApplication;
+	videoApplication: VideoApplication;
 	returnHandler: ReturnHandler;
 	adminHandler: AdminHandler;
+	adminCommandHandler: AdminCommandHandler;
 	homeHandler: HomeHandler;
 	callbackQueryHandler: CallbackQueryHandler;
 	inlineQueryHandler: InlineQueryHandler;
@@ -22,6 +28,7 @@ export default class TelegramBot {
 
 	constructor(services: YTAServices) {
 		this.userApplication = services.userApplication;
+		this.videoApplication = services.videoApplication;
 		this.returnHandler = new ReturnHandler();
 		this.adminHandler = new AdminHandler(
 			services.userApplication,
@@ -31,6 +38,7 @@ export default class TelegramBot {
 			services.viewApplication,
 			services.videoApplication
 			);
+		this.adminCommandHandler = new AdminCommandHandler(services.userApplication);
 		this.homeHandler = new HomeHandler(services.videoApplication, services.userApplication);
 		this.callbackQueryHandler = new CallbackQueryHandler(services.userApplication, services.videoApplication);
 		this.inlineQueryHandler = new InlineQueryHandler(services.videoApplication);
@@ -38,7 +46,7 @@ export default class TelegramBot {
 	}
 
 	#startBot() {
-		call(TelegramMethodEnum.GetMe, null, (bot) => {
+		call(TelegramMethodEnum.GetMe, null, async (bot) => {
 			if(!bot)
 			{
 				console.log("Telegram connection issue!");
@@ -48,6 +56,15 @@ export default class TelegramBot {
 			const botUsername = bot.username;
 	
 			log(`Bot started @${botUsername}`);
+
+			const usersCount = await this.userApplication.getTotalCount();
+
+			config.owners.forEach(ownerId => {
+				TelegramCall(TelegramMethodEnum.SendMessage, {
+					chat_id: ownerId,
+					text: `Bot started v${config.version}\n${new Date().toLocaleString("en-GB")}\n\nUsers: ${usersCount}`
+				});
+			});
 	
 			this.#getUpdates();
 		});
@@ -65,8 +82,10 @@ export default class TelegramBot {
 						for (var i=0; i<updates.length; ++i) {
 							const updateHandler = new UpdateHandler(
 								this.userApplication,
+								this.videoApplication,
 								this.returnHandler,
 								this.adminHandler,
+								this.adminCommandHandler,
 								this.homeHandler,
 								this.callbackQueryHandler,
 								this.inlineQueryHandler

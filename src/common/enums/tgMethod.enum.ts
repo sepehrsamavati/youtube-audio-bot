@@ -12,4 +12,5 @@ export enum TelegramMethodEnum {
     EditMessageReplyMarkup = "editMessageReplyMarkup",
     ForwardMessage = "forwardMessage",
     CopyMessage = "copyMessage",
+    SendChatAction = "sendChatAction",
 };

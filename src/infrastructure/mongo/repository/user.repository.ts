@@ -1,17 +1,63 @@
-import UserModel from "../models/user.js";
 import { Types } from "mongoose";
+import UserModel from "../models/user.js";
 import { User } from "../../../common/types/user.js";
 import { logError } from "../../../common/helpers/log.js";
 import { UserMode, UserStatus, UserType } from "../../../common/enums/user.enum.js";
 import IUserRepository from "../../../application/contracts/user/repository.interface.js";
 
 export default class UserRepository implements IUserRepository {
+	async promote(tgId: number, promoter: number): Promise<boolean> {
+		try {
+			return Boolean(await UserModel.findOneAndUpdate({ tgId }, { promotedBy: promoter }));
+		} catch (e) {
+			logError("User repository / Promote", e);
+			return false;
+		}
+	}
+	async demote(tgId: number): Promise<boolean> {
+		try {
+			return Boolean(await UserModel.findOneAndUpdate({ tgId }, { $unset: { promotedBy: "" } }));
+		} catch (e) {
+			logError("User repository / Demote", e);
+			return false;
+		}
+	}
 	async count(): Promise<number> {
 		try {
 			return await UserModel.count();
 		} catch (e) {
 			logError("User repository / Count", e);
 			return 0;
+		}
+	}
+
+	async findByUsername(username: string): Promise<User | null> {
+		try {
+			const user = await UserModel.findOne({ username: { '$regex': username, $options: 'i' } });
+			return user ? {
+				id: user._id,
+				tgId: user.tgId,
+				mode: user.mode,
+				status: user.status,
+				type: user.type,
+				language: user.language,
+				lastRequest: user.lastRequest,
+				username: user.username,
+				promotedBy: user.promotedBy
+			} : null;
+		} catch (e) {
+			logError("User repository / Find by username");
+			return null;
+		}
+	}
+
+	async updateUsername(tgId: number, username: string): Promise<boolean> {
+		try {
+			const res = await UserModel.findOneAndUpdate({ tgId }, { username });
+			return Boolean(res);
+		} catch (e) {
+			logError("User repository / Update username");
+			return false;
 		}
 	}
 	async updateUserMode(tgId: number, userMode: UserMode): Promise<boolean> {
@@ -30,7 +76,21 @@ export default class UserRepository implements IUserRepository {
 				type: userType
 			});
 			return true;
-		} catch {
+		} catch (e) {
+			logError("User repository / updateUserType", e);
+			return false;
+		}
+	}
+	async updateUserStatus(tgId: number, userStatus: UserStatus): Promise<boolean> {
+		try {
+			await UserModel.findOneAndUpdate({
+				tgId
+			}, {
+				status: userStatus
+			});
+			return true;
+		} catch (e) {
+			logError("User repository / updateUserStatus", e);
 			return false;
 		}
 	}
@@ -44,7 +104,7 @@ export default class UserRepository implements IUserRepository {
 				status: userStatus
 			});
 			return true;
-		} catch(e) {
+		} catch (e) {
 			logError("User repository / updateUsersStatus", e);
 			return false;
 		}
@@ -52,9 +112,19 @@ export default class UserRepository implements IUserRepository {
 	async createUser(user: Omit<User, 'id'>): Promise<User | null> {
 		try {
 			const newUser = await UserModel.create(user);
-			return newUser;
+			return newUser ? {
+				id: newUser.id,
+				tgId: newUser.tgId,
+				mode: newUser.mode,
+				status: newUser.status,
+				type: newUser.type,
+				language: newUser.language,
+				lastRequest: newUser.lastRequest,
+				username: newUser.username,
+				promotedBy: newUser.promotedBy
+			} : null;
 		} catch (e) {
-			debugger
+			logError("User repository / Create user", e);
 			return null;
 		}
 	}
@@ -75,6 +145,7 @@ export default class UserRepository implements IUserRepository {
 				lastRequest: user.lastRequest,
 				language: user.language,
 				status: user.status,
+				username: user.username,
 				promotedBy: user.promotedBy
 			};
 		} catch (e) {

@@ -2,6 +2,7 @@ export type UITextObj = {
     _lang: string;
     _start: string;
     _help: string;
+    _notPromoted: string;
     stats: string;
     _stats: string;
     help: string;
@@ -33,18 +34,34 @@ export type UITextObj = {
     setError: string;
     currentValueSelectNew: string;
     currentValueSendNewMessage: string;
+    alreadyBanned: string;
+    notBanned: string;
+    cantBanYourself: string;
+    userBanned: string;
+    userUnbanned: string;
+    nothingToCancel: string;
+    downloadsCanceled: string;
+    canceledByUser: string;
 
     sendingToUsers: string;
     sentToUsers: string;
     replyToMessageToBroadcast: string;
 
     userAccountName: string;
+    userAccountInfo: string;
+    promotedBy: string;
+    promoted: string;
+    demoted: string;
+    notPromoted: string;
+    alreadyPromotedBy: string;
     userNotFound: string;
     userIsNotAdmin: string;
     adminAdded: string;
     adminRemoved: string;
     cantRemoveOwner: string;
     alreadyAdmin: string;
+    adminPanel: string;
+    userPanel: string;
 
     musicNotFound: string;
     liked: string;
@@ -82,14 +99,17 @@ export type UITextObj = {
     invalidValue: string;
     textLengthLimitError: string;
     availableDynamicWords: string;
+    protectAudios: string;
 
     /* Errors */
     invalidDataFormat: string;
+    getInfoError: string;
+    downloadError: string;
     convertError: string;
     fileSizeOver50: string;
     coverConvertError: string;
     coverCropError: string;
     croppedCoverSaveError: string;
-    setCoverError: string;
+    setMetaError: string;
     uploadError: string;
 };

@@ -15,6 +15,7 @@ export interface AppSettings {
 	defaultLang: string;
     publicMode: boolean;
 	shareAvailable: boolean;
+    protectAudios: boolean;
 }
 
 export default interface YTAServices {

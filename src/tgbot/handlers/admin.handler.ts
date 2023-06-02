@@ -59,6 +59,7 @@ export default class AdminHandler implements HandlerBase {
                     end();
                     return;
                 case "...":
+                case UIT.adminPanel:
                 case UIT.return:
                 case UIT.cancel:
                     handlerData.setUserMode(UserMode.Default);
@@ -76,6 +77,7 @@ export default class AdminHandler implements HandlerBase {
                     const totalSavedVideos = await this.videoApplication.getTotalCount();
                     const usersCount = await this.userApplication.getTotalCount();
                     sendText(Extensions.StringFormatter(UIT._stats, [
+                        config.version,
                         broadcastStats.count,
                         broadcastStats.last.getTime() === 0 ? UIT.never : broadcastStats.last.toLocaleString(),
                         lastWeekDownloads,
@@ -92,6 +94,7 @@ export default class AdminHandler implements HandlerBase {
                         reply_markup: inlineKeyboards.create([
                             [UIT.startText, UIT.helpText],
                             [UIT.shareAvailable, UIT.publicMode],
+                            [UIT.protectAudios],
                             [UIT.return]
                         ])
                     });
@@ -196,6 +199,11 @@ export default class AdminHandler implements HandlerBase {
                             onOfCurrentStatus = settings.shareAvailable;
                             settingTypeSelect = true;
                             break;
+                        case UIT.protectAudios:
+                            handlerData.setUserMode(UserMode.SetProtectAudios);
+                            onOfCurrentStatus = settings.protectAudios;
+                            settingTypeSelect = true;
+                            break;
                         case UIT.publicMode:
                             handlerData.setUserMode(UserMode.SetPublicMode);
                             onOfCurrentStatus = settings.publicMode;
@@ -263,6 +271,20 @@ export default class AdminHandler implements HandlerBase {
                             const operationResult = await this.settingsApplication.update("shareAvailable", value);
                             if (operationResult.ok)
                                 settings.shareAvailable = value;
+                            return operationResult;
+                        }
+                    });
+                    end();
+                    return;
+                case UserMode.SetProtectAudios:
+                    new SettingsInputValidation<boolean>(update, {
+                        title: UIT.protectAudios,
+                        user, UIT, handlerData,
+                        type: Boolean,
+                        onValid: async (value) => {
+                            const operationResult = await this.settingsApplication.update("protectAudios", value);
+                            if (operationResult.ok)
+                                settings.protectAudios = value;
                             return operationResult;
                         }
                     });

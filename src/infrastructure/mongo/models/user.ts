@@ -19,6 +19,14 @@ const schema = new mongoose.Schema<User>({
         type: Number,
         required: true
     },
+    language: {
+        type: String,
+        required: true
+    },
+    username: {
+        type: String,
+        required: false
+    },
     promotedBy: {
         type: Number,
         required: false

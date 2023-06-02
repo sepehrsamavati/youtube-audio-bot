@@ -12,7 +12,7 @@ export default function TelegramCall(method: TelegramMethodEnum, params?: any, o
 		formData = new FormData();
 		formData.append(method.slice(4).toLocaleLowerCase(), fs.createReadStream(params.file));
 		delete params.file;
-		Object.entries(params).forEach(param => formData.append(param[0], typeof param[1] === "object" ? JSON.stringify(param[1]) : param[1]));
+		Object.entries(params).forEach(param => formData.append(param[0], typeof param[1] === "object" ? JSON.stringify(param[1]) : (typeof param[1] === "boolean" ? param[1].toString() : param[1])));
 	}
 	return new Promise<any>(resolve => {
 		const returnResponse = (res: any) => {

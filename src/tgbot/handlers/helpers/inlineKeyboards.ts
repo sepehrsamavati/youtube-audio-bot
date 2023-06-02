@@ -1,28 +1,33 @@
-import { UITextObj } from "../../../common/types/uitext.js";
-import { User } from "../../../common/types/user.js";
 import config from "../../../config.js";
+import { User } from "../../../common/types/user.js";
+import { UITextObj } from "../../../common/types/uitext.js";
+import { UserType } from "../../../common/enums/user.enum.js";
 
 export default {
     admin: (admin: User, UIT: UITextObj) => {
-        let keyboard = [
+        const keyboard = [
             [{ text: UIT.stats }, { text: UIT.settings }]
         ];
         if (admin && config.owners.includes(admin.tgId)) {
             keyboard.push([{ text: UIT.addAdmin }, { text: UIT.remAdmin }]);
         }
+        keyboard.push([{ text: UIT.userPanel }]);
         return {
             keyboard,
             resize_keyboard: true
         };
     },
     user: (user: User, UIT: UITextObj) => {
+        const keyboard = [
+            [{ text: UIT.random }, { text: UIT.weekTop }],
+            [{ text: UIT.recentDownloads }],
+            [{ text: UIT.top5 }, { text: UIT.mostLikes }],
+            [{ text: UIT.help }]
+        ];
+        if(user.type === UserType.Admin)
+            keyboard.push([{ text: UIT.adminPanel }]);
         return {
-            keyboard: [
-                [{ text: UIT.random }, { text: UIT.weekTop }],
-                [{ text: UIT.recentDownloads }],
-                [{ text: UIT.top5 }, { text: UIT.mostLikes }],
-                [{ text: UIT.help }]
-            ],
+            keyboard,
             resize_keyboard: true
         };
     },

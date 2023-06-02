@@ -1,19 +1,20 @@
 import i18n from "./helpers/i18n.js";
-import { findUser as auth } from "./helpers/auth.js";
-import HandlerHelper from "../../common/helpers/handlerHelper.js";
-import { TgMsgUpdate } from "../../common/types/tgBot.js";
-import { TelegramMethodEnum } from "../../common/enums/tgMethod.enum.js";
-import { UserMode, UserType } from "../../common/enums/user.enum.js";
 import HomeHandler from "./home.handler.js";
-import inlineKeyboards from "./helpers/inlineKeyboards.js";
-import CallbackQueryHandler from "./callbackQuery.handler.js";
-import InlineQueryHandler from "./inlineQuery.handler.js";
 import AdminHandler from "./admin.handler.js";
-import dynamicText from "./helpers/dynamicText.js";
-import UserApplication from "../../application/user.application.js";
-import { logError } from "../../common/helpers/log.js";
-import { User } from "../../common/types/user.js";
 import ReturnHandler from "./return.handler.js";
+import dynamicText from "./helpers/dynamicText.js";
+import { findUser as auth } from "./helpers/auth.js";
+import { logError } from "../../common/helpers/log.js";
+import { TgMsgUpdate } from "../../common/types/tgBot.js";
+import InlineQueryHandler from "./inlineQuery.handler.js";
+import inlineKeyboards from "./helpers/inlineKeyboards.js";
+import AdminCommandHandler from "./adminCommand.handler.js";
+import CallbackQueryHandler from "./callbackQuery.handler.js";
+import HandlerHelper from "../../common/helpers/handlerHelper.js";
+import UserApplication from "../../application/user.application.js";
+import VideoApplication from "../../application/video.application.js";
+import { TelegramMethodEnum } from "../../common/enums/tgMethod.enum.js";
+import { UserMode, UserStatus, UserType } from "../../common/enums/user.enum.js";
 
 class UpdateHandler {
 	async handleUpdate(update: TgMsgUpdate) {
@@ -25,63 +26,98 @@ class UpdateHandler {
 			message?.chat.id
 			?? update.callback_query?.message.chat.id
 			?? update.inline_query?.from.id
+			?? update.my_chat_member?.from.id
 			?? 0;
 
 		if(helper.ID === 0) {
 			logError("Main TG update handler / 0 chat ID", {
 				update
 			});
+			return;
 		}
 
-		helper.user = await auth(this.userApplication, helper.ID) as User;
+		const user = await auth(this.userApplication, helper.ID);
 
-		const { UIT, langCode } = i18n(helper.user);
+		if(!(user && this.#continue && user.status !== UserStatus.Banned)) return;
+
+		if(message?.from.username && message.from.username !== user.username) {
+			await this.userApplication.setUsername(user.tgId, message.from.username);
+		}
+
+		if(user.status === UserStatus.Temp) {
+			// EULA / TOS / Phone register
+			await this.userApplication.setUserStatus(user.tgId, UserStatus.OK);
+		}
+
+		const { UIT, langCode } = i18n(user);
+		helper.user = user;
 		helper.UIT = UIT;
 		helper.langCode = langCode;
 
-		if (helper.user && this.#continue) {
-			if (message) {
-				await this.returnHandler.handler(helper);
+		if (message) {
+			await this.returnHandler.handler(helper);
 
-				if (helper.user.type === UserType.Admin) {
+			if (helper.user.type === UserType.Admin) {
+				if(update.message?.text?.startsWith('/'))
+					await this.adminCommandHandler.handler(helper);
+				if(this.#continue)
 					await this.adminHandler.handler(helper);
-				}
+			}
 
+			if (this.#continue) {
+				switch (message.text?.toLowerCase()) {
+					case "/start":
+					case UIT.userPanel.toLowerCase():
+						helper.call(TelegramMethodEnum.SendText, {
+							chat_id: helper.ID,
+							text: dynamicText({
+								text: UIT._start,
+								update
+							}),
+							reply_markup: inlineKeyboards.user(helper.user, helper.UIT)
+						});
+						this.end();
+						await this.helper.setUserMode(UserMode.Default);
+						break;
+					case "/cancel":
+						const cancelResult = this.videoApplication.cancelDownload(helper.ID);
+						helper.sendText(UIT[cancelResult] ?? cancelResult).end();
+						break;
+					case UIT.help.toLowerCase():
+					case "/help":
+						helper.call(TelegramMethodEnum.SendText, {
+							chat_id: helper.ID,
+							text: dynamicText({
+								text: UIT._help,
+								update
+							}),
+							reply_markup: inlineKeyboards.user(helper.user, helper.UIT)
+						});
+						this.end();
+						await this.helper.setUserMode(UserMode.Default);
+						break;
+				}
 				if (this.#continue) {
-					switch (message.text?.toLowerCase()) {
-						case "/start":
-							helper.call(TelegramMethodEnum.SendText, {
-								chat_id: helper.ID,
-								text: dynamicText({
-									text: UIT._start,
-									update
-								}),
-								reply_markup: inlineKeyboards.user(helper.user, helper.UIT)
-							});
-							this.end();
-							await this.helper.setUserMode(UserMode.Default);
+					switch (helper.user.mode) {
+						case UserMode.Default:
+							await this.homeHandler.handler(helper);
 							break;
 					}
-					if (this.#continue) {
-						switch (helper.user.mode) {
-							case UserMode.Default:
-								await this.homeHandler.handler(helper);
-								break;
-						}
-					}
 				}
-			} else if (update.callback_query) {
-				this.callbackQueryHandler.handler(helper);
-			} else if (update.inline_query) {
-				this.inlineQueryHandler.handler(helper);
 			}
+		} else if (update.callback_query) {
+			this.callbackQueryHandler.handler(helper);
+		} else if (update.inline_query) {
+			this.inlineQueryHandler.handler(helper);
 		}
 	}
 
 	constructor(
 		private userApplication: UserApplication,
+		private videoApplication: VideoApplication,
 		private returnHandler: ReturnHandler,
 		private adminHandler: AdminHandler,
+		private adminCommandHandler: AdminCommandHandler,
 		private homeHandler: HomeHandler,
 		private callbackQueryHandler: CallbackQueryHandler,
 		private inlineQueryHandler: InlineQueryHandler

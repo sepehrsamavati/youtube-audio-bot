@@ -11,10 +11,10 @@ export const log = (...args: any[]) => {
 
 export const logError = (title = '', error: any = {}, data = '') => {
 	console.error(
-		`ERROR START ${new Date().toLocaleString()}`,
+		`\nERROR START ${new Date().toLocaleString()}`,
 		`\n${title}\n`
 	);
-	console.error(error.message ?? error);
+	console.error(error instanceof Error ? error.message ?? error : error);
 	console.error(
 		data ? `\n${data}` : '',
 		"\nERROR END\n\n\n"

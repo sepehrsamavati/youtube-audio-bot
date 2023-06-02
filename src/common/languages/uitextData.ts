@@ -5,14 +5,15 @@ const UITextData: UITextObj[] = [
         _lang: "en",
         _start: "🤟 Hi [NAME], welcome to YouTube Audio bot\n⁉ Help: /help",
         _help: "📌 Just send me a YouTube link or video ID to get MP3 file here",
+        _notPromoted: "❌ You're not promoted and don't have access to use the bot",
         stats: "📊 Stats",
-        _stats: "Bot statistics"
-            + "\n\n📉 Total BCs: %s1"
-            + "\n⏱ Last BC: %s2"
-            + "\n\n📊 Last week downloads: %s3"
-            + "\n🗃 Saved: %s4"
-            + "\n👁 Views: %s5"
-            + "\n\n👥 Users: %s6",
+        _stats: "Bot statistics (v%s1)"
+            + "\n\n📉 Total BCs: %s2"
+            + "\n⏱ Last BC: %s3"
+            + "\n\n📊 Last week downloads: %s4"
+            + "\n🗃 Saved: %s5"
+            + "\n👁 Views: %s6"
+            + "\n\n👥 Users: %s7",
         help: "❔ Help",
         random: "🎲 Random song",
         top5: "🎖 Top 5",
@@ -20,7 +21,7 @@ const UITextData: UITextObj[] = [
         weekTop: "🥇 Last Week Top",
         _weekTop: "🔥 Top %s1 last week download(s)\n\n\n%s2",
         mostLikes: "♥ Most Likes",
-        _mostLikes: "♥ Top %s1 likes\n\n\n%s2",
+        _mostLikes: "♥ Top %s1 like(s)\n\n\n%s2",
         recentDownloads: "🗂 Recent Downloads",
         _recentDownloads: "📆 Recent %s1 Downloads\n\n\n%s2",
         noDownloads: "No downloads!",
@@ -45,12 +46,28 @@ const UITextData: UITextObj[] = [
         setError: "Error in setting value!",
         currentValueSelectNew: "Current value: %s1\nSelect new value",
         currentValueSendNewMessage: "Current value:\n\n%s1\n\n\nSend new message",
+        alreadyBanned: "⚠️ Already banned",
+        notBanned: "⚠️ User isn't banned",
+        cantBanYourself: "Can't ban yourself",
+        userBanned: "✅ User banned",
+        userUnbanned: "✅ User unbanned",
+        nothingToCancel: "⚠️ Nothing to cancel!",
+        downloadsCanceled: "✅ Cancel submitted.",
+        canceledByUser: "🚮 Canceled by user.",
+        adminPanel: "Admin panel",
+        userPanel: "User panel",
 
         sendingToUsers: "🔁 Sending to %s1 user(s)...",
         sentToUsers: "✅ Sent to %s1 user(s).",
         replyToMessageToBroadcast: "⚠️ Reply to a message to broadcast!",
 
         userAccountName: "User account name",
+        userAccountInfo: "🆔 User %s1%s2\n\nStatus: %s3\nMode: %s4\nLanguage: %s5\nLast request: %s6\n%s7\n%s8",
+        promotedBy: "Promoted by %s1 %s2",
+        alreadyPromotedBy: "⚠️ Already promoted by %s1",
+        promoted: "✅ Promoted",
+        demoted: "✅ Demoted",
+        notPromoted: "⚠️ Not promoted",
         userNotFound: "❌ User not found",
         userIsNotAdmin: "❌ Not admin",
         adminAdded: "✅ Admin %s1 added",
@@ -89,15 +106,18 @@ const UITextData: UITextObj[] = [
         invalidValue: "%s1\n\n❌ Invalid value%s2",
         textLengthLimitError: "Text too large, max valid length is %s1",
         availableDynamicWords: "Available dynamic words:",
+        protectAudios: "Protect audios",
 
-        invalidDataFormat: "Invalid Format",
-        convertError: "Error in converting",
-        fileSizeOver50: "File size is over 50 MB",
-        coverConvertError: "Couldn't convert cover",
-        coverCropError: "Couldn't crop cover",
-        croppedCoverSaveError: "Error while saving cropped cover",
-        setCoverError: "Couldn't set cover",
-        uploadError: "Couldn't upload audio!"
+        getInfoError: "❌ Get info error",
+        downloadError: "❌ Download error",
+        invalidDataFormat: "❌ Invalid Format",
+        convertError: "❌ Error in converting",
+        fileSizeOver50: "❌ File size is over 50 MB",
+        coverConvertError: "❌ Couldn't convert cover",
+        coverCropError: "❌ Couldn't crop cover",
+        croppedCoverSaveError: "❌ Error while saving cropped cover",
+        setMetaError: "❌ Couldn't set meta data",
+        uploadError: "❌ Couldn't upload audio!"
     }
 ];
 
