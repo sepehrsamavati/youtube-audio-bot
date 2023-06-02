@@ -1,3 +1,15 @@
+## [2.0.0-beta.1] - 2023-06-03
+
+### Changed
+- Rewritten in typescript (onion-based architecture)
+- Data structure
+
+### Added
+- Database
+- New bugs to debug in the future
+
+
+
 ## [1.2.4] - 2022-10-25
 
 ### Changed
