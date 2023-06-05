@@ -167,7 +167,7 @@ export default class VideoApplication implements IVideoApplication {
             if(queueVideo.canceled) {
                 result.failed("canceledByUser");
             }
-            options.stepCallback({ ...queueVideo }, result.ok, result.ok ? undefined : result.message);
+            options.stepCallback(queueVideo, result.ok, result.ok ? undefined : result.message);
         }, stepSleep = () => new Promise<void>(resolve => {
             const delay = options.minDelay - (new Date().getTime() - queueVideo.lastUpdate.getTime());
 

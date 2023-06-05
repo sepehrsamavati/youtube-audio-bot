@@ -173,8 +173,7 @@ export default class HomeHandler implements HandlerBase {
                             sendAudio({
                                 ID, UIT,
                                 replyToMessage: userMessageId,
-                                filePath: queueVideo.fileAddress + ".mp3",
-                                audio: queueVideo.id
+                                audio: queueVideo
                             }).then(data => {
                                 if (data !== null) {
                                     this.videoApplication.add(queueVideo, data.audio.file_id);
