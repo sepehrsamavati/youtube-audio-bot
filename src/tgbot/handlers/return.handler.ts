@@ -14,6 +14,7 @@ export default class ReturnHandler implements HandlerBase {
                 case UserMode.SetPublicMode:
                 case UserMode.SetShareAvailability:
                 case UserMode.SetStartText:
+                case UserMode.SetProtectAudios:
                     user.mode = UserMode.Default;
                     update.message.text = UIT.settings;
                     break;
