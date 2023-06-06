@@ -1,3 +1,4 @@
+import settings from "../../settings.js";
 import HandlerBase from "../../common/models/handlerBase.js";
 import HandlerHelper from "../../common/helpers/handlerHelper.js";
 import VideoApplication from "../../application/video.application.js";
@@ -11,7 +12,7 @@ export default class InlineQueryHandler implements HandlerBase {
         const { update, user, call, end } = handlerData;
         const inlineQuery = update.inline_query;
         if (user && inlineQuery) {
-            if(inlineQuery.query.startsWith("getVid"))
+            if(inlineQuery.query.startsWith("getVid") && settings.shareAvailable)
 			{
                 const videoYtId = inlineQuery.query.slice(6);
 				const video = await this.videoApplication.getAudio(videoYtId, user.id);

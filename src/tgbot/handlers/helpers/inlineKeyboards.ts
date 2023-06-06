@@ -1,4 +1,5 @@
 import config from "../../../config.js";
+import settings from "../../../settings.js";
 import { User } from "../../../common/types/user.js";
 import { UITextObj } from "../../../common/types/uitext.js";
 import { UserType } from "../../../common/enums/user.enum.js";
@@ -65,13 +66,14 @@ export default {
                 isLiked = audio.isLiked;
             }
             const likeQuery = isLiked ? `remLike${id}` : `like${id}`;
+            const inlineKeyboard: any[] = [
+                { text: isLiked ? "💚" : "♥", callback_data: likeQuery }
+            ];
+            if(settings.shareAvailable && !settings.protectAudios) {
+                inlineKeyboard.push({ text: UIT.share, switch_inline_query: `getVid${id}` });
+            }
             return {
-                inline_keyboard: [
-                    [
-                        { text: isLiked ? "💚" : "♥", callback_data: likeQuery },
-                        { text: UIT.share, switch_inline_query: `getVid${id}` }
-                    ]
-                ]
+                inline_keyboard: [inlineKeyboard]
             };
         }
     }
