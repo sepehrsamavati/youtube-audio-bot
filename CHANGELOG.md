@@ -1,3 +1,13 @@
+## [2.0.0-beta.2] - 2023-06-10
+
+### Fix
+- Read share availability from settings
+- Return handler protect audio settings status
+
+### Added
+- Telegram audio file info
+
+
 ## [2.0.0-beta.1] - 2023-06-03
 
 ### Changed
