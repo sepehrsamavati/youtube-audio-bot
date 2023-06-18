@@ -7,6 +7,7 @@ export type User = {
     mode: UserMode;
     status: UserStatus;
     type: UserType;
+    createDate: Date;
     lastRequest: Date;
     language: string;
     username?: string;

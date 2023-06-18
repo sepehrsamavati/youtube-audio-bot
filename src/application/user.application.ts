@@ -99,6 +99,7 @@ export default class UserApplication implements IUserApplication {
 				type: config.owners.includes(id) ? UserType.Admin : UserType.Default,
 				language: settings.defaultLang,
 				lastRequest: new Date(),
+				createDate: new Date(),
 				status: UserStatus.Temp
 			}) : null);
         return user;

@@ -43,6 +43,7 @@ export default class UserRepository implements IUserRepository {
 				language: user.language,
 				lastRequest: user.lastRequest,
 				username: user.username,
+				createDate: user.createDate,
 				promotedBy: user.promotedBy
 			} : null;
 		} catch (e) {
@@ -121,6 +122,7 @@ export default class UserRepository implements IUserRepository {
 				language: newUser.language,
 				lastRequest: newUser.lastRequest,
 				username: newUser.username,
+				createDate: user.createDate,
 				promotedBy: newUser.promotedBy
 			} : null;
 		} catch (e) {
@@ -146,6 +148,7 @@ export default class UserRepository implements IUserRepository {
 				language: user.language,
 				status: user.status,
 				username: user.username,
+				createDate: user.createDate,
 				promotedBy: user.promotedBy
 			};
 		} catch (e) {

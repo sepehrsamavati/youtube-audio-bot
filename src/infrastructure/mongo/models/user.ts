@@ -35,6 +35,10 @@ const schema = new mongoose.Schema<User>({
         type: Date,
         required: true
     },
+    createDate: {
+        type: Date,
+        required: true
+    },
 }, { versionKey: false, collection: 'users' });
 
 const UserModel = mongoose.model<User>('User', schema);
