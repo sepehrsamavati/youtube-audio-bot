@@ -8,23 +8,32 @@ export default class BroadcastRepository implements IBroadcastRepository {
 		try {
 			const res = await BroadcastModel.create(broadcast);
 			return Boolean(res);
-		} catch(e) {
+		} catch (e) {
 			logError("Broadcast repository / Add", e);
 			return false;
 		}
 	}
 	async getStatistics(): Promise<{ count: number; last: Date; } | null> {
 		try {
-			const count = await BroadcastModel.count();
-			if(typeof count !== "number") return null;
+			const res: { _id: string; count: number; last: Date; }[] = await BroadcastModel.aggregate([
+				{
+					$group: {
+						_id: "",
+						count: {
+							"$sum": 1
+						},
+						last: {
+							"$max": "$start"
+						}
+					}
+				}
+			]).exec();
 
-			const lastBroadcast = await BroadcastModel.find().sort({ start: -1 }).limit(1);
-
-			return lastBroadcast?.length ? {
-				count,
-				last: lastBroadcast[0].start
+			return res?.length ? {
+				count: res[0].count,
+				last: res[0].last
 			} : null;
-		} catch(e) {
+		} catch (e) {
 			logError("Broadcast repository / Get statistics", e);
 			return null;
 		}
