@@ -100,4 +100,5 @@ export type TgMsgUpdate = {
     }
     message?: TelegramMessage;
     my_chat_member?: ChatMemberUpdated;
+    channel_post?: TelegramMessage;
 }

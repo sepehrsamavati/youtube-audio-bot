@@ -30,9 +30,7 @@ class UpdateHandler {
 			?? 0;
 
 		if(helper.ID === 0) {
-			logError("Main TG update handler / 0 chat ID", {
-				update
-			});
+			logError("Main TG update handler / 0 chat ID", JSON.stringify(update));
 			return;
 		}
 
