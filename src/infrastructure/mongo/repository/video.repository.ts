@@ -26,7 +26,7 @@ export default class VideoRepository implements IVideoRepository {
 				title: vid.title,
 				tgFileId: vid.tgFileId
 			};
-		} catch(e) {
+		} catch (e) {
 			return null;
 		}
 	}
@@ -39,7 +39,7 @@ export default class VideoRepository implements IVideoRepository {
 				title: video.title,
 				tgFileId: video.tgFileId,
 			} : null;
-		} catch(e) {
+		} catch (e) {
 			return null;
 		}
 	}
@@ -47,7 +47,7 @@ export default class VideoRepository implements IVideoRepository {
 		try {
 			const video = await VideoModel.findOne({ id });
 			return video?._id ?? null;
-		} catch(e) {
+		} catch (e) {
 			return null;
 		}
 	}
@@ -67,8 +67,8 @@ export default class VideoRepository implements IVideoRepository {
 						}
 					}
 				])
-                .limit(count)
-                .exec();
+				.limit(count)
+				.exec();
 			return ((await VideoModel.populate(mostViewed, { path: "_id" })) as any[])
 				.filter(item => item !== null)
 				.map(item => {
@@ -79,13 +79,13 @@ export default class VideoRepository implements IVideoRepository {
 						tgFileId: video.tgFileId,
 					};
 				});
-		} catch(e) {
+		} catch (e) {
 			return [];
 		}
 	}
 	async getMostLiked(count: number): Promise<Video[]> {
 		try {
-			const likes = await LikeModel
+			const mostLikedVideos: { _id: Types.ObjectId; count: number; video: IVideo[] }[] = await LikeModel
 				.aggregate([
 					{
 						$group: {
@@ -97,21 +97,27 @@ export default class VideoRepository implements IVideoRepository {
 						$sort: {
 							count: -1
 						}
+					},
+					{
+						$lookup: {
+							from: 'videos',
+							localField: '_id',
+							foreignField: '_id',
+							as: 'video'
+						}
 					}
 				])
-                .limit(count)
-                .exec();
-			return ((await VideoModel.populate(likes, { path: "_id" })) as any[])
-				.filter(item => item !== null)
-				.map(item => {
-					const video = item._id;
+				.limit(count)
+				.exec();
+			return mostLikedVideos.map(item => {
+					const video = item.video[0];
 					return {
 						id: video.id,
 						title: video.title,
 						tgFileId: video.tgFileId,
 					};
 				});
-		} catch(e) {
+		} catch (e) {
 			return [];
 		}
 	}
@@ -119,9 +125,9 @@ export default class VideoRepository implements IVideoRepository {
 		try {
 			const videos = await VideoModel
 				.find()
-                .sort({
-                    date: -1
-                })
+				.sort({
+					date: -1
+				})
 				.limit(count);
 			return videos.map(video => {
 				return {
@@ -130,7 +136,7 @@ export default class VideoRepository implements IVideoRepository {
 					tgFileId: video.tgFileId,
 				};
 			});
-		} catch(e) {
+		} catch (e) {
 			return [];
 		}
 	}
@@ -151,20 +157,20 @@ export default class VideoRepository implements IVideoRepository {
 					tgFileId: video.tgFileId,
 				};
 			});
-		} catch(e) {
+		} catch (e) {
 			return [];
 		}
 	}
 	async getCountByDateRange(from: Date, to: Date): Promise<number> {
 		try {
 			return await VideoModel
-			.count({
-				date: {
-					$gte: from,
-					$lte: to
-				}
-			});
-		} catch(e) {
+				.count({
+					date: {
+						$gte: from,
+						$lte: to
+					}
+				});
+		} catch (e) {
 			logError("Get count by date range / Video repository", e);
 			return 0;
 		}
@@ -172,7 +178,7 @@ export default class VideoRepository implements IVideoRepository {
 	async getTotalCount(): Promise<number> {
 		try {
 			return await VideoModel.count();
-		} catch(e) {
+		} catch (e) {
 			logError("Get total count / Video repository", e);
 			return 0;
 		}
@@ -180,8 +186,7 @@ export default class VideoRepository implements IVideoRepository {
 	async getRandom(): Promise<IVideo | null> {
 		try {
 			const count = await this.getTotalCount();
-			if(count > 0)
-			{
+			if (count > 0) {
 				const randomIndex = Math.floor(Math.random() * count);
 				const video = await VideoModel.findOne().skip(randomIndex);
 				return video ? {
@@ -192,7 +197,7 @@ export default class VideoRepository implements IVideoRepository {
 				} : null;
 			}
 			return null
-		} catch(e) {
+		} catch (e) {
 			logError("Get random / Video repository", e);
 			return null;
 		}
