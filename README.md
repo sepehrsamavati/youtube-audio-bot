@@ -27,6 +27,7 @@ Key | Value
 ------------ | -------------
 `YTA_TG_TOKEN` | Telegram bot API token
 `YTA_TG_OWNERS` | Array of chat ID (Telegram account/chat ID)
+`YTA_WHITELIST_CHATS` | Array of chat ID or username (do not auto leave from these chats)
 `YTA_FFMPEG_EXE` | Path to a working ffmpeg binary (converts MP4 to MP3)
 `YTA_MONGODB` | MongoDB connection string
 `YTA_USER_CONCURRENT_DOWNLOADS` | Maximum number of concurrent downloads per user
