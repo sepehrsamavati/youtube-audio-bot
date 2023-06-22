@@ -110,13 +110,13 @@ export default class VideoRepository implements IVideoRepository {
 				.limit(count)
 				.exec();
 			return mostLikedVideos.map(item => {
-					const video = item.video[0];
-					return {
-						id: video.id,
-						title: video.title,
-						tgFileId: video.tgFileId,
-					};
-				});
+				const video = item.video[0];
+				return {
+					id: video.id,
+					title: video.title,
+					tgFileId: video.tgFileId,
+				};
+			});
 		} catch (e) {
 			return [];
 		}
@@ -185,18 +185,19 @@ export default class VideoRepository implements IVideoRepository {
 	}
 	async getRandom(): Promise<IVideo | null> {
 		try {
-			const count = await this.getTotalCount();
-			if (count > 0) {
-				const randomIndex = Math.floor(Math.random() * count);
-				const video = await VideoModel.findOne().skip(randomIndex);
-				return video ? {
-					_id: video._id,
-					title: video.title,
-					id: video.id,
-					tgFileId: video.tgFileId
-				} : null;
-			}
-			return null
+			const video = await VideoModel.aggregate([
+				{
+					$sample: {
+						size: 1
+					}
+				}
+			]).exec();
+			return video ? {
+				_id: video[0]._id,
+				title: video[0].title,
+				id: video[0].id,
+				tgFileId: video[0].tgFileId
+			} : null;
 		} catch (e) {
 			logError("Get random / Video repository", e);
 			return null;
