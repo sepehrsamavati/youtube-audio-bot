@@ -1,4 +1,5 @@
 import i18n from "./helpers/i18n.js";
+import config from "../../config.js";
 import HomeHandler from "./home.handler.js";
 import AdminHandler from "./admin.handler.js";
 import ReturnHandler from "./return.handler.js";
@@ -6,6 +7,7 @@ import dynamicText from "./helpers/dynamicText.js";
 import { findUser as auth } from "./helpers/auth.js";
 import { logError } from "../../common/helpers/log.js";
 import { TgMsgUpdate } from "../../common/types/tgBot.js";
+import TelegramCall from "../../common/helpers/tgCall.js";
 import InlineQueryHandler from "./inlineQuery.handler.js";
 import inlineKeyboards from "./helpers/inlineKeyboards.js";
 import AdminCommandHandler from "./adminCommand.handler.js";
@@ -24,9 +26,10 @@ class UpdateHandler {
 		helper.update = update;
 		helper.ID =
 			message?.chat.id
-			?? update.callback_query?.message.chat.id
-			?? update.inline_query?.from.id
-			?? update.my_chat_member?.from.id
+			?? update.callback_query?.message?.chat?.id
+			?? update.inline_query?.from?.id
+			?? update.my_chat_member?.from?.id
+			?? update.channel_post?.chat?.id
 			?? 0;
 
 		if(helper.ID === 0) {
@@ -34,12 +37,22 @@ class UpdateHandler {
 			return;
 		}
 
+		if(update.channel_post
+			&& !(
+				update.channel_post.chat.username ? config.whiteListChats.includes(`@${update.channel_post.chat.username}`)
+				: config.whiteListChats.includes(helper.ID.toString())
+				)) {
+			TelegramCall(TelegramMethodEnum.LeaveChat, { chat_id: helper.ID });
+			return;
+		}
+
 		const user = await auth(this.userApplication, helper.ID);
 
 		if(!(user && this.#continue && user.status !== UserStatus.Banned)) return;
 
-		if(message?.from.username && message.from.username !== user.username) {
-			await this.userApplication.setUsername(user.tgId, message.from.username);
+		const username = message?.from.username ?? update.channel_post?.chat?.username;
+		if(username && username !== user.username) {
+			await this.userApplication.setUsername(user.tgId, username);
 		}
 
 		if(user.status === UserStatus.Temp) {

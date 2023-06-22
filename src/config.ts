@@ -5,6 +5,7 @@ dotenv.config();
 
 const config = {
 	isDevelopment: process.env.NODE_ENV === "development",
+	whiteListChats: process.env.YTA_WHITELIST_CHATS?.split(',').map(item => item.trim()) ?? [],
 	tgbot: {
         token: process.env.YTA_TG_TOKEN ?? "",
         api: "https://api.telegram.org/bot",
