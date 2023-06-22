@@ -3,6 +3,8 @@ import HandlerBase from "../../common/models/handlerBase.js";
 import HandlerHelper from "../../common/helpers/handlerHelper.js";
 import UserApplication from "../../application/user.application.js";
 import { UserMode, UserStatus } from "../../common/enums/user.enum.js";
+import TelegramCall from "../../common/helpers/tgCall.js";
+import { TelegramMethodEnum } from "../../common/enums/tgMethod.enum.js";
 
 export default class AdminCommandHandler implements HandlerBase {
     constructor(
@@ -79,6 +81,12 @@ export default class AdminCommandHandler implements HandlerBase {
                 else response = (await this.userApplication.demote(user.tgId)).ok ? UIT.demoted : UIT.failed;
             }
             sendText(response).end();
+        } else if (command.startsWith("leave")) {
+            const usernameOrId = command.slice(5);
+            const res = await TelegramCall(TelegramMethodEnum.LeaveChat, {
+                chat_id: usernameOrId
+            });
+            sendText(res ? UIT.ok : UIT.failed).end();
         }
 
     }

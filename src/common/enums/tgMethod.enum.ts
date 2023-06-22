@@ -13,4 +13,5 @@ export enum TelegramMethodEnum {
     ForwardMessage = "forwardMessage",
     CopyMessage = "copyMessage",
     SendChatAction = "sendChatAction",
+    LeaveChat = "leaveChat",
 };
