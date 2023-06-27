@@ -98,7 +98,12 @@ export class Downloader {
                     });
                 });
 
-                ytdl(video.id, { quality: "highestaudio" }).pipe(videoWriteStream);
+                ytdl(video.id, { quality: "highestaudio" })
+                    .on("error", err => {
+                        logError("Downloader / YTDL core error", err);
+                        resolve(res.failed("downloadError"));
+                    })
+                    .pipe(videoWriteStream);
             } catch (e) {
                 logError("Downloader / Download video", e);
                 resolve(res.failed("downloadError"));
@@ -118,7 +123,7 @@ export class Downloader {
                     .withAudioCodec('libmp3lame')
                     .toFormat('mp3')
                     .on('error', function (err) {
-                        logError("Video application / FFMPEG error", err);
+                        logError("Downloader / FFMPEG error", err);
                         resolve(res.failed(video.error = "convertError"));
                     })
                     .on('end', function () {
@@ -132,7 +137,7 @@ export class Downloader {
                     });
                 mp3File.saveToFile(audioFileAddress);
             } catch (e) {
-                logError("Video application / Convert to MP3", e);
+                logError("Downloader / Convert to MP3", e);
                 resolve(res.failed(video.error ?? "convertError"));
             }
         });
@@ -160,13 +165,13 @@ export class Downloader {
                         biggerSide = newFileInfo.height > newFileInfo.width ? "height" : "width";
                         cropSides();
                     }).catch((err) => {
-                        logError("Video application / Convert WEBP cover to JPG", err);
+                        logError("Downloader / Convert WEBP cover to JPG", err);
                         video.error = "coverConvertError";
                         resolve(res.failed(video.error));
                     });
                 }
             } catch (e) {
-                logError("Video application / Generate cover", e);
+                logError("Downloader / Generate cover", e);
                 resolve(res.failed(video.error ?? "coverConvertError"));
             }
         });
@@ -188,7 +193,7 @@ export class Downloader {
                 }
                 NodeID3.write(options, baseFileAddress + ".mp3", function (err) {
                     if (err) {
-                        logError("Video application / Write metadata", err);
+                        logError("Downloader / Write metadata", err);
                         video.error = "setMetaError";
                         resolve(res.failed(video.error));
                     }
@@ -196,7 +201,7 @@ export class Downloader {
                         resolve(res.succeeded());
                 });
             } catch (e) {
-                logError("Video application / Set metadata", e);
+                logError("Downloader / Set metadata", e);
                 resolve(res.failed(video.error ?? "setMetaError"));
             }
         });
