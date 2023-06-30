@@ -2,6 +2,7 @@ import fs from "node:fs";
 import axios from "axios";
 import FormData from "form-data";
 import config from "../../config.js";
+import shutdown from "./shutdown.js";
 import { TelegramMethodEnum } from "../enums/tgMethod.enum.js";
 
 const botUrl = config.tgbot.botUrl;
@@ -34,6 +35,8 @@ export default function TelegramCall(method: TelegramMethodEnum, params?: any, o
 					console.error(error.response.data);
 				else
 					console.error(error.message ?? error);
+				if(error.code === 'ETIMEDOUT')
+					shutdown();
 			});
 	});
 };
