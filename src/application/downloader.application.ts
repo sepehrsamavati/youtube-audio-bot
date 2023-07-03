@@ -99,9 +99,13 @@ export class Downloader {
                 });
 
                 ytdl(video.id, { quality: "highestaudio" })
-                    .on("error", err => {
+                    .on("error", (err: unknown) => {
                         logError("Downloader / YTDL core error", err);
-                        resolve(res.failed("downloadError"));
+                        if(err && typeof err === "object" && (err as any).statusCode === 429) {
+                            resolve(res.failed("youtubeRateLimit"));
+                        } else {
+                            resolve(res.failed("downloadError"));
+                        }
                     })
                     .pipe(videoWriteStream);
             } catch (e) {

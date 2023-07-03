@@ -110,6 +110,7 @@ const UITextData: UITextObj[] = [
 
         getInfoError: "❌ Get info error",
         downloadError: "❌ Download error",
+        youtubeRateLimit: "❌ YouTube limited the bot due to high amount of requests, you may try later...",
         invalidDataFormat: "❌ Invalid Format",
         convertError: "❌ Error in converting",
         fileSizeOver50: "❌ File size is over 50 MB",

@@ -105,6 +105,7 @@ export type UITextObj = {
     invalidDataFormat: string;
     getInfoError: string;
     downloadError: string;
+    youtubeRateLimit: string;
     convertError: string;
     fileSizeOver50: string;
     coverConvertError: string;
