@@ -1,3 +1,24 @@
+## [2.0.0] - 2023-07-22
+
+### Change
+- User schema (add createDate)
+- Update dependencies
+- Update package.json (remove unnecessary dependencies)
+- Broadcast stats repository (use aggregate)
+- Video repository, most liked (use aggregate)
+- Video repository, random (use sample)
+
+### Fix
+- YTDL core error handling
+- Shutdown on tg connection timeout (fix bot unresponsive)
+
+### Add
+- Channel post type to telegram update object
+- Leave chat admin command
+- Leave from non whitelisted channels
+- YouTube 429 error message
+
+
 ## [2.0.0-beta.2] - 2023-06-10
 
 ### Fix
