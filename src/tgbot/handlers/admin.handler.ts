@@ -71,11 +71,19 @@ export default class AdminHandler implements HandlerBase {
                     end();
                     return;
                 case UIT.stats:
-                    const totalViews = await this.viewApplication.getTotalCount();
-                    const broadcastStats = await this.broadcastApplication.getStatistics();
-                    const lastWeekDownloads = await this.videoApplication.getLastWeekDownloadsCount();
-                    const totalSavedVideos = await this.videoApplication.getTotalCount();
-                    const usersCount = await this.userApplication.getTotalCount();
+                    const [
+                        totalViews,
+                        broadcastStats,
+                        lastWeekDownloads,
+                        totalSavedVideos,
+                        usersCount
+                    ] = await Promise.all([
+                        this.viewApplication.getTotalCount(),
+                        this.broadcastApplication.getStatistics(),
+                        this.videoApplication.getLastWeekDownloadsCount(),
+                        this.videoApplication.getTotalCount(),
+                        this.userApplication.getTotalCount()
+                    ]);
                     sendText(Extensions.StringFormatter(UIT._stats, [
                         config.version,
                         broadcastStats.count,
