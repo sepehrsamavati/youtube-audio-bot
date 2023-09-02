@@ -1,3 +1,13 @@
+## [2.0.1] - 2023-09-02
+
+### Change
+- Bump MongoDB version
+
+### Fix
+- Admin stats get data using Promise.all
+
+
+
 ## [2.0.0] - 2023-07-22
 
 ### Change
