@@ -1,3 +1,11 @@
+## [2.0.2] - 2023-11-19
+
+### Change
+- Bump Sharp version
+- Bump Axios version
+
+
+
 ## [2.0.1] - 2023-09-02
 
 ### Change
