@@ -11,7 +11,7 @@
 📤 Upload to Telegram  
 
 ## Launch
-1. Clone/Download repository
+1. Download a release or clone repository
 2. Open CMD/terminal and navigate to project folder
 3. Run `npm i --omit=dev` to install dependencies (or just `npm i` for development)
 4. Create environment file `.env` using `.env.example` & configure
