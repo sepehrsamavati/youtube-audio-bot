@@ -1,3 +1,11 @@
+## [2.0.3] - 2024-03-04
+
+### Change
+- Bump ip from 2.0.0 to 2.0.1
+
+### Fix
+- Process exit (manual shutdown)
+
 ## [2.0.2] - 2023-11-19
 
 ### Change
