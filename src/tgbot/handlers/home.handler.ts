@@ -24,7 +24,7 @@ export default class HomeHandler implements HandlerBase {
             case UIT.random:
                 const randomAudio = await this.videoApplication.getRandomAudio(user.id);
                 if(randomAudio)
-                    sendAudio({
+                    await sendAudio({
                         ID, UIT, replyToMessage: update.message.message_id,
                         audio: randomAudio, 
                     });
@@ -87,7 +87,7 @@ export default class HomeHandler implements HandlerBase {
                 if(VideoApplication.Downloader.validateVideoId(videoId)) {
                     const video = await this.videoApplication.getAudio(videoId, user.id);
                     if(video)
-                        sendAudio({
+                        await sendAudio({
                             ID, UIT, replyToMessage: update.message.message_id,
                             audio: video
                         });
@@ -112,7 +112,7 @@ export default class HomeHandler implements HandlerBase {
 
             const cacheVideo = await this.videoApplication.getAudio(videoId, user.id);
             if (cacheVideo) {
-                sendAudio({
+                await sendAudio({
                     ID, UIT, replyToMessage: userMessageId, audio: cacheVideo
                 });
                 end();
