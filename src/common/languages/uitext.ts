@@ -22,6 +22,14 @@ class UIText {
         return null;
     }
 
+    static getLanguageByName(name: string) {
+        return UIText.texts.find(uit => uit._languageName === name);
+    }
+
+    static getAllLanguageNames() {
+        return UIText.texts.map(uit => uit._languageName);
+    }
+
     static getAll() {
         return [...UIText.texts];
     }

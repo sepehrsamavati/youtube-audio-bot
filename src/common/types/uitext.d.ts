@@ -1,5 +1,6 @@
 export type UITextObj = {
     _lang: string;
+    _languageName: string;
     _start: string;
     _help: string;
     _notPromoted: string;
@@ -42,6 +43,8 @@ export type UITextObj = {
     nothingToCancel: string;
     downloadsCanceled: string;
     canceledByUser: string;
+    selectLanguage: string;
+    languageChanged: string;
 
     sendingToUsers: string;
     sentToUsers: string;
@@ -113,4 +116,5 @@ export type UITextObj = {
     croppedCoverSaveError: string;
     setMetaError: string;
     uploadError: string;
+    invalidLanguage: string;
 };

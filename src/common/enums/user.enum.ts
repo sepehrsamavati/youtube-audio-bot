@@ -1,6 +1,7 @@
 export enum UserMode {
     /* Shared */
     Default = 1,
+    ChangeLanguage = 2,
 
     /* Admin */
     AddAdmin = 20,

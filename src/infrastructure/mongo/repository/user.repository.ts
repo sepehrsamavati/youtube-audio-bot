@@ -61,6 +61,14 @@ export default class UserRepository implements IUserRepository {
 			return false;
 		}
 	}
+	async updateUserLang(tgId: number, language: string): Promise<boolean> {
+		try {
+			await UserModel.findOneAndUpdate({ tgId: tgId }, { language });
+			return true;
+		} catch {
+			return false;
+		}
+	}
 	async updateUserMode(tgId: number, userMode: UserMode): Promise<boolean> {
 		try {
 			await UserModel.findOneAndUpdate({ tgId: tgId }, {

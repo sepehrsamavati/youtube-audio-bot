@@ -3,6 +3,7 @@ import settings from "../../../settings.js";
 import { User } from "../../../common/types/user.js";
 import { UITextObj } from "../../../common/types/uitext.js";
 import { UserType } from "../../../common/enums/user.enum.js";
+import UIText from "../../../common/languages/UIText.js";
 
 export default {
     admin: (admin: User, UIT: UITextObj) => {
@@ -25,11 +26,21 @@ export default {
             [{ text: UIT.top5 }, { text: UIT.mostLikes }],
             [{ text: UIT.help }]
         ];
-        if(user.type === UserType.Admin)
+        if (user.type === UserType.Admin)
             keyboard.push([{ text: UIT.adminPanel }]);
         return {
             keyboard,
             resize_keyboard: true
+        };
+    },
+    changeLanguage: (UIT: UITextObj) => {
+        return {
+            keyboard: [
+                ...UIText.getAllLanguageNames().map(name => [{ text: name }]),
+                [{ text: UIT.return }],
+            ],
+            resize_keyboard: true,
+            one_time_keyboard: true
         };
     },
     return: (UIT: UITextObj) => {
@@ -69,7 +80,7 @@ export default {
             const inlineKeyboard: any[] = [
                 { text: isLiked ? "💚" : "♥", callback_data: likeQuery }
             ];
-            if(settings.shareAvailable && !settings.protectAudios) {
+            if (settings.shareAvailable && !settings.protectAudios) {
                 inlineKeyboard.push({ text: UIT.share, switch_inline_query: `getVid${id}` });
             }
             return {

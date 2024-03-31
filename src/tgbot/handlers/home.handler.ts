@@ -6,7 +6,6 @@ import HandlerBase from "../../common/models/handlerBase.js";
 import { TelegramMethodEnum } from "../../common/enums/tgMethod.enum.js";
 import { QueueVideo } from "../../common/models/queueVideo.js";
 import { ChatID, MessageID } from "../../common/types/tgBot.js";
-import inlineKeyboards from "./helpers/inlineKeyboards.js";
 import { getUICode, getVideoId } from "./helpers/videoIdBase64.js";
 import Extensions from "../../common/helpers/extensions.js";
 import sendAudio from "./helpers/sendAudio.js";

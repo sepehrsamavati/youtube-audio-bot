@@ -17,6 +17,7 @@ import UserApplication from "../../application/user.application.js";
 import VideoApplication from "../../application/video.application.js";
 import { TelegramMethodEnum } from "../../common/enums/tgMethod.enum.js";
 import { UserMode, UserStatus, UserType } from "../../common/enums/user.enum.js";
+import UIText from "../../common/languages/UIText.js";
 
 class UpdateHandler {
 	async handleUpdate(update: TgMsgUpdate) {
@@ -32,30 +33,30 @@ class UpdateHandler {
 			?? update.channel_post?.chat?.id
 			?? 0;
 
-		if(helper.ID === 0) {
+		if (helper.ID === 0) {
 			logError("Main TG update handler / 0 chat ID", JSON.stringify(update));
 			return;
 		}
 
-		if(update.channel_post
+		if (update.channel_post
 			&& !(
 				update.channel_post.chat.username ? config.whiteListChats.includes(`@${update.channel_post.chat.username}`)
-				: config.whiteListChats.includes(helper.ID.toString())
-				)) {
+					: config.whiteListChats.includes(helper.ID.toString())
+			)) {
 			TelegramCall(TelegramMethodEnum.LeaveChat, { chat_id: helper.ID });
 			return;
 		}
 
 		const user = await auth(this.userApplication, helper.ID);
 
-		if(!(user && this.#continue && user.status !== UserStatus.Banned)) return;
+		if (!(user && this.#continue && user.status !== UserStatus.Banned)) return;
 
 		const username = message?.from.username ?? update.channel_post?.chat?.username;
-		if(username && username !== user.username) {
+		if (username && username !== user.username) {
 			await this.userApplication.setUsername(user.tgId, username);
 		}
 
-		if(user.status === UserStatus.Temp) {
+		if (user.status === UserStatus.Temp) {
 			// EULA / TOS / Phone register
 			await this.userApplication.setUserStatus(user.tgId, UserStatus.OK);
 		}
@@ -69,9 +70,9 @@ class UpdateHandler {
 			await this.returnHandler.handler(helper);
 
 			if (helper.user.type === UserType.Admin) {
-				if(update.message?.text?.startsWith('/'))
+				if (update.message?.text?.startsWith('/'))
 					await this.adminCommandHandler.handler(helper);
-				if(this.#continue)
+				if (this.#continue)
 					await this.adminHandler.handler(helper);
 			}
 
@@ -89,6 +90,15 @@ class UpdateHandler {
 						});
 						this.end();
 						await this.helper.setUserMode(UserMode.Default);
+						break;
+					case "/language":
+						helper.call(TelegramMethodEnum.SendText, {
+							chat_id: helper.ID,
+							text: UIT.selectLanguage,
+							reply_markup: inlineKeyboards.changeLanguage(helper.UIT)
+						});
+						this.end();
+						await this.helper.setUserMode(UserMode.ChangeLanguage);
 						break;
 					case "/cancel":
 						const cancelResult = this.videoApplication.cancelDownload(helper.ID);
@@ -113,6 +123,31 @@ class UpdateHandler {
 						case UserMode.Default:
 							await this.homeHandler.handler(helper);
 							break;
+						case UserMode.ChangeLanguage: {
+							if (!update.message?.text) {
+								helper.sendText(UIT.commandNotFound).end();
+							} else {
+								const desiredLang = UIText.getLanguageByName(update.message.text);
+								if (desiredLang) {
+									if ((await this.userApplication.setUserLanguage(user.tgId, desiredLang._lang)).ok) {
+										helper.call(TelegramMethodEnum.SendText, {
+											chat_id: helper.ID,
+											text: dynamicText({
+												text: desiredLang.languageChanged,
+												update
+											}),
+											reply_markup: inlineKeyboards.user(helper.user, desiredLang)
+										});
+										this.end();
+										await this.helper.setUserMode(UserMode.Default);
+									} else {
+										helper.sendText(UIT.setError).end();
+									}
+								} else {
+									helper.sendText(UIT.invalidLanguage).end();
+								}
+							}
+						} break;
 					}
 				}
 			}

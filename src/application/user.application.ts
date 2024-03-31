@@ -59,6 +59,14 @@ export default class UserApplication implements IUserApplication {
         return operationResult;
     }
 
+    async setUserLanguage(tgId: number, languageCode: string): Promise<OperationResult> {
+        const operationResult = new OperationResult();
+        if(await this.userRepository.updateUserLang(tgId, languageCode)) {
+            operationResult.succeeded();
+        }
+        return operationResult;
+    }
+
     async setUserType(tgId: number, type: UserType): Promise<OperationResult> {
         const operationResult = new OperationResult();
         if(await this.userRepository.updateUserType(tgId, type)) {

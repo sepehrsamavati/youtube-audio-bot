@@ -3,7 +3,8 @@ import { UITextObj } from "../types/uitext";
 const UITextData: UITextObj[] = [
     {
         _lang: "en",
-        _start: "🤟 Hi [NAME], welcome to YouTube Audio bot\n⁉ Help: /help",
+        _languageName: "English",
+        _start: "🤟 Hi [NAME], welcome to YouTube Audio bot\n⁉ Help: /help\n🌍 Change language: /language",
         _help: "📌 Just send me a YouTube link or video ID to get MP3 file here",
         _notPromoted: "❌ You're not promoted and don't have access to use the bot",
         stats: "📊 Stats",
@@ -56,6 +57,8 @@ const UITextData: UITextObj[] = [
         canceledByUser: "🚮 Canceled by user.",
         adminPanel: "Admin panel",
         userPanel: "User panel",
+        selectLanguage: "Select language:",
+        languageChanged: "Language changed",
 
         sendingToUsers: "🔁 Sending to %s1 user(s)...",
         sentToUsers: "✅ Sent to %s1 user(s).",
@@ -118,7 +121,131 @@ const UITextData: UITextObj[] = [
         coverCropError: "❌ Couldn't crop cover",
         croppedCoverSaveError: "❌ Error while saving cropped cover",
         setMetaError: "❌ Couldn't set meta data",
-        uploadError: "❌ Couldn't upload audio!"
+        uploadError: "❌ Couldn't upload audio!",
+        invalidLanguage: "❌ Invalid language, select from the keyboard!"
+    },
+    {
+        _lang: "fa",
+        _languageName: "فارسی",
+        _start: "🤟 سلام [NAME], به ربات دانلود آهنگ از یوتیوب خوش اومدی\n⁉ راهنما: /help\n🌍 تغییر زبان: /language",
+        _help: "📌 کافیه یه لینک یوتیوب رو برام بفرستی تا فایل MP3 رو دریافت کنی",
+        _notPromoted: "❌ شما دسترسی استفاده از ربات را ندارید",
+        stats: "📊 آمار",
+        _stats: "آمار ربات (v%s1)"
+            + "\n\n📉 پیام‌های همگانی: %s2"
+            + "\n⏱ آخرین پیام همگانی: %s3"
+            + "\n\n📊 دانلودهای هفته اخیر: %s4"
+            + "\n🗃 ویدیوهای ذخیره شده: %s5"
+            + "\n👁 بازدیدها: %s6"
+            + "\n\n👥 کاربران: %s7",
+        help: "❔ راهنما",
+        random: "🎲 آهنگ تصادفی",
+        top5: "🎖 Top 5",
+        _top5: "🔥 %s1 آهنگ بیشتر دانلود شده\n\n\n%s2",
+        weekTop: "🥇 پربازدیدهای هفته اخیر",
+        _weekTop: "🔥 %s1 آهنگ بیشتر دانلود شده هفته اخیر\n\n\n%s2",
+        mostLikes: "♥ بیشترین لایک",
+        _mostLikes: "♥ آهنگ‌های بیشتر لایک شده\n\n\n%s2",
+        recentDownloads: "🗂 دانلودهای اخیر",
+        _recentDownloads: "📆 %s1 آهنگ دانلود شده اخیر\n\n\n%s2",
+        noDownloads: "دانلودی وجود نداشته!",
+        addAdmin: "➕ افزودن مدیر",
+        remAdmin: "➖ حذف مدیر",
+        return: "🔙 بازگشت",
+        edtSup: "⚠️ از پیام ویرایش شده پشتیبانی نمی‌شود.",
+        submit: "✅ ثبت",
+        cancel: "❌ لغو",
+        on: "⚪ روشن",
+        off: "⚫ خاموش",
+        ok: "✅",
+        failed: "❌",
+        never: "هیچوقت",
+        noAccess: "❌ شما دسترسی ندارید!",
+        commandNotFound: "❌ دستوری یافت نشد!",
+        invalidVideo: "❌ ویدیو معتبر نیست!",
+        musicNotFound: "آهنگی یافت نشد",
+        liked: "لایک شد 💚",
+        likeRemoved: "لایک حذف شد 💔",
+        invalidCommand: "❌ دستور نامعتبر!",
+        setError: "خطا در ثبت مقدار!",
+        currentValueSelectNew: "مقدار فعلی: %s1\nمقدار جدید را انتخاب کنید",
+        currentValueSendNewMessage: "مقدار فعلی:\n\n%s1\n\n\nپیام جدید را ارسال کنید",
+        alreadyBanned: "⚠️ از قبل مسدود شده",
+        notBanned: "⚠️ کاربر مسدود نمی‌باشد",
+        cantBanYourself: "نمی‌توانید حساب خودتان را مسدود کنید",
+        userBanned: "✅ کاربر مسدود شد",
+        userUnbanned: "✅ کاربر از مسدودی خارج شد",
+        nothingToCancel: "⚠️ چیزی برای لغو کردن وجود نداره!",
+        downloadsCanceled: "✅ دستور لغو ثبت شد.",
+        canceledByUser: "🚮 توسط کاربر لغو شد.",
+        adminPanel: "پنل ادمین",
+        userPanel: "پنل کاربر",
+        selectLanguage: "زبان مورد نظر را انتخاب کنید:",
+
+        sendingToUsers: "🔁 در حال ارسال به %s1 کاربر...",
+        sentToUsers: "✅ به %s1 کاربر ارسال شد.",
+        replyToMessageToBroadcast: "⚠️ به یک پیام ریپلای کنید تا به عنوان پیام همگانی ارسال شود!",
+
+        userAccountName: "نام حساب کاربر",
+        userAccountInfo: "🆔 کاربر %s1%s2\n\nوضعیت: %s3\nحالت: %s4\nزبان: %s5\nآخرین درخواست: %s6\n%s7\n%s8",
+        promotedBy: "دسترسی توسط %s1 %s2",
+        alreadyPromotedBy: "⚠️ از قبل توسط %s1 دسترسی داشته",
+        promoted: "✅ دسترسی داده شد",
+        demoted: "✅ دسترسی حذف شد",
+        notPromoted: "⚠️ دسترسی ندارد",
+        userNotFound: "❌ کاربر یافت نشد",
+        userIsNotAdmin: "❌ کاربر مورد نظر مدیر نمی‌باشد",
+        adminAdded: "✅ مدیر %s1 اضافه شد",
+        adminRemoved: "✅ مدیر %s1 حذف شد",
+        cantRemoveOwner: "❌ امکان حذف مالک وجود ندارد",
+        alreadyAdmin: "❌ از قبل مدیر بوده",
+
+        botIsBusy: "⚠️ ربات خیلی مشغوله، یک دقیقه صبر کن و مجددا تلاش کن.",
+        isBeingDownloaded: "⚠️ همین ویدیو/آهنگ داره توسط یه کاربر دیگه دانلود میشه، یک دقیقه صبر کن و مجددا تلاش کن.",
+        reachedConcurrentDownloads: "❌ شما به محدودیت دانلودهای همزمان رسیدید!",
+
+        currentAdmins: "مدیرهای فعلی",
+        selectItemToRemove: "آیتم مورد نظر را جهت حذف انتخاب کنید",
+        sendUserIdToAddAdmin: "شناسه حساب تلگرام را جهت اضافه کردن مدیر ارسال کنید",
+
+        share: "اشتراک گذاری",
+        alreadyLiked: "❌ از قبل لایک کردی!",
+        isNotLiked: "❌ لایک نشده بود که حذف بشه!",
+
+        validating: "🔁 اعتبارسنجی...",
+        getInfo: "ℹ️ [1/6] دریافت اطلاعات",
+        downloadVideo: "📥 [2/6] دانلود MP4",
+        convertToAudio: "🎙 [3/6] تبدیل به MP3",
+        generateCover: "📸 [4/6] ساخت کاور",
+        setMeta: "🖋 [5/6] ثبت اطلاعات آهنگ",
+        upload: "📤 [6/6] آپلود به تلگرام",
+
+        /* Settings */
+        settings: "⚙️ تنظیمات",
+        startText: "📃 متن شروع",
+        helpText: "❔ متن راهنما",
+        publicMode: "حالت عمومی",
+        shareAvailable: "اشتراک گذاری",
+        valueTurnedTo: "%s1 %s2 شد",
+        valueChangedTo: "مقدار %s1 به %s2 تغییر پیدا کرد",
+        invalidValue: "%s1\n\n❌ مقدار نامعتبر%s2",
+        textLengthLimitError: "طول متن خیلی زیاده, حداکثر طول مجاز برای متن %s1 است",
+        availableDynamicWords: "کلمات پویا قابل استفاده:",
+        protectAudios: "حفاظت از محتوا",
+
+        getInfoError: "❌ خطا در دریافت اطلاعات",
+        downloadError: "❌ خطا در دانلود",
+        youtubeRateLimit: "❌ یوتیوب ربات رو به علت تعداد درخواست بالا بلاک کرده, بهتره بعدا دوباره تلاش کنی...",
+        invalidDataFormat: "❌ فرمت غیر قابل قبول",
+        convertError: "❌ خطا در تبدیل فیلم به آهنگ",
+        fileSizeOver50: "❌ حجم فایل بیشتر از 50 MB است",
+        coverConvertError: "❌ خطا در تبدیل کاور",
+        coverCropError: "❌ خطا در برش کاور",
+        croppedCoverSaveError: "❌ خطا هنگام ذخیره کاور برش داده شده",
+        setMetaError: "❌ خطا در ثبت اطلاعات آهنگ",
+        uploadError: "❌ خطا در آپلود آهنگ!",
+        invalidLanguage: "❌ زبان غیر قابل قبول، از منو پایین جهت انتخاب کردن استفاده کنید!",
+        languageChanged: "زبان تغییر کرد"
     }
 ];
 
