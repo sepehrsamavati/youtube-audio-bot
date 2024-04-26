@@ -1,3 +1,11 @@
+## [2.0.4] - 2024-04-26
+
+### Add
+- Change language
+
+### Change
+- Bump follow-redirects from 1.15.5 to 1.15.6
+
 ## [2.0.3] - 2024-03-04
 
 ### Change
