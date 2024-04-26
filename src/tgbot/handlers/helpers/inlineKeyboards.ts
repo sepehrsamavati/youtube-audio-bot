@@ -24,7 +24,7 @@ export default {
             [{ text: UIT.random }, { text: UIT.weekTop }],
             [{ text: UIT.recentDownloads }],
             [{ text: UIT.top5 }, { text: UIT.mostLikes }],
-            [{ text: UIT.help }]
+            [{ text: UIT.help }, { text: UIT.changeLanguage }]
         ];
         if (user.type === UserType.Admin)
             keyboard.push([{ text: UIT.adminPanel }]);

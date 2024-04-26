@@ -122,7 +122,8 @@ const UITextData: UITextObj[] = [
         croppedCoverSaveError: "❌ Error while saving cropped cover",
         setMetaError: "❌ Couldn't set meta data",
         uploadError: "❌ Couldn't upload audio!",
-        invalidLanguage: "❌ Invalid language, select from the keyboard!"
+        invalidLanguage: "❌ Invalid language, select from the keyboard!",
+        changeLanguage: "🌍 Change language"
     },
     {
         _lang: "fa",
@@ -245,7 +246,8 @@ const UITextData: UITextObj[] = [
         setMetaError: "❌ خطا در ثبت اطلاعات آهنگ",
         uploadError: "❌ خطا در آپلود آهنگ!",
         invalidLanguage: "❌ زبان غیر قابل قبول، از منو پایین جهت انتخاب کردن استفاده کنید!",
-        languageChanged: "زبان تغییر کرد"
+        languageChanged: "زبان تغییر کرد",
+        changeLanguage: "🌍 تغییر زبان"
     }
 ];
 

@@ -43,6 +43,7 @@ export type UITextObj = {
     nothingToCancel: string;
     downloadsCanceled: string;
     canceledByUser: string;
+    changeLanguage: string;
     selectLanguage: string;
     languageChanged: string;
 
