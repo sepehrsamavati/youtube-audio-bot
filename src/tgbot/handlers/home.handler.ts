@@ -35,8 +35,8 @@ export default class HomeHandler implements HandlerBase {
                 sendText(
                         recentDownloads.length ?
                         Extensions.StringFormatter(UIT._recentDownloads, [
-                            recentDownloads.length,
-                            recentDownloads.map((video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}`).join("\n\n")
+                            Extensions.digitLocalization(recentDownloads.length, UIT._lang),
+                            recentDownloads.map((video, i) => `${Extensions.digitLocalization(i+1, UIT._lang)}. ${video.title} /v${getUICode(video.id)}`).join("\n\n")
                         ]) : UIT.noDownloads
                     );
                 end();
@@ -47,8 +47,8 @@ export default class HomeHandler implements HandlerBase {
                 sendText(
                         lastWeekDownloads.length ?
                         Extensions.StringFormatter(UIT._weekTop, [
-                            lastWeekDownloads.length,
-                            lastWeekDownloads.map( (video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}` ).join("\n\n")
+                            Extensions.digitLocalization(lastWeekDownloads.length, UIT._lang),
+                            lastWeekDownloads.map( (video, i) => `${Extensions.digitLocalization(i+1, UIT._lang)}. ${video.title} /v${getUICode(video.id)}` ).join("\n\n")
                         ]) : UIT.noDownloads
                     );
                 end();
@@ -59,8 +59,8 @@ export default class HomeHandler implements HandlerBase {
                 sendText(
                         topAudios.length ?
                         Extensions.StringFormatter(UIT._top5, [
-                            topAudios.length,
-                            topAudios.map( (video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}` ).join("\n\n")
+                            Extensions.digitLocalization(topAudios.length, UIT._lang),
+                            topAudios.map( (video, i) => `${Extensions.digitLocalization(i+1, UIT._lang)}. ${video.title} /v${getUICode(video.id)}` ).join("\n\n")
                         ]) : UIT.noDownloads
                     );
                 end();
@@ -71,8 +71,8 @@ export default class HomeHandler implements HandlerBase {
                 sendText(
                     mostLiked.length ?
                         Extensions.StringFormatter(UIT._mostLikes, [
-                            mostLiked.length,
-                            mostLiked.map( (video, i) => `${i+1}. ${video.title} /v${getUICode(video.id)}` ).join("\n\n")
+                            Extensions.digitLocalization(mostLiked.length, UIT._lang),
+                            mostLiked.map( (video, i) => `${Extensions.digitLocalization(i+1, UIT._lang)}. ${video.title} /v${getUICode(video.id)}` ).join("\n\n")
                         ]) : UIT.noDownloads
                     );
                 end();

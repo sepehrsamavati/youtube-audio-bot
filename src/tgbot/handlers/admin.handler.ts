@@ -86,12 +86,12 @@ export default class AdminHandler implements HandlerBase {
                     ]);
                     sendText(Extensions.StringFormatter(UIT._stats, [
                         config.version,
-                        broadcastStats.count,
-                        broadcastStats.last.getTime() === 0 ? UIT.never : broadcastStats.last.toLocaleString(),
-                        lastWeekDownloads,
-                        totalSavedVideos,
-                        totalViews,
-                        usersCount
+                        Extensions.digitLocalization(broadcastStats.count, UIT._lang),
+                        broadcastStats.last.getTime() === 0 ? UIT.never : Extensions.dateLocalization(broadcastStats.last, UIT._lang),
+                        Extensions.digitLocalization(lastWeekDownloads, UIT._lang),
+                        Extensions.digitLocalization(totalSavedVideos, UIT._lang),
+                        Extensions.digitLocalization(totalViews, UIT._lang),
+                        Extensions.digitLocalization(usersCount, UIT._lang)
                     ])).end();
                     return;
                 case UIT.settings:
