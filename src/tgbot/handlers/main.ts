@@ -91,7 +91,7 @@ class UpdateHandler {
 						this.end();
 						await this.helper.setUserMode(UserMode.Default);
 						break;
-					case UIT.changeLanguage:
+					case UIT.changeLanguage.toLowerCase():
 					case "/language":
 						helper.call(TelegramMethodEnum.SendText, {
 							chat_id: helper.ID,

@@ -25,6 +25,6 @@ export default class Extensions {
 
     static dateLocalization(date: Date, locale: string) {
         const dateLocale = Extensions.#dateLocales[locale as 'en'] ?? Extensions.#dateLocales.en;
-        return date.toLocaleString(dateLocale);
+        return Extensions.digitLocalization(date.toLocaleString(dateLocale), locale);
     }
 }
