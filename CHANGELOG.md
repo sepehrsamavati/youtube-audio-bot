@@ -1,3 +1,13 @@
+## [2.0.5] - 2024-06-03
+
+### Add
+- Telegram message entity
+- Read URL from message entity
+
+### Change
+- NPM audit fix; Update dependencies
+
+
 ## [2.0.4] - 2024-04-26
 
 ### Add
@@ -5,6 +15,7 @@
 
 ### Change
 - Bump follow-redirects from 1.15.5 to 1.15.6
+
 
 ## [2.0.3] - 2024-03-04
 
