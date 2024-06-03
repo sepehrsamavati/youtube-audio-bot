@@ -96,7 +96,14 @@ export default class HomeHandler implements HandlerBase {
                 }
             }
 
-            const videoId = VideoApplication.Downloader.validateVideoId(update.message.text);
+            let url = update.message.text;
+
+            const urlEntity = update.message.entities?.find(entity => entity.type === 'url');
+            if(urlEntity) {
+                url = url.substring(urlEntity.offset, urlEntity.offset + urlEntity.length);
+            }
+
+            const videoId = VideoApplication.Downloader.validateVideoId(url);
             const userMessageId: ChatID = update.message.message_id;
 
             if (!videoId) {

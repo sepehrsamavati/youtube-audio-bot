@@ -21,12 +21,23 @@ type User = {
     is_premium?: string;
 };
 
+type MessageEntityType = 'url' | 'spoiler'
+    | 'text_link' | 'code' | 'blockquote' | 'underline' | 'strikethrough'
+    | 'italic' | 'email' | 'bold' | 'hashtag' | 'mention' | 'cashtag'
+    | 'bot_command' | 'text_mention' | 'custom_emoji' | 'pre';
+
 export type TelegramMessage = {
     text?: string;
     date: number;
     chat: Chat;
     from: User;
     message_id: MessageID;
+    entities?: {
+        offset: number;
+        length: number;
+        url?: string;
+        type: MessageEntityType;
+    }[];
     contact?: {
         user_id: ChatID;
         phone_number: string;
