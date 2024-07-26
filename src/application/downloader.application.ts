@@ -1,11 +1,11 @@
 import fs from 'node:fs';
 import sharp from "sharp";
-import ytdl from "ytdl-core";
 import path from 'node:path';
 import http from 'node:https';
 import NodeID3 from "node-id3";
 import config from '../config.js';
 import ffmpeg from "fluent-ffmpeg";
+import ytdl from "@distube/ytdl-core";
 import { logError } from '../common/helpers/log.js';
 import { QueueVideo } from '../common/models/queueVideo.js';
 import { QueueVideoStep } from '../common/enums/video.enum.js';
