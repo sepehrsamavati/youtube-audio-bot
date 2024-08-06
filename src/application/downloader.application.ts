@@ -13,6 +13,8 @@ import OperationResult from '../common/models/operationResult.js';
 import getFileSizeInMegaBytes from "../common/helpers/getFileSize.js";
 import cropThumbnailSides from "../common/helpers/cropThumbnailSides.js";
 
+const agent = config.cookiesPath ? ytdl.createAgent(JSON.parse(fs.readFileSync(config.cookiesPath).toString())) : undefined;
+
 export class Downloader {
     static validateVideoId(idOrUrl: string) {
         try {
@@ -32,7 +34,7 @@ export class Downloader {
         const res = new OperationResult();
         video.step = QueueVideoStep.GetInfo;
         try {
-            const basicInfo = await ytdl.getBasicInfo(video.id);
+            const basicInfo = await ytdl.getBasicInfo(video.id, { agent });
             const { videoDetails } = basicInfo;
 
             if (videoDetails.author.name.endsWith(" - Topic") && videoDetails.author.name.length > 8) /* remove ' - Topic' */ {
@@ -98,10 +100,10 @@ export class Downloader {
                     });
                 });
 
-                ytdl(video.id, { quality: "highestaudio" })
+                ytdl(video.id, { agent, quality: "highestaudio" })
                     .on("error", (err: unknown) => {
                         logError("Downloader / YTDL core error", err);
-                        if(err && typeof err === "object" && (err as any).statusCode === 429) {
+                        if (err && typeof err === "object" && (err as any).statusCode === 429) {
                             resolve(res.failed("youtubeRateLimit"));
                         } else {
                             resolve(res.failed("downloadError"));
