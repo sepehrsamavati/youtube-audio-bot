@@ -26,6 +26,8 @@
 Key | Value
 ------------ | -------------
 `YTA_TG_TOKEN` | Telegram bot API token
+`YTA_CACHE_DIR` | Data and cache directory (created and cleared on app startup)
+`YTA_COOKIES_JSON_PATH` | _Optional_ path to cookies ([explained here](https://www.npmjs.com/package/@distube/ytdl-core))
 `YTA_TG_OWNERS` | Array of chat ID (Telegram account/chat ID)
 `YTA_WHITELIST_CHATS` | Array of chat ID or username (do not auto leave from these chats)
 `YTA_FFMPEG_EXE` | Path to a working ffmpeg binary (converts MP4 to MP3)
