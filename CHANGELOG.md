@@ -1,3 +1,11 @@
+## [2.1.0-preview.1] - 2024-08-06
+
+### Change
+- Change main YT downloader dependency
+
+### Fix
+- Fix download error
+
 ## [2.0.5] - 2024-06-03
 
 ### Add
