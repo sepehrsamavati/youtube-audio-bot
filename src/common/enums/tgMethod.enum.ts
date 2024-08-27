@@ -14,4 +14,5 @@ export enum TelegramMethodEnum {
     CopyMessage = "copyMessage",
     SendChatAction = "sendChatAction",
     LeaveChat = "leaveChat",
+    SetWebhook = "setWebhook",
 };

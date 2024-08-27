@@ -8,7 +8,8 @@
     "start": "node ./dist/core.js",
     "start:tsx": "tsx ./src/core.ts",
     "start:build": "npm run build && npm run start",
-    "data:seed": "node ./dist/seed/main.js"
+    "data:seed": "node ./dist/seed/main.js",
+    "unsetWebhook": "node ./dist/scripts/unsetWebhook.js"
   },
   "type": "module",
   "repository": {
