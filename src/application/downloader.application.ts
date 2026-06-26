@@ -29,13 +29,33 @@ function cookiesJsonToString(cookies: CookieJson[]): string {
         .join("; ");
 }
 
+function parseCookieFile(content: string): string {
+    const trimmed = content.trim();
+    if (!trimmed)
+        throw new Error("Cookie file is empty");
+    if (trimmed.startsWith("["))
+        return cookiesJsonToString(JSON.parse(trimmed) as CookieJson[]);
+    return trimmed;
+}
+
+function loadCookies(): string | undefined {
+    const plainCookies = config.cookies.trim();
+    if (plainCookies)
+        return plainCookies;
+
+    const cookiesPath = config.cookiesPath.trim();
+    if (!cookiesPath)
+        return undefined;
+
+    return parseCookieFile(fs.readFileSync(cookiesPath, "utf8"));
+}
+
 async function getInnertube(): Promise<Innertube> {
     if (!innertubePromise) {
         const options: { cookie?: string } = {};
-        if (config.cookiesPath) {
-            const cookies = JSON.parse(fs.readFileSync(config.cookiesPath, "utf8")) as CookieJson[];
-            options.cookie = cookiesJsonToString(cookies);
-        }
+        const cookie = loadCookies();
+        if (cookie)
+            options.cookie = cookie;
         innertubePromise = Innertube.create(options);
     }
     return innertubePromise;

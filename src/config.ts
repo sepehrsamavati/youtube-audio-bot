@@ -18,6 +18,7 @@ const config = {
 	owners: (process.env.YTA_TG_OWNERS ?? "").split(',').map(id => parseInt(id)),
 	connectionString: process.env.YTA_MONGODB ?? "",
 	version: process.env.npm_package_version ?? "-",
+	cookies: process.env.YTA_COOKIES ?? "",
 	cookiesPath: process.env.YTA_COOKIES_JSON_PATH ?? ""
 };
 
