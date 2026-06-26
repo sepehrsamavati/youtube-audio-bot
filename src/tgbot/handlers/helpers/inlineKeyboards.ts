@@ -3,7 +3,7 @@ import settings from "../../../settings.js";
 import { User } from "../../../common/types/user.js";
 import { UITextObj } from "../../../common/types/uitext.js";
 import { UserType } from "../../../common/enums/user.enum.js";
-import UIText from "../../../common/languages/UIText.js";
+import UIText from "../../../common/languages/uitext.js";
 
 export default {
     admin: (admin: User, UIT: UITextObj) => {

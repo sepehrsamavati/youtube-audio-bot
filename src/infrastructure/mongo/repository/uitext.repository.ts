@@ -1,7 +1,7 @@
 import UITextModel from "../models/uitext.js";
 import { logError } from "../../../common/helpers/log.js";
 import { UITextObj } from "../../../common/types/uitext.js";
-import IUserInterfaceTextRepository from "../../../application/contracts/UIText/repository.interface.js";
+import IUserInterfaceTextRepository from "../../../application/contracts/uitext/repository.interface.js";
 
 export default class UITextRepository implements IUserInterfaceTextRepository {
 	async add(lang: string, key: string, value: string): Promise<boolean> {

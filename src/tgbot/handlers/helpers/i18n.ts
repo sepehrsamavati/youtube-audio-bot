@@ -1,6 +1,6 @@
 import settings from "../../../settings.js";
 import { User } from "../../../common/types/user.js";
-import UIText from "../../../common/languages/UIText.js";
+import UIText from "../../../common/languages/uitext.js";
 
 export default function getUserUIT(user?: User) {
     const langCode = user?.language ?? settings.defaultLang;

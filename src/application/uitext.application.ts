@@ -1,8 +1,8 @@
-import UIText from "../common/languages/UIText.js";
+import UIText from "../common/languages/uitext.js";
 import { UITextObj } from "../common/types/uitext.js";
 import OperationResult from "../common/models/operationResult.js";
-import IUserInterfaceTextRepository from "./contracts/UIText/repository.interface.js";
-import IUserInterfaceTextApplication from "./contracts/UIText/application.interface.js";
+import IUserInterfaceTextRepository from "./contracts/uitext/repository.interface.js";
+import IUserInterfaceTextApplication from "./contracts/uitext/application.interface.js";
 
 export default class UITextApplication implements IUserInterfaceTextApplication {
     constructor(

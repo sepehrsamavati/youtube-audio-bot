@@ -17,7 +17,7 @@ import UserApplication from "../../application/user.application.js";
 import VideoApplication from "../../application/video.application.js";
 import { TelegramMethodEnum } from "../../common/enums/tgMethod.enum.js";
 import { UserMode, UserStatus, UserType } from "../../common/enums/user.enum.js";
-import UIText from "../../common/languages/UIText.js";
+import UIText from "../../common/languages/uitext.js";
 
 class UpdateHandler {
 	async handleUpdate(update: TgMsgUpdate) {

@@ -2,10 +2,12 @@ import fs from 'node:fs';
 import sharp from "sharp";
 import path from 'node:path';
 import http from 'node:https';
+import { Readable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 import NodeID3 from "node-id3";
 import config from '../config.js';
 import ffmpeg from "fluent-ffmpeg";
-import ytdl from "@distube/ytdl-core";
+import { Innertube, Utils } from "youtubei.js";
 import { logError } from '../common/helpers/log.js';
 import { QueueVideo } from '../common/models/queueVideo.js';
 import { QueueVideoStep } from '../common/enums/video.enum.js';
@@ -13,17 +15,48 @@ import OperationResult from '../common/models/operationResult.js';
 import getFileSizeInMegaBytes from "../common/helpers/getFileSize.js";
 import cropThumbnailSides from "../common/helpers/cropThumbnailSides.js";
 
-const agent = config.cookiesPath ? ytdl.createAgent(JSON.parse(fs.readFileSync(config.cookiesPath).toString())) : undefined;
+type CookieJson = { name: string; value: string; domain?: string };
+
+const VIDEO_ID_REGEX = /^[a-zA-Z0-9_-]{11}$/;
+const VIDEO_URL_REGEX = /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/;
+
+let innertubePromise: Promise<Innertube> | undefined;
+
+function cookiesJsonToString(cookies: CookieJson[]): string {
+    return cookies
+        .filter(c => !c.domain || c.domain.includes("youtube.com"))
+        .map(c => `${c.name}=${c.value}`)
+        .join("; ");
+}
+
+async function getInnertube(): Promise<Innertube> {
+    if (!innertubePromise) {
+        const options: { cookie?: string } = {};
+        if (config.cookiesPath) {
+            const cookies = JSON.parse(fs.readFileSync(config.cookiesPath, "utf8")) as CookieJson[];
+            options.cookie = cookiesJsonToString(cookies);
+        }
+        innertubePromise = Innertube.create(options);
+    }
+    return innertubePromise;
+}
+
+function isRateLimitError(err: unknown): boolean {
+    if (!err || typeof err !== "object")
+        return false;
+    if ("statusCode" in err && (err as { statusCode?: number }).statusCode === 429)
+        return true;
+    const info = (err as { info?: { response?: Response } }).info;
+    return info?.response?.status === 429;
+}
 
 export class Downloader {
     static validateVideoId(idOrUrl: string) {
         try {
-            if (ytdl.validateURL(idOrUrl))
-                return ytdl.getVideoID(idOrUrl);
-            else if (ytdl.validateID(idOrUrl))
+            if (VIDEO_ID_REGEX.test(idOrUrl))
                 return idOrUrl;
-            else
-                return null;
+            const match = idOrUrl.match(VIDEO_URL_REGEX);
+            return match?.[1] ?? null;
         } catch (e) {
             if (e instanceof Error)
                 console.error(e.message)
@@ -34,39 +67,42 @@ export class Downloader {
         const res = new OperationResult();
         video.step = QueueVideoStep.GetInfo;
         try {
-            const basicInfo = await ytdl.getBasicInfo(video.id, { agent });
-            const { videoDetails } = basicInfo;
+            const innertube = await getInnertube();
+            const info = await innertube.getInfo(video.id);
 
-            if (videoDetails.author.name.endsWith(" - Topic") && videoDetails.author.name.length > 8) /* remove ' - Topic' */ {
-                videoDetails.author.name = videoDetails.author.name.slice(0, -8);
+            let authorName = info.basic_info.channel?.name ?? info.basic_info.author ?? "";
+
+            if (authorName.endsWith(" - Topic") && authorName.length > 8) /* remove ' - Topic' */ {
+                authorName = authorName.slice(0, -8);
             }
 
-            const videoTitleSplit = videoDetails.title.split(" - ");
+            const videoTitle = info.basic_info.title ?? "";
+            const videoTitleSplit = videoTitle.split(" - ");
             if (videoTitleSplit.length === 2) {
                 video.title = videoTitleSplit[1];
                 video.artist = videoTitleSplit[0];
-                video.album = videoDetails.author.name;
+                video.album = authorName;
             }
             else {
-                video.title = videoDetails.title;
-                video.artist = videoDetails.author.name;
+                video.title = videoTitle;
+                video.artist = authorName;
                 if (video.title.startsWith(video.artist + " - ") && video.title.length > video.artist.length + 3) {
                     video.title = video.title.slice(video.artist.length + 3);
                 }
             }
 
-
-            if (videoDetails.publishDate) {
-                video.year = videoDetails.publishDate.split("-").shift() ?? "0";
-            }
-            if (videoDetails.media
-                && videoDetails.media.song
-                && videoDetails.media.artist) {
-                video.title = videoDetails.media.song;
-                video.artist = videoDetails.media.artist;
+            if (info.basic_info.start_timestamp) {
+                video.year = info.basic_info.start_timestamp.getFullYear().toString();
             }
 
-            video.thumbnail = videoDetails.thumbnails.pop()?.url ?? "";
+            const musicTrack = info.music_tracks[0];
+            if (musicTrack?.song && musicTrack?.artist) {
+                video.title = musicTrack.song;
+                video.artist = musicTrack.artist;
+            }
+
+            const thumbnails = info.basic_info.thumbnail;
+            video.thumbnail = thumbnails?.length ? thumbnails[thumbnails.length - 1].url : "";
 
             return res.succeeded();
         } catch (e) {
@@ -77,44 +113,41 @@ export class Downloader {
     static async download(video: QueueVideo): Promise<OperationResult> {
         const res = new OperationResult();
         video.step = QueueVideoStep.DownloadVideo;
-        return new Promise(resolve => {
-            try {
-                const baseFileAddress = video.fileAddress = path.join(config.cacheDirectory, video.localId);
-                const videoFileAddress = baseFileAddress + '.mp4';
+        try {
+            const baseFileAddress = video.fileAddress = path.join(config.cacheDirectory, video.localId);
+            const videoFileAddress = baseFileAddress + '.mp4';
 
-                const videoWriteStream = fs.createWriteStream(videoFileAddress);
+            const innertube = await getInnertube();
+            const downloadStream = await innertube.download(video.id, {
+                type: "audio",
+                quality: "best",
+            });
 
-                videoWriteStream.on("finish", async function () {
-                    video.mp4Size = getFileSizeInMegaBytes(videoFileAddress);
+            const videoWriteStream = fs.createWriteStream(videoFileAddress);
+            await pipeline(Readable.from(Utils.streamToIterable(downloadStream)), videoWriteStream);
 
-                    http.get(video.thumbnail, function (thumbnailStream) {
-                        const thumbnailFileAddress = baseFileAddress + (video.thumbnail.endsWith(".jpg") ? ".jpg" : ".webp");
-                        const thumbnailWriteStream = fs.createWriteStream(thumbnailFileAddress);
-                        thumbnailStream.pipe(thumbnailWriteStream)
-                            .on("finish", async function () {
+            video.mp4Size = getFileSizeInMegaBytes(videoFileAddress);
 
-                                video.thumbSize = getFileSizeInMegaBytes(thumbnailFileAddress);
+            await new Promise<void>((resolve, reject) => {
+                http.get(video.thumbnail, function (thumbnailStream) {
+                    const thumbnailFileAddress = baseFileAddress + (video.thumbnail.endsWith(".jpg") ? ".jpg" : ".webp");
+                    const thumbnailWriteStream = fs.createWriteStream(thumbnailFileAddress);
+                    thumbnailStream.pipe(thumbnailWriteStream)
+                        .on("finish", function () {
+                            video.thumbSize = getFileSizeInMegaBytes(thumbnailFileAddress);
+                            resolve();
+                        })
+                        .on("error", reject);
+                }).on("error", reject);
+            });
 
-                                resolve(res.succeeded());
-                            });
-                    });
-                });
-
-                ytdl(video.id, { agent, quality: "highestaudio" })
-                    .on("error", (err: unknown) => {
-                        logError("Downloader / YTDL core error", err);
-                        if (err && typeof err === "object" && (err as any).statusCode === 429) {
-                            resolve(res.failed("youtubeRateLimit"));
-                        } else {
-                            resolve(res.failed("downloadError"));
-                        }
-                    })
-                    .pipe(videoWriteStream);
-            } catch (e) {
-                logError("Downloader / Download video", e);
-                resolve(res.failed("downloadError"));
-            }
-        });
+            return res.succeeded();
+        } catch (e) {
+            logError("Downloader / Download video", e);
+            if (isRateLimitError(e))
+                return res.failed("youtubeRateLimit");
+            return res.failed("downloadError");
+        }
     }
     static async convert(video: QueueVideo): Promise<OperationResult> {
         const res = new OperationResult();

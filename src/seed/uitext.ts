@@ -1,5 +1,5 @@
 import { log } from "../common/helpers/log.js";
-import UIText from "../common/languages/UIText.js";
+import UIText from "../common/languages/uitext.js";
 import UITextRepository from "../infrastructure/mongo/repository/uitext.repository.js";
 
 export default async (uitextRepository: UITextRepository) => {

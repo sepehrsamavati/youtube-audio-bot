@@ -1,5 +1,5 @@
 import settings from "../../settings.js";
-import UITextData from "./UITextData.js";
+import UITextData from "./uitextData.js";
 import { UITextObj } from "../types/uitext.js";
 
 class UIText {
