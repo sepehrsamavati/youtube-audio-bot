@@ -18,7 +18,7 @@
 5. Run `npm run start` to start the bot
 
 ### Requirements
-- NodeJS v16+
+- NodeJS (tested on v26.3.0)
 - FFMPEG ([official download page](https://ffmpeg.org/download.html))
 - MongoDB
 
