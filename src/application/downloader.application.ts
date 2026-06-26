@@ -7,7 +7,8 @@ import { pipeline } from 'node:stream/promises';
 import NodeID3 from "node-id3";
 import config from '../config.js';
 import ffmpeg from "fluent-ffmpeg";
-import { Innertube, Utils } from "youtubei.js";
+import { Innertube, Platform, UniversalCache, Utils } from "youtubei.js";
+import type { Types } from "youtubei.js";
 import { logError } from '../common/helpers/log.js';
 import { QueueVideo } from '../common/models/queueVideo.js';
 import { QueueVideoStep } from '../common/enums/video.enum.js';
@@ -19,8 +20,13 @@ type CookieJson = { name: string; value: string; domain?: string };
 
 const VIDEO_ID_REGEX = /^[a-zA-Z0-9_-]{11}$/;
 const VIDEO_URL_REGEX = /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/;
+const ANONYMOUS_DOWNLOAD_CLIENTS: Types.InnerTubeClient[] = ["IOS", "TV", "MWEB", "YTMUSIC"];
+const AUTHENTICATED_DOWNLOAD_CLIENTS: Types.InnerTubeClient[] = ["TV", "MWEB", "YTMUSIC", "WEB_CREATOR", "ANDROID", "WEB"];
 
-let innertubePromise: Promise<Innertube> | undefined;
+Platform.shim.eval = async (data) => new Function(data.output)();
+
+let innertubeAuthPromise: Promise<Innertube> | undefined;
+let innertubeAnonPromise: Promise<Innertube> | undefined;
 
 function cookiesJsonToString(cookies: CookieJson[]): string {
     return cookies
@@ -50,15 +56,110 @@ function loadCookies(): string | undefined {
     return parseCookieFile(fs.readFileSync(cookiesPath, "utf8"));
 }
 
-async function getInnertube(): Promise<Innertube> {
-    if (!innertubePromise) {
-        const options: { cookie?: string } = {};
+function createInnertubeOptions(authenticated: boolean): Parameters<typeof Innertube.create>[0] {
+    const options: Parameters<typeof Innertube.create>[0] = {
+        cache: new UniversalCache(
+            true,
+            path.join(path.dirname(config.cacheDirectory), authenticated ? "innertube-cache" : "innertube-cache-anon"),
+        ),
+    };
+
+    if (authenticated) {
         const cookie = loadCookies();
         if (cookie)
             options.cookie = cookie;
-        innertubePromise = Innertube.create(options);
     }
-    return innertubePromise;
+
+    return options;
+}
+
+async function getInnertube(authenticated = true): Promise<Innertube> {
+    if (authenticated) {
+        if (!innertubeAuthPromise)
+            innertubeAuthPromise = Innertube.create(createInnertubeOptions(true));
+        return innertubeAuthPromise;
+    }
+
+    if (!innertubeAnonPromise)
+        innertubeAnonPromise = Innertube.create(createInnertubeOptions(false));
+    return innertubeAnonPromise;
+}
+
+function isDownloadRetryableError(err: unknown): boolean {
+    if (err instanceof Error) {
+        const message = err.message;
+        if (message.includes("No valid URL to decipher")
+            || message.includes("No matching formats found")
+            || message.includes("Streaming data not available")
+            || message.includes("failed with status 400")
+            || message.includes("status code 400")
+            || message.includes("Video is login required")
+            || message.includes("JavaScript evaluator")
+            || message.includes("non 2xx status code"))
+            return true;
+    }
+    const errorType = (err as { info?: { error_type?: string } }).info?.error_type;
+    return errorType === "NO_STREAMING_DATA"
+        || errorType === "LOGIN_REQUIRED"
+        || errorType === "FETCH_FAILED";
+}
+
+type DownloadAttempt = { authenticated: boolean; client: Types.InnerTubeClient };
+
+function getDownloadAttempts(): DownloadAttempt[] {
+    const attempts: DownloadAttempt[] = ANONYMOUS_DOWNLOAD_CLIENTS.map(client => ({ authenticated: false, client }));
+    if (loadCookies())
+        attempts.push(...AUTHENTICATED_DOWNLOAD_CLIENTS.map(client => ({ authenticated: true, client })));
+    return attempts;
+}
+
+async function downloadWithClient(innertube: Innertube, videoId: string, client: Types.InnerTubeClient) {
+    return innertube.download(videoId, {
+        type: "audio",
+        quality: "best",
+        format: "any",
+        client,
+    });
+}
+
+async function writeStreamToFile(stream: ReadableStream<Uint8Array>, filePath: string): Promise<void> {
+    const writeStream = fs.createWriteStream(filePath);
+    try {
+        await pipeline(Readable.from(Utils.streamToIterable(stream)), writeStream);
+    } catch (e) {
+        writeStream.destroy();
+        if (fs.existsSync(filePath))
+            fs.unlinkSync(filePath);
+        throw e;
+    }
+}
+
+async function downloadAudioToFile(videoId: string, filePath: string) {
+    let lastError: unknown;
+
+    for (const { authenticated, client } of getDownloadAttempts()) {
+        try {
+            const stream = await downloadWithClient(await getInnertube(authenticated), videoId, client);
+            await writeStreamToFile(stream, filePath);
+            return;
+        } catch (e) {
+            lastError = e;
+            if (!isDownloadRetryableError(e))
+                throw e;
+        }
+    }
+
+    try {
+        const stream = await (await getInnertube(false)).download(videoId, {
+            type: "video+audio",
+            quality: "bestefficiency",
+            format: "any",
+            client: "IOS",
+        });
+        await writeStreamToFile(stream, filePath);
+    } catch (e) {
+        throw lastError ?? e;
+    }
 }
 
 function isRateLimitError(err: unknown): boolean {
@@ -66,8 +167,9 @@ function isRateLimitError(err: unknown): boolean {
         return false;
     if ("statusCode" in err && (err as { statusCode?: number }).statusCode === 429)
         return true;
-    const info = (err as { info?: { response?: Response } }).info;
-    return info?.response?.status === 429;
+    const info = (err as { info?: { response?: Response; error_type?: string } }).info;
+    return info?.response?.status === 429
+        || (info?.error_type === "FETCH_FAILED" && info?.response?.status === 429);
 }
 
 export class Downloader {
@@ -87,7 +189,7 @@ export class Downloader {
         const res = new OperationResult();
         video.step = QueueVideoStep.GetInfo;
         try {
-            const innertube = await getInnertube();
+            const innertube = await getInnertube(!!loadCookies());
             const info = await innertube.getInfo(video.id);
 
             let authorName = info.basic_info.channel?.name ?? info.basic_info.author ?? "";
@@ -137,14 +239,7 @@ export class Downloader {
             const baseFileAddress = video.fileAddress = path.join(config.cacheDirectory, video.localId);
             const videoFileAddress = baseFileAddress + '.mp4';
 
-            const innertube = await getInnertube();
-            const downloadStream = await innertube.download(video.id, {
-                type: "audio",
-                quality: "best",
-            });
-
-            const videoWriteStream = fs.createWriteStream(videoFileAddress);
-            await pipeline(Readable.from(Utils.streamToIterable(downloadStream)), videoWriteStream);
+            await downloadAudioToFile(video.id, videoFileAddress);
 
             video.mp4Size = getFileSizeInMegaBytes(videoFileAddress);
 
