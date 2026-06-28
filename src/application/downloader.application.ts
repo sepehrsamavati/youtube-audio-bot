@@ -7,7 +7,7 @@ import { pipeline } from 'node:stream/promises';
 import NodeID3 from "node-id3";
 import config from '../config.js';
 import ffmpeg from "fluent-ffmpeg";
-import { Innertube, Platform, UniversalCache, Utils } from "youtubei.js";
+import { ClientType, Innertube, Platform, UniversalCache, Utils } from "youtubei.js";
 import type { Types } from "youtubei.js";
 import { logError } from '../common/helpers/log.js';
 import { QueueVideo } from '../common/models/queueVideo.js';
@@ -20,8 +20,8 @@ type CookieJson = { name: string; value: string; domain?: string };
 
 const VIDEO_ID_REGEX = /^[a-zA-Z0-9_-]{11}$/;
 const VIDEO_URL_REGEX = /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/;
-const ANONYMOUS_DOWNLOAD_CLIENTS: Types.InnerTubeClient[] = ["IOS", "TV", "MWEB", "YTMUSIC"];
-const AUTHENTICATED_DOWNLOAD_CLIENTS: Types.InnerTubeClient[] = ["TV", "MWEB", "YTMUSIC", "WEB_CREATOR", "ANDROID", "WEB"];
+const ANONYMOUS_DOWNLOAD_CLIENTS: Types.InnerTubeClient[] = ["IOS", "TV_EMBEDDED", "TV", "MWEB", "YTMUSIC"];
+const AUTHENTICATED_DOWNLOAD_CLIENTS: Types.InnerTubeClient[] = ["WEB_CREATOR", "TV_EMBEDDED", "TV", "MWEB", "YTMUSIC", "ANDROID"];
 
 Platform.shim.eval = async (data) => new Function(data.output)();
 
@@ -66,11 +66,18 @@ function createInnertubeOptions(authenticated: boolean): Parameters<typeof Inner
 
     if (authenticated) {
         const cookie = loadCookies();
-        if (cookie)
+        if (cookie) {
             options.cookie = cookie;
+            options.client_type = ClientType.WEB_CREATOR;
+        }
     }
 
     return options;
+}
+
+function resetInnertubeSessions(): void {
+    innertubeAuthPromise = undefined;
+    innertubeAnonPromise = undefined;
 }
 
 async function getInnertube(authenticated = true): Promise<Innertube> {
@@ -94,31 +101,58 @@ function isDownloadRetryableError(err: unknown): boolean {
             || message.includes("failed with status 400")
             || message.includes("status code 400")
             || message.includes("Video is login required")
+            || message.includes("Video is unplayable")
             || message.includes("JavaScript evaluator")
-            || message.includes("non 2xx status code"))
+            || message.includes("non 2xx status code")
+            || message.includes("PlayerErrorCommand")
+            || message.includes("This video is unavailable"))
             return true;
     }
     const errorType = (err as { info?: { error_type?: string } }).info?.error_type;
     return errorType === "NO_STREAMING_DATA"
         || errorType === "LOGIN_REQUIRED"
+        || errorType === "UNPLAYABLE"
         || errorType === "FETCH_FAILED";
+}
+
+function hasPlayableAudio(info: Awaited<ReturnType<Innertube["getBasicInfo"]>>): boolean {
+    const status = info.playability_status?.status;
+    if (status === "LOGIN_REQUIRED" || status === "UNPLAYABLE")
+        return false;
+
+    const formats = [
+        ...(info.streaming_data?.formats ?? []),
+        ...(info.streaming_data?.adaptive_formats ?? []),
+    ];
+    return formats.some(f => f.has_audio && (f.url || f.signature_cipher || f.cipher));
+}
+
+function throwForUnplayableInfo(info: Awaited<ReturnType<Innertube["getBasicInfo"]>>): never {
+    const status = info.playability_status?.status;
+    const reason = info.playability_status?.reason ?? "Streaming data not available";
+    const errorType = status === "LOGIN_REQUIRED" ? "LOGIN_REQUIRED" : "NO_STREAMING_DATA";
+    throw Object.assign(new Error(reason), { info: { error_type: errorType } });
 }
 
 type DownloadAttempt = { authenticated: boolean; client: Types.InnerTubeClient };
 
 function getDownloadAttempts(): DownloadAttempt[] {
-    const attempts: DownloadAttempt[] = ANONYMOUS_DOWNLOAD_CLIENTS.map(client => ({ authenticated: false, client }));
+    const attempts: DownloadAttempt[] = [];
     if (loadCookies())
         attempts.push(...AUTHENTICATED_DOWNLOAD_CLIENTS.map(client => ({ authenticated: true, client })));
+    attempts.push(...ANONYMOUS_DOWNLOAD_CLIENTS.map(client => ({ authenticated: false, client })));
     return attempts;
 }
 
 async function downloadWithClient(innertube: Innertube, videoId: string, client: Types.InnerTubeClient) {
-    return innertube.download(videoId, {
+    const info = await innertube.getBasicInfo(videoId, { client });
+    if (!hasPlayableAudio(info))
+        throwForUnplayableInfo(info);
+
+    return info.download({
         type: "audio",
         quality: "best",
         format: "any",
-        client,
     });
 }
 
@@ -137,24 +171,34 @@ async function writeStreamToFile(stream: ReadableStream<Uint8Array>, filePath: s
 async function downloadAudioToFile(videoId: string, filePath: string) {
     let lastError: unknown;
 
-    for (const { authenticated, client } of getDownloadAttempts()) {
-        try {
-            const stream = await downloadWithClient(await getInnertube(authenticated), videoId, client);
-            await writeStreamToFile(stream, filePath);
-            return;
-        } catch (e) {
-            lastError = e;
-            if (!isDownloadRetryableError(e))
-                throw e;
+    for (let pass = 0; pass < 2; pass++) {
+        for (const { authenticated, client } of getDownloadAttempts()) {
+            try {
+                const stream = await downloadWithClient(await getInnertube(authenticated), videoId, client);
+                await writeStreamToFile(stream, filePath);
+                return;
+            } catch (e) {
+                lastError = e;
+                if (!isDownloadRetryableError(e))
+                    throw e;
+            }
+        }
+
+        if (pass === 0) {
+            resetInnertubeSessions();
+            continue;
         }
     }
 
     try {
-        const stream = await (await getInnertube(false)).download(videoId, {
+        const innertube = await getInnertube(false);
+        const info = await innertube.getBasicInfo(videoId, { client: "IOS" });
+        if (!hasPlayableAudio(info))
+            throwForUnplayableInfo(info);
+        const stream = await info.download({
             type: "video+audio",
             quality: "bestefficiency",
             format: "any",
-            client: "IOS",
         });
         await writeStreamToFile(stream, filePath);
     } catch (e) {
@@ -258,6 +302,9 @@ export class Downloader {
 
             return res.succeeded();
         } catch (e) {
+            const reason = (e as { info?: { reason?: string; status?: string } }).info;
+            if (reason?.reason)
+                console.error(`Downloader / Client rejected: ${reason.status ?? "?"} — ${reason.reason}`);
             logError("Downloader / Download video", e);
             if (isRateLimitError(e))
                 return res.failed("youtubeRateLimit");
